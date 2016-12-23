@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 1994-2016 Altair Engineering, Inc.
  * For more information, contact Altair at www.altair.com.
- *  
+ *
  * This file is part of the PBS Professional ("PBS Pro") software.
- * 
+ *
  * Open Source License Information:
  *  
  * PBS Pro is free software. You can redistribute it and/or modify it under the
@@ -102,6 +102,9 @@ extern "C" {
 #define ATTR_DefaultChunk	"default_chunk"
 #define ATTR_X11_cookie         "forward_x11_cookie"
 #define ATTR_X11_port           "forward_x11_port"
+#define ATTR_l_max		"max_resc_req"
+#define ATTR_l_min		"min_resc_req"
+#define ATTR_multi_select_job	"multi_select_job"
 #define ATTR_GUI		"gui"
 
 /* Begin Standing Reservation Attributes */
@@ -133,6 +136,7 @@ extern "C" {
 #define ATTR_security	"security"
 #define ATTR_sched_hint	"sched_hint"
 #define ATTR_SchedSelect "schedselect"
+#define ATTR_RequestedSpec "requestedspec"
 #define ATTR_substate	"substate"
 #define ATTR_name	"Job_Name"
 #define ATTR_owner	"Job_Owner"
@@ -326,9 +330,9 @@ extern "C" {
 #define ATTR_NODE_ProvisionEnable	"provision_enable"
 #define ATTR_NODE_current_aoe	"current_aoe"
 #define ATTR_NODE_in_multivnode_host	"in_multivnode_host"
-#define ATTR_NODE_License	"license"
-#define ATTR_NODE_LicenseInfo	"license_info"
-#define ATTR_NODE_TopologyInfo	"topology_info"
+#define	ATTR_NODE_License	"license"
+#define	ATTR_NODE_LicenseInfo	"license_info"
+#define	ATTR_NODE_TopologyInfo	"topology_info"
 #define ATTR_NODE_MaintJobs	"maintenance_jobs"
 
 /* Resource "attribute" names */

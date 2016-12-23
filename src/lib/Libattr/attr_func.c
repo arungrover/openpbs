@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 1994-2016 Altair Engineering, Inc.
  * For more information, contact Altair at www.altair.com.
- *  
+ *
  * This file is part of the PBS Professional ("PBS Pro") software.
- * 
+ *
  * Open Source License Information:
  *  
  * PBS Pro is free software. You can redistribute it and/or modify it under the
@@ -52,7 +52,7 @@
 /**
  * @file	attr_func.c
  * @brief
- * 	This file contains general functions for manipulating attributes and attribute lists.
+ * This file contains general functions for manipulating attributes and attribute lists.
  *
  * @par Included are:
  *	clear_attr()
@@ -83,7 +83,7 @@
 
 /**
  * @brief
- * 	clear_attr - clear an attribute value structure and clear ATR_VFLAG_SET
+ * clear_attr - clear an attribute value structure and clear ATR_VFLAG_SET
  * 
  * @param[in] pattr - pointer to attribute structure
  * @param[in] pdef - pointer to attribute_def structure
@@ -110,7 +110,7 @@ clear_attr(attribute *pattr, struct attribute_def *pdef)
 
 /**
  * @brief
- * 	find_attr - find attribute definition by name
+ * find_attr - find attribute definition by name
  *
  *	Searches array of attribute definition strutures to find one
  *	whose name matches the requested name.
@@ -142,7 +142,7 @@ find_attr(struct attribute_def *attr_def, char *name, int limit)
 
 /**
  * @brief
- * 	free_svrcache - free the cached svrattrl entries associated with an attribute
+ * free_svrcache - free the cached svrattrl entries associated with an attribute
  *
  * @param[in] attr - pointer to attribute structure
  *
@@ -181,7 +181,7 @@ free_svrcache(struct attribute *attr)
 
 /**
  * @brief
- *	free_null - A free routine for attributes which do not
+ * free_null - A free routine for attributes which do not
  *	have malloc-ed space ( boolean, char, long ).
  *
  * @param[in] attr - pointer to attribute structure
@@ -203,8 +203,8 @@ free_null(struct attribute *attr)
 
 /**
  * @brief
- * 	comp_null - A do nothing, except return 0, attribute comparison
- *	function.
+ * comp_null - A do nothing, except return 0, attribute comparison
+ *	       function.
  *
  * @param[in] attr - pointer to attribute structure
  * @param[in] with - pointer to attribute structure
@@ -223,7 +223,7 @@ comp_null(struct attribute *attr, struct attribute *with)
 
 /**
  * @brief
- * 	attrlist_alloc - allocate space for an svrattrl structure entry
+ * attrlist_alloc - allocate space for an svrattrl structure entry
  *
  *	The space required for the entry is calculated and allocated.
  *	The total size and three string lengths are set in the entry,
@@ -276,11 +276,11 @@ attrlist_alloc(int szname, int szresc, int szval)
 
 /**
  * @brief
- * 	attrlist_create - create an svrattrl structure entry
+ * attrlist_create - create an svrattrl structure entry
  *
- *	The space required for the entry is calculated and allocated.
- * 	The attribute and resource name is copied into the entry.
- * 	Note, the value string should be inserted by the caller after this returns.
+ * The space required for the entry is calculated and allocated.
+ * The attribute and resource name is copied into the entry.
+ * Note, the value string should be inserted by the caller after this returns.
  *
  * @param[in] aname - attribute name
  * @param[in] rname - resource name if needed or null
@@ -370,7 +370,7 @@ free_svrattrl(svrattrl *pal)
 
 /**
  * @brief
- * 	parse_comma_string() - parse a string of the form:
+ * parse_comma_string() - parse a string of the form:
  *		value1 [, value2 ...]
  *
  *	On the first call, start is non null, a pointer to the first value
@@ -470,7 +470,7 @@ count_substrings(char *val, int *pcnt)
 
 /**
  * @brief
- * 	attrl_fixlink - fix up the next pointer within the attropl substructure
+ * attrl_fixlink - fix up the next pointer within the attropl substructure
  *	within a svrattrl list.
  *
  * @param[in] phead - pointer to head of svrattrl list
@@ -503,7 +503,7 @@ attrl_fixlink(pbs_list_head *phead)
 
 /**
  * @brief
- * 	free_none - when scheduler modifies accrue_type, we don't
+ * free_none - when scheduler modifies accrue_type, we don't
  *            want to delete previous value.
  *
  * @param[in] attr - pointer to attribute structure
@@ -535,6 +535,7 @@ free_none(struct attribute *attr)
  * @param[in]		val_str - the value field.
  * @param[in]		flag - the flag entry
  * @param[in]		name_prefix - string to prefix the 'name_str'
+ * @param[in]		op - operator to be used between resource and value
  *
  * @return int
  * @retval 0 for sucess
@@ -543,7 +544,7 @@ free_none(struct attribute *attr)
  */
 int
 add_to_svrattrl_list(pbs_list_head *phead, char *name_str, char *resc_str,
-	char *val_str, unsigned int flag, char *name_prefix)
+	char *val_str, unsigned int flag, char *name_prefix, enum batch_op op)
 {
 	svrattrl 	 *psvrat = NULL;
 	int		 valln = 0;
@@ -583,6 +584,7 @@ add_to_svrattrl_list(pbs_list_head *phead, char *name_str, char *resc_str,
 		strcpy(psvrat->al_value, val_str);
 	}
 	psvrat->al_flags = flag;
+	psvrat->al_op = op;
 	append_link(phead, &psvrat->al_link, psvrat);
 
 	return 0;
@@ -599,6 +601,7 @@ add_to_svrattrl_list(pbs_list_head *phead, char *name_str, char *resc_str,
  * @param[in]	val_str - fills in the svrattrl al_value field
  * @param[in]	flag - fills in the svrattrl al_flags field
  * @param[in]	name_prefix - string to prefix the 'name_str'
+ * @param[in]	op - operator to be used between resource and value
  *
  * @return int
  * @retval 0	success
@@ -606,7 +609,7 @@ add_to_svrattrl_list(pbs_list_head *phead, char *name_str, char *resc_str,
  */
 int
 add_to_svrattrl_list_sorted(pbs_list_head *phead, char *name_str, char *resc_str,
-	char *val_str, unsigned int flag, char *name_prefix)
+	char *val_str, unsigned int flag, char *name_prefix, enum batch_op op)
 {
 	svrattrl 	*psvrat = NULL;
 	int		valln = 0;
@@ -647,6 +650,7 @@ add_to_svrattrl_list_sorted(pbs_list_head *phead, char *name_str, char *resc_str
 		strcpy(psvrat->al_value, val_str);
 	}
 	psvrat->al_flags = flag;
+	psvrat->al_op = op;
 
 	plink_cur = phead;
 	psvr_cur = (svrattrl *)GET_NEXT(*phead);
@@ -695,7 +699,7 @@ copy_svrattrl_list(pbs_list_head *from_head, pbs_list_head *to_head)
 	while (plist) {
 
 		if (add_to_svrattrl_list(to_head, plist->al_name, plist->al_resc,
-			plist->al_value, plist->al_op, NULL) == -1) {
+			plist->al_value, plist->al_flags, NULL, plist->al_op) == -1) {
 			free_attrlist(to_head);
 			return -1;
 		}
@@ -958,7 +962,7 @@ str_array_to_svrattrl(char **str_array, pbs_list_head *to_head, char *name_str)
 	CLEAR_HEAD((*to_head));
 	i=0;
 	while (str_array[i]) {
-		if (add_to_svrattrl_list(to_head, name_str, NULL, str_array[i], 0, NULL) == -1) {
+		if (add_to_svrattrl_list(to_head, name_str, NULL, str_array[i], 0, NULL, EQ) == -1) {
 			/* clear what we've accumulated so far*/
 			free_attrlist(to_head);
 			CLEAR_HEAD((*to_head));

@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 1994-2016 Altair Engineering, Inc.
  * For more information, contact Altair at www.altair.com.
- *  
+ *
  * This file is part of the PBS Professional ("PBS Pro") software.
- * 
+ *
  * Open Source License Information:
  *  
  * PBS Pro is free software. You can redistribute it and/or modify it under the
@@ -39,10 +39,15 @@
 #ifdef	__cplusplus
 extern "C" {
 #endif
+
+#include "pbs_ifl.h"
+
 /* structure used by grunt syntax parser located in libpbs.h */
 typedef struct key_value_pair {
 	char *kv_keyw;
 	char *kv_val;
+	enum batch_op op;
+	int sel_or;
 } key_value_pair;
 
 #define KVP_SIZE 50
@@ -61,6 +66,10 @@ extern int parse_node_resc(char *str, char **nodep, int *nl, struct key_value_pa
 extern int parse_node_resc_r(char *str, char **nodep, int *pnelem, int *nlkv, struct key_value_pair **kv);
 extern char *parse_plus_spec(char *selstr, int *rc);
 extern char *parse_plus_spec_r(char *selstr, char **last, int *hp);
+extern char *parse_select_or_string(char *selstr);
+extern char *parse_or_spec(char* selstr, int *rc);
+extern char *parse_or_spec_r(char *selstr, char **last, int *hp);
+extern char *op_to_str(enum batch_op);
 
 #ifdef	__cplusplus
 }

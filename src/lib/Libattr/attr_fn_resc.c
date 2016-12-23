@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 1994-2016 Altair Engineering, Inc.
  * For more information, contact Altair at www.altair.com.
- *  
+ *
  * This file is part of the PBS Professional ("PBS Pro") software.
- * 
+ *
  * Open Source License Information:
  *  
  * PBS Pro is free software. You can redistribute it and/or modify it under the
@@ -55,12 +55,12 @@
 /**
  * @file	attr_fn_resc.c
  * @brief
- * 	This file contains functions for manipulating attributes of type
+ * This file contains functions for manipulating attributes of type
  *	resource
  *
- *  A "resource" is similiar to an attribute but with two levels of
- *  names.  The first name is the attribute name, e.g. "resource-list",
- *  the second name is the resource name, e.g. "mem".
+ * A "resource" is similiar to an attribute but with two levels of
+ * names.  The first name is the attribute name, e.g. "resource-list",
+ * the second name is the resource name, e.g. "mem".
  * @details
  * Each resource_def has functions for:
  *	Decoding the value string to the internal representation.
@@ -93,7 +93,7 @@ int comp_resc_nc;	/* count of resources not compared  */
 
 /**
  * @brief
- * 	decode_resc - decode a "attribute name/resource name/value" triplet into
+ * decode_resc - decode a "attribute name/resource name/value" triplet into
  *	         a resource type attribute
  *
  * @param[in] patr - ptr to attribute to decode
@@ -167,7 +167,7 @@ decode_resc(struct attribute *patr, char *name, char *rescn, char *val)
 
 /**
  * @brief
- * 	Encode attr of type ATR_TYPE_RESR into attr_extern form
+ * Encode attr of type ATR_TYPE_RESR into attr_extern form
  *
  * Here we are a little different from the typical attribute.  Most have a
  * single value to be encoded.  But resource attribute may have a whole bunch.
@@ -272,7 +272,7 @@ encode_resc(attribute *attr, pbs_list_head *phead, char *atname, char *rsname, i
 
 /**
  * @brief
- * 	set_resc - set value of attribute of type ATR_TYPE_RESR to another
+ * set_resc - set value of attribute of type ATR_TYPE_RESR to another
  *
  *	For each resource in the list headed by the "new" attribute,
  *	the correspondingly name resource in the list headed by "old"
@@ -363,7 +363,7 @@ set_resc(struct attribute *old, struct attribute *new, enum batch_op op)
 
 /**
  * @brief
- * 	comp_resc - compare two attributes of type ATR_TYPE_RESR
+ * comp_resc - compare two attributes of type ATR_TYPE_RESR
  *
  *	DANGER Will Robinson, DANGER
  *
@@ -400,12 +400,52 @@ comp_resc(struct attribute *attr, struct attribute *with)
 			atresc = find_resc_entry(attr, wiresc->rs_defin);
 			if (atresc != (resource *)0) {
 				if (atresc->rs_value.at_flags & ATR_VFLAG_SET) {
-					if ((rc=atresc->rs_defin->rs_comp(&atresc->rs_value, 				      &wiresc->rs_value)) > 0)
-						comp_resc_gt++;
-					else if (rc < 0)
-						comp_resc_lt++;
-					else
-						comp_resc_eq++;
+					/* while comparing, we ignore operator set in "attr"
+					 * and operator only from "with" is considered to compare the two.
+					 */
+					if ((rc=atresc->rs_defin->rs_comp(&atresc->rs_value, &wiresc->rs_value)) > 0) {
+						switch (wiresc->rs_value.op) {
+							/* if 'with' has greater than operator then there are chances that
+							 * attr < with, thus marking comp_resc_lt
+							 */
+							case GT:
+							case GE:
+								comp_resc_lt++;
+								break;
+							default:
+								comp_resc_gt++;
+								break;
+						}
+					}
+					else if (rc < 0) {
+						switch (wiresc->rs_value.op) {
+							/* if 'with' has less than operator then there are chances that
+							 * attr > with, thus marking comp_resc_gt
+							 */
+							case LT:
+							case LE:
+								comp_resc_gt++;
+								break;
+							default:
+								comp_resc_lt++;
+								break;
+						}
+					}
+					else {
+						switch (wiresc->rs_value.op) {
+							case GT:
+							case GE:
+								comp_resc_lt++;
+								break;
+							case LT:
+							case LE:
+								comp_resc_gt++;
+								break;
+							default:
+								comp_resc_eq++;
+								break;
+						}
+					}
 				}
 			} else {
 				comp_resc_nc++;
@@ -418,7 +458,7 @@ comp_resc(struct attribute *attr, struct attribute *with)
 
 /**
  * @brief
- * 	free_resc - free space associated with attribute value
+ * free_resc - free space associated with attribute value
  *
  *	For each entry in the resource list, the entry is delinked,
  *	the resource entry value space freed (by calling the resource
@@ -453,7 +493,7 @@ free_resc(attribute *pattr)
 
 /**
  * @brief
- * 	find_resc_def - find the resource_def structure for a resource with
+ * find_resc_def - find the resource_def structure for a resource with
  *	a given name
  *
  * @param[in] rscdf - address of array of resource_def structs 
@@ -487,9 +527,9 @@ find_resc_def(resource_def *rscdf, char *name, int limit)
  * @param[in] rscdf - address of array of resource_def structs
  *
  * @return	int
- * @retval 	1 	if built-in
- * @retval 	0 	if custom
- * @retval 	-1 	on error
+ * @retval 1 if built-in
+ * @retval 0 if custom
+ * @retval -1 on error
  *
  */
 int
@@ -523,8 +563,8 @@ is_builtin(resource_def *rscdef)
 
 /**
  * @brief
- * 	find_resc_entry - find a resource (value) entry in a list headed in an
- * 	an attribute that points to the specified resource_def structure
+ * find_resc_entry - find a resource (value) entry in a list headed in an
+ * an attribute that points to the specified resource_def structure
  *
  * @param[in] pattr - pointer to attribute structure
  * @param[in] rscdf - pointer to resource_def structure
@@ -551,7 +591,7 @@ find_resc_entry(attribute *pattr, resource_def *rscdf)
 
 /**
  * @brief
- * 	add_resource_entry - add and "unset" entry for a resource type to a
+ * add_resource_entry - add and "unset" entry for a resource type to a
  *	list headed in an attribute.  Just for later displaying, the
  *	resource list is maintained in an alphabetic order.
  *	The parent attribute is marked with ATR_VFLAG_SET and ATR_VFLAG_MODIFY
@@ -592,6 +632,7 @@ add_resource_entry(attribute *pattr, resource_def *prdef)
 	new->rs_value.at_flags = 0;
 	new->rs_value.at_user_encoded = 0;
 	new->rs_value.at_priv_encoded = 0;
+	new->rs_value.op = EQ;
 	prdef->rs_free(&new->rs_value);
 
 	if (pr != (resource *)0) {

@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 1994-2016 Altair Engineering, Inc.
  * For more information, contact Altair at www.altair.com.
- *  
+ *
  * This file is part of the PBS Professional ("PBS Pro") software.
- * 
+ *
  * Open Source License Information:
  *  
  * PBS Pro is free software. You can redistribute it and/or modify it under the
@@ -132,7 +132,7 @@ verify_value_resc(int batch_request, int parent_object, int cmd,
 		/* found the resource, verify type and value of resource */
 		resc_attr.name = pattr->resource;
 		resc_attr.value = pattr->value;
-
+		resc_attr.op = pattr->op;
 		if (prdef->at_verify_datatype)
 			err_code = prdef->at_verify_datatype(&resc_attr,
 				err_msg);
@@ -1392,11 +1392,11 @@ verify_value_mgr_opr_acl_check(int batch_request, int parent_object,
 		if (*entry != '*') { /* if == * cannot check it any more */
 
 			/* if not wild card, must be fully qualified host */
-			if (get_fullhostname(entry, hostname, (sizeof(hostname) - 1))
-				|| strncasecmp(entry, hostname, (sizeof(hostname) - 1))) {
+				if (get_fullhostname(entry, hostname, (sizeof(hostname) - 1))
+					|| strncasecmp(entry, hostname, (sizeof(hostname) - 1))) {
 					err = PBSE_BADHOST;
 					break;
-			}
+				}
 		}
 
 		token = NULL;
@@ -1532,35 +1532,57 @@ verify_value_select(int batch_request, int parent_object, int cmd,
 	struct       key_value_pair *pkvp;
 	int          rc = 0;
 	int          j;
+	char *	     val;
+	char *	     sel_or;
 	struct attropl resc_attr;
 	if ((pattr->value == NULL) || (pattr->value[0] == '\0'))
 		return PBSE_BADATVAL;
-
-	chunk = parse_plus_spec(pattr->value, &rc); /* break '+' seperated substrings */
-	if (rc != 0)
-		return (rc);
-
-	while (chunk) {
-#ifdef NAS
-		if (parse_chunk(chunk, 0, &nchk, &nelem, &pkvp, NULL) == 0)
-#else
-		if (parse_chunk(chunk, &nchk, &nelem, &pkvp, NULL) == 0)
-#endif
-		{
-			for (j = 0; j < nelem; ++j) {
-				resc_attr.name = pattr->name;
-				resc_attr.resource = pkvp[j].kv_keyw;
-				resc_attr.value = pkvp[j].kv_val;
-				rc = verify_value_resc(batch_request, parent_object, cmd, &resc_attr, err_msg);
-				if (rc > 0)
-					return rc;
-			}
-		} else {
-			return PBSE_BADATVAL;
-		}
-		chunk = parse_plus_spec(NULL, &rc);
-		if (rc != 0)
+	val  = strdup(pattr->value);
+	if (val == NULL)
+		return PBSE_SYSTEM;
+	sel_or = parse_select_or_string(val); /* break "||" seperated substrings */
+	if (sel_or == NULL) {
+		free(val); 
+		return PBSE_SYSTEM;
+	}
+	
+	while (sel_or) {
+		chunk = parse_plus_spec(sel_or, &rc); /* break '+' seperated substrings */
+		if (rc != 0) {
+			free(val);
 			return (rc);
-	} /* while */
+		}
+
+		while (chunk) {
+#ifdef NAS
+			if (parse_chunk(chunk, 0, &nchk, &nelem, &pkvp, NULL) == 0)
+#else
+			if (parse_chunk(chunk, &nchk, &nelem, &pkvp, NULL) == 0)
+#endif
+			{
+				for (j = 0; j < nelem; ++j) {
+					resc_attr.name = pattr->name;
+					resc_attr.resource = pkvp[j].kv_keyw;
+					resc_attr.value = pkvp[j].kv_val;
+					rc = verify_value_resc(batch_request, parent_object, cmd, &resc_attr, err_msg);
+					if (rc > 0) {
+						free(val);
+						return rc;
+					}
+				}
+			} else {
+				free(val);
+				return PBSE_BADATVAL;
+			}
+			chunk = parse_plus_spec(NULL, &rc);
+			if (rc != 0) {
+				free(val);
+				return (rc);
+			}
+		} /* while */
+		free(sel_or);
+		sel_or = parse_select_or_string(NULL);
+	} /* while sel_or */
+	free(val);
 	return PBSE_NONE;
 }

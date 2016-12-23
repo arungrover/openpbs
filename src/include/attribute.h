@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 1994-2016 Altair Engineering, Inc.
  * For more information, contact Altair at www.altair.com.
- *  
+ *
  * This file is part of the PBS Professional ("PBS Pro") software.
- * 
+ *
  * Open Source License Information:
  *  
  * PBS Pro is free software. You can redistribute it and/or modify it under the
@@ -175,6 +175,7 @@ struct attribute {
 	svrattrl    *at_user_encoded;	/* encoded svrattrl form for users*/
 	svrattrl    *at_priv_encoded;	/* encoded svrattrl form for mgr/op*/
 	union  attr_val at_val;		/* the attribute value	*/
+	enum batch_op op;
 };
 typedef struct attribute attribute;
 
@@ -326,9 +327,9 @@ extern int  compare_svrattrl_list(pbs_list_head *list1, pbs_list_head *list2);
 extern svrattrl *find_svrattrl_list_entry(pbs_list_head *phead, char *name,
 	char *resc);
 extern int add_to_svrattrl_list(pbs_list_head *phead, char *name_str, char *resc_str,
-	char *val_str, unsigned int flag, char *name_prefix);
+	char *val_str, unsigned int flag, char *name_prefix, enum batch_op op);
 extern int add_to_svrattrl_list_sorted(pbs_list_head *phead, char *name_str, char *resc_str,
-	char *val_str, unsigned int flag, char *name_prefix);
+	char *val_str, unsigned int flag, char *name_prefix, enum batch_op op);
 extern unsigned int get_svrattrl_flag(char *name, char *resc, char *val,
 	pbs_list_head *svrattrl_list, int hook_set_flag);
 extern int compare_svrattrl_list(pbs_list_head *l1, pbs_list_head *l2);

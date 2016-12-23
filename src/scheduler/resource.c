@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 1994-2016 Altair Engineering, Inc.
  * For more information, contact Altair at www.altair.com.
- *  
+ *
  * This file is part of the PBS Professional ("PBS Pro") software.
- * 
+ *
  * Open Source License Information:
  *  
  * PBS Pro is free software. You can redistribute it and/or modify it under the
@@ -95,10 +95,10 @@
  * @brief
  * 		query a pbs server for the resources it knows about
  *
- * @param[in]	pbs_sd	-	communication descriptor to pbs server
+ *	 @param[in] pbs_sd - communication descriptor to pbs server
  *
- * @return	resdef**
- * @retval	array of resources from server
+ *	@return resdef**
+ *	@retval array of resources from server
  * @retval	NULL	: on error
  *
  */
@@ -227,10 +227,10 @@ query_resources(int pbs_sd)
  * @brief
  * 		convert server type number into resource_type struct
  *
- * @param[in]	type	-	server type number
- * @param[out]	rtype	-	resource type structure
+ *	  @param[in]  type - server type number
+ *	  @param[out] rtype - resource type structure
  *
- * @return	void
+ *	@return void
  *
  */
 void
@@ -275,7 +275,7 @@ conv_rsc_type(int type, struct resource_type *rtype)
  * @param[in]	vdef	-	resource definition structure.
  * @param[in]	n	- not used here
  *
- * @see	filter_array()
+ * @see filter_array()
  */
 int
 def_is_consumable(void *vdef, void *n)
@@ -294,7 +294,7 @@ def_is_consumable(void *vdef, void *n)
  * @param[in]	vdef	-	resource definition structure.
  * @param[in]	n	- not used here
  *
- * @see	filter_array()
+ * @see filter_array()
  */
 int
 def_is_bool(void *vdef, void *n)
@@ -313,7 +313,7 @@ def_is_bool(void *vdef, void *n)
  * @brief
  * 		resdef constructor
  *
- * @return	newly allocated resdef
+ * @return newly allocated resdef
  */
 resdef *
 new_resdef(void)
@@ -335,9 +335,9 @@ new_resdef(void)
  * @brief
  * 		resdef copy constructor
  *
- * @param[in]	olddef	-	resdef to copy
+ * @param[in] olddef - resdef to copy
  *
- * @return	duplicated resdef *
+ * @return duplicated resdef *
  */
 resdef *
 dup_resdef(resdef *olddef)
@@ -365,9 +365,9 @@ dup_resdef(resdef *olddef)
  * @brief
  * 		copy constructor for array of resdefs
  *
- * @param[in]	odef_arr	-	array of resdefs to copy
+ * @param[in] odef_arr - array of resdefs to copy
  *
- * @return	duplicated array of resdef **s
+ * @return duplicated array of resdef **s
  */
 resdef **
 dup_resdef_array(resdef **odef_arr)
@@ -405,7 +405,7 @@ dup_resdef_array(resdef **odef_arr)
  *
  * @param[in,out]	def	-	resdef to free
  *
- * @return	void
+ * @return void
  */
 void
 free_resdef(resdef *def)
@@ -421,9 +421,9 @@ free_resdef(resdef *def)
  * 		add resdef to resdef array
  *
  * @param[in,out]	resdef_arr	-	pointer to an array of resdef to be added to(i.e. resdef ***)
- * @param[in]	def	-	def to add to array
+ * @param[in] def - def to add to array
  *
- * @return	int
+ * @return int
  * @retval	index	: index of string on success
  * @retval	-1	: failure
  */
@@ -453,12 +453,12 @@ add_resdef_to_array(resdef ***resdef_arr, resdef *def)
 /**
  * @brief
  *  	make a copy of a resdef array -- array itself is new memory,
- *      pointers point to the same thing.
+ *        pointers point to the same thing.
  *
  * @param[in]	deflist	-	array to copy
  *
- * @returns	resdef **
- * @retval	copied array
+ * @returns resdef **
+ * @retval copied array
  * @retval	NULL	: on error
  */
 resdef **
@@ -487,9 +487,9 @@ copy_resdef_array(resdef **deflist)
  * @brief
  * 		destructor for array of resdef
  *
- * @param[in]	deflist	-	array of resdef to free
+ * @param[in] deflist - array of resdef to free
  *
- * @return	void
+ * @return void
  */
 void
 free_resdef_array(resdef **deflist)
@@ -510,11 +510,11 @@ free_resdef_array(resdef **deflist)
  * @brief
  * 		find and return a resdef entry by name
  *
- * @param[in]	deflist	-	array of resdef to search
- * @param[in] name	-	name of resource to search for
+ *	  @param[in] deflist - array of resdef to search
+ *	  @param[in] name - name of resource to search for
  *
- * @return	resdef *
- * @retval	found resource def
+ *	@return resdef *
+ *	@retval found resource def
  * @retval	NULL	: if not found
  */
 resdef *
@@ -535,10 +535,10 @@ find_resdef(resdef **deflist, char *name)
  * @brief
  * 		does resdef exist in a resdef array?
  *
- * @param[in]	deflist	-	array of resdef to search
- * @param[in]	def	-	def of resource to search for
+ *	  @param[in] deflist - array of resdef to search
+ *	  @param[in] def - def of resource to search for
  *
- * @return	int
+ *	@return int
  * @retval	1	: if found
  * @retval	0	: if not found
  */
@@ -557,7 +557,7 @@ resdef_exists_in_array(resdef **deflist, resdef *def)
  * @brief
  * 		free and clear global resource definition pointers
  *
- * @return	void
+ * @return void
  */
 void
 reset_global_resource_ptrs(void)
@@ -591,7 +591,7 @@ reset_global_resource_ptrs(void)
  *
  * @param[in]	res	-	resource to see if it is set
  *
- * @return	int
+ * @return int
  * @retval	1	: is set
  * @retval	0	: not set
  */
@@ -615,11 +615,11 @@ is_res_avail_set(schd_resource *res)
  * @brief
  * 		add the resource signature of 'res' to the string 'sig'
  *
- * @param[in,out]	sig	-	resource signature we're adding to
- * @param[in,out]	sig_size	-	size of string sig
- * @param[in]	res	-	the resource to add to sig
+ * @param[in,out] sig - resource signature we're adding to
+ * @param[in,out] sig_size - size of string sig
+ * @param[in] res - the resource to add to sig
  *
- * @return	success/failure
+ * @return success/failure
  * @retval	1	: success
  * @retval	0	: failure
  */
@@ -647,15 +647,15 @@ add_resource_sig(char **sig, int *sig_size, schd_resource *res)
  *      FORM: res0=val:res1=val:...:resN=val
  *      Where 0, 1, .., N are indices into the resources array
  *
- * @param[in]	node	-	node to create signature from
- * @param[in]	resources	-	string array of resources
+ * @param[in] node - node to create signature from
+ * @param[in] resources - string array of resources
  * @param[in]	flags	-	CHECK_ALL_BOOLS - include all booleans even if not in resources
  *
- * @return	char *
- * @retval	signature of node
+ * @return char *
+ * @retval signature of node
  * @retval	NULL	: on error
  *
- * @par	it is the responsibility of the caller to free string returned
+ * @par it is the responsibility of the caller to free string returned
  */
 char *
 create_resource_signature(schd_resource *reslist, resdef **resources, unsigned int flags)
@@ -719,12 +719,12 @@ create_resource_signature(schd_resource *reslist, resdef **resources, unsigned i
  * 		query the resource definition from the server and create derived
  *        data structures.  Only query if required.
  *
- * @param[in]	pbs_sd	-	connection descriptor to the pbs server
+ * @param[in] pbs_sd - connection descriptor to the pbs server
  *
- * @return	int
+ * @return int
  * @retval	1	: success - we've updated the global resdef arrays
  * @retval	0	: failure - we haven't updated the global resdef arrays.  Scheduling
- *                     		should not continue.
+ *                     should not continue.
  */
 int
 update_resource_defs(int pbs_sd)
@@ -789,7 +789,7 @@ update_resource_defs(int pbs_sd)
  * @brief
  * 		convert an array of string resource names into resdefs
  *
- * @param[in]	resstr	-	array of resource strings
+ * @param[in] resstr - array of resource strings
  *
  * @return	resdef array
  * @retval	NULL	: on error
@@ -831,9 +831,9 @@ resstr_to_resdef(char **resstr)
  * @brief
  * 		safely access allres by index.  This can be used if allres is NULL
  *
- * @param[in]	ind	-	index into allres array
+ * @param[in] ind - index into allres array
  *
- * @return	resdef*
+ * @return resdef*
  */
 resdef *
 getallres(enum resource_index ind)
@@ -851,7 +851,7 @@ getallres(enum resource_index ind)
  *
  * @param[in]	resresv_arr	-	array of requests
  *
- * @return	array of resource definitions
+ * @return array of resource definitions
  */
 resdef **
 collect_resources_from_requests(resource_resv **resresv_arr)
@@ -863,11 +863,31 @@ collect_resources_from_requests(resource_resv **resresv_arr)
 	for (i = 0; resresv_arr[i] != NULL; i++) {
 		resource_resv *r = resresv_arr[i];
 
-		/* schedselect: node resources - resources to be satisfied on the nodes */
-		if (r->select != NULL && r->select->defs != NULL) {
-			for (j = 0; r->select->defs[j] != NULL; j++) {
-				if (!resdef_exists_in_array(defarr, r->select->defs[j]))
-					add_resdef_to_array(&defarr, r->select->defs[j]);
+		if ((r->job != NULL) && (r->job->is_multiselect == 1))
+		{
+			int k = 0;
+			/* iterate through all multi_select specifications and add then to resdef array */
+			for (; k < r->num_selspec && r->multi_select[k] != NULL; k++)
+			{
+				r->select = r->multi_select[k]->spec;
+				/* schedselect: node resources - resources to be satisfied on the nodes */
+				if (r->select != NULL && r->select->defs != NULL) {
+					for (j = 0; r->select->defs[j] != NULL; j++) {
+						if (!resdef_exists_in_array(defarr, r->select->defs[j]))
+							add_resdef_to_array(&defarr, r->select->defs[j]);
+					}
+				}
+			}
+		}
+		else
+		{
+
+			/* schedselect: node resources - resources to be satisfied on the nodes */
+			if (r->select != NULL && r->select->defs != NULL) {
+				for (j = 0; r->select->defs[j] != NULL; j++) {
+					if (!resdef_exists_in_array(defarr, r->select->defs[j]))
+						add_resdef_to_array(&defarr, r->select->defs[j]);
+				}
 			}
 		}
 		/*
@@ -922,7 +942,7 @@ no_hostvnode(void *v, void *arg)
 /**
  * @brief
  * 		filter function for filter_array().  Used to filter for resources
- * 		that are host based and get summed at the job level
+ * that are host based and get summed at the job level
  *
  * @param[in]	v	-	pointer to resource definition structure.
  * @param[in]	arg	-	argument (not used)
@@ -955,7 +975,7 @@ filter_noncons(void *v, void *arg)
 /**
  * @brief update the resource definition pointers in the sort_info structures
  * 
- * @par	We parse our config file when we start.  We do not have the resource
+ * @par We parse our config file when we start.  We do not have the resource 
  *      definitions at that time.  They also can change over time if the server
  *      sends us a SCH_CONFIGURE command.
  *

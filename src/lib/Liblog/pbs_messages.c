@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 1994-2016 Altair Engineering, Inc.
  * For more information, contact Altair at www.altair.com.
- *  
+ *
  * This file is part of the PBS Professional ("PBS Pro") software.
- * 
+ *
  * Open Source License Information:
  *  
  * PBS Pro is free software. You can redistribute it and/or modify it under the
@@ -389,6 +389,8 @@ char *msg_norunalteredjob = "Cannot run job which was altered/moved during curre
 /* resource limit setup specific */
 char *msg_corelimit = "invalid value for PBS_CORE_LIMIT in pbs.conf, continuing with default core limit. To use PBS_CORE_LIMIT update pbs.conf with correct value";
 
+/* consumable resources can not be submitted with != operator */
+char *msg_neconsumable_resc = "Consumable resource can only be requested with = operator";
 char *msg_resc_busy = "Resource busy";
 
 char *msg_job_moved = "Job moved to remote server";
@@ -553,13 +555,14 @@ struct pbs_err_to_txt pbs_err_to_txt[] = {
 	{PBSE_JOBSCRIPTMAXSIZE, &msg_jobscript_max_size},
 	{PBSE_BADJOBSCRIPTMAXSIZE,&msg_badjobscript_max_size},
 	{PBSE_WRONG_RESUME, &msg_wrong_resume},
+	{PBSE_NECONSUMABLE_RESC, &msg_neconsumable_resc},
 	{ 0, (char **)0 }		/* MUST be the last entry */
 };
 
 
 /**
  * @brief
- * 	pbse_to_txt() - return a text message for an PBS error number
+ * pbse_to_txt() - return a text message for an PBS error number
  *	if it exists
  *
  * @param[in] err - error number whose appropriate text message to be returned

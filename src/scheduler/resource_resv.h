@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 1994-2016 Altair Engineering, Inc.
  * For more information, contact Altair at www.altair.com.
- *  
+ *
  * This file is part of the PBS Professional ("PBS Pro") software.
- * 
+ *
  * Open Source License Information:
  *  
  * PBS Pro is free software. You can redistribute it and/or modify it under the
@@ -136,7 +136,7 @@ void free_resource_req(resource_req *req);
 /*
  *	set_resource_req - set the value and type of a resource req
  */
-void set_resource_req(resource_req *req, char *val);
+void set_resource_req(resource_req *req, char *val, enum batch_op op);
 
 /*
  *
@@ -148,6 +148,18 @@ resource_req *dup_resource_req_list(resource_req *oreq);
  *      dup_resource_req - duplicate a resource_req struct
  */
 resource_req *dup_resource_req(resource_req *oreq);
+
+/*
+ * is_conditional_resreq - function checks if any of the resource request
+ *          passed in resource_req list has a conditional operator.
+ */
+int is_conditional_resreq(resource_req *req);
+
+/*
+ * clear_consumable_resreq - function clears the resource amount requested by the job
+ *			    provided it is a consumable resource.
+ */
+void clear_consumable_resreq(resource_req *req);
 
 /*
  *      update_resresv_on_run - update information kept in a resource_resv
@@ -227,10 +239,19 @@ void free_place(place *pl);
 place *dup_place(place *pl);
 
 /*
+ *	parse_placespec - allocate a new place structure and parse
+ *				a placement spec (-l place)
+ *	returns newly allocated place
+ *		NULL: invalid placement spec
+ *
+ */
+place *parse_placespec(char *place_str);
+
+/*
  *	compare_res_to_str - compare a resource structure of type string to
  *			     a character array string
  */
-int compare_res_to_str(schd_resource *res, char *str, enum resval_cmpflag);
+int compare_res_to_str(schd_resource *res, char *str, enum resval_cmpflag, int op);
 
 /*
  *	compare_non_consumable - perform the == operation on a non consumable
@@ -281,6 +302,67 @@ selspec *new_selspec();
  *	dup_selspec - copy constructor for selspec
  */
 selspec *dup_selspec(selspec *oldspec);
+
+/*
+ *	parse_selspec - parse a simple select spec into requested resources
+ *
+ *	  IN: selspec - the select spec to parse
+ *	  OUT: numchunks - the number of chunks
+ *
+ *	returns requested resource list (& number of chunks in numchunks)
+ *		NULL on error or invalid spec
+ */
+multi_selspec **parse_selspec(char *selspec);
+
+/*
+ * parse select specification in string format which does not contain "||" multiple select specifications
+ */
+selspec *parse_single_selspec(char *selspec);
+
+/*
+ * parse select specification in string format to create a list of multi_selspec structures
+ */
+multi_selspec **parse_multi_selspec(char *selspec);
+
+/*
+ * append a new multi_selspec structure into the array
+ */
+multi_selspec **add_to_multi_selspec(multi_selspec **spec, int *spec_size, multi_selspec *lspec);
+
+/*
+ * free multi_selspec structure
+ */
+void free_multi_selspec(multi_selspec *multi_spec);
+
+/*
+ * free multi_selspec array
+ */
+void free_multi_selspec_array(multi_selspec **multi_spec);
+
+/*
+ * create a new multi_selspec structure
+ */
+multi_selspec* new_multi_selspec();
+
+/*
+ * duplicate a mutli_selspec structure
+ */
+multi_selspec* dup_multi_selspec(multi_selspec *sel_in);
+
+/*
+ * duplicate multi_selspec arary
+ */
+multi_selspec** dup_multi_selspec_array(multi_selspec **multi_select);
+
+/*
+ * free multi_selspec array
+ */
+void free_multi_selspec_array(multi_selspec **multi_spec);
+
+/*
+ * clears multi_selspec array of a job
+ */
+void clear_multi_selspec_array(resource_resv *job);
 
 /*
  *	free_selspec - destructor for selspec

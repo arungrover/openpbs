@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 1994-2016 Altair Engineering, Inc.
  * For more information, contact Altair at www.altair.com.
- *  
+ *
  * This file is part of the PBS Professional ("PBS Pro") software.
- * 
+ *
  * Open Source License Information:
  *  
  * PBS Pro is free software. You can redistribute it and/or modify it under the
@@ -67,6 +67,15 @@ is_ok_to_run_STF(status *policy, int pbs_sd, server_info *sinfo,
 	queue_info *qinfo, resource_resv *njob, schd_error *err,
 	nspec **(*shrink_heuristic)(status *policy, int pbs_sd, server_info *sinfo,
 	queue_info *qinfo, resource_resv *njob, schd_error *err));
+
+/*
+ * can_run_job - checks if a job can run for any of the given select specifications
+ */
+nspec **
+can_run_job(status *policy, int pbs_sd, server_info *sinfo,
+	queue_info *qinfo, resource_resv *njob, schd_error *err);
+
+
 /*
  * shrink_job_algorithm - generic algorithm for shrinking a job
  */
@@ -238,6 +247,12 @@ schd_resource *unset_str_res(void);
  *	returns 1 on success or 0 on failure/error
  */
 int find_correct_nodes(status *policy, server_info *sinfo, queue_info *qinfo, resource_resv *resresv, node_info ***ninfo_arr, node_partition ***nodepart);
+
+/*
+ * checks if amount requested and available match according to the operator
+ */
+int find_resreq_availability(sch_resource_t avail, sch_resource_t req, enum batch_op op);
+
 
 #ifdef	__cplusplus
 }

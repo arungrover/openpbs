@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 1994-2016 Altair Engineering, Inc.
  * For more information, contact Altair at www.altair.com.
- *  
+ *
  * This file is part of the PBS Professional ("PBS Pro") software.
- * 
+ *
  * Open Source License Information:
  *  
  * PBS Pro is free software. You can redistribute it and/or modify it under the
@@ -430,14 +430,14 @@ tfree2(struct tree **rootp)
  * @brief
  * 		get the addr of the host on which a node is defined
  *
- * @param[in]	name	- is in one of the forms:
- *							nodename[:DDDD][:resc=val...]
- *							nodename[:DDDD]/DD[*DD]
- *							where D is a numerical digit;  :DDDD is a port number
+ * @param[in] name - is in one of the forms:
+ *		nodename[:DDDD][:resc=val...]
+ *		nodename[:DDDD]/DD[*DD]
+ *	where D is a numerical digit;  :DDDD is a port number
  * @param[in]	port	- the port number as commonly used in exec_vnode string or
- * 							exec_host string
+ * 		exec_host string
  *
- * @return	The IP address and port from the first Mom declared for the node
+ * @return The IP address and port from the first Mom declared for the node
  *
  * @par MT-safe: No
  */
@@ -467,9 +467,9 @@ enum Set_All_State_When {
 /**
  * @brief
  * 		set or clear state bits on the mominfo entry and all
- *		virtual nodes under that Mom and set the comment, if txt is null,
+ *	virtual nodes under that Mom and set the comment, if txt is null,
  *		set the comment, if txt is null,
- *		do_set = 1 means set the bits in "bits", otherwise clear them
+ *	do_set = 1 means set the bits in "bits", otherwise clear them
  *
  * @param[in]	pmom	- pointer to mom
  * @param[in]	do_set	- do_set = 1 means set the bits, otherwise clear them
@@ -489,7 +489,7 @@ set_all_state(mominfo_t *pmom, int do_set, unsigned long bits, char *txt,
 	unsigned long	mstate;
 	mom_svrinfo_t  *psvrmom = (mom_svrinfo_t *)(pmom->mi_data);
 	struct pbsnode *pvnd;
-	attribute	*pat;
+	attribute      *pat;
 	int		nchild;
 
 	if (do_set) { /* STALE is not meaning in the state of the Mom, don't set it */
@@ -579,10 +579,10 @@ set_all_state(mominfo_t *pmom, int do_set, unsigned long bits, char *txt,
  * 		requeue/delete job on primary node going down.
  *
  * @par Functionality:
- *		If the primary, Mother Superior, node of a job goes down, it
- *		should be requeued if possible or delete.
+ *	If the primary, Mother Superior, node of a job goes down, it
+ *	should be requeued if possible or delete.
  *
- *		Called via a work-task set up in momptr_down()
+ *	Called via a work-task set up in momptr_down()
  * @see
  * 		momptr_down
  *
@@ -734,14 +734,14 @@ node_down_requeue(struct work_task *pwt)
 /**
  * @brief
  * 		called when a node is marked down or responds to an
- * 		IS_DISCARD_JOB message.
+ * IS_DISCARD_JOB message.
  *
  * @par Functionality:
- * 		If all Moms have responded or are down, then we can deal with the job
- * 		depending on the substate.
+ * 	If all Moms have responded or are down, then we can deal with the job
+ * 	depending on the substate.
  *
- *		If the second arg (pmom) is null, just check the state; if not null
- *		then mark that Mom's slot as done, then check
+ *	If the second arg (pmom) is null, just check the state; if not null
+ *	then mark that Mom's slot as done, then check
  *
  * @see
  * 		discard_job
@@ -1301,11 +1301,11 @@ ping_a_mom_mcast(mominfo_t *pmom, int force_hello, int mtfd_ishello, int mtfd_is
 /**
  * @brief
  * 		Change the state of a vnode. See pbs_nodes.h for definition of node's
- * 		availability and unavailability.
+ * availability and unavailability.
  *
- * 		This function detects the type of change, either from available to
- * 		unavailable, and invokes the appropriate handler to handle the state
- * 		change.
+ * This function detects the type of change, either from available to
+ * unavailable, and invokes the appropriate handler to handle the state
+ * change.
  *
  * @param[in]	pbsnode	- The vnode
  * @param[in]	state_bits	- the value to set the vnode to
@@ -1388,13 +1388,13 @@ set_vnode_state(struct pbsnode *pnode, unsigned long state_bits, enum vnode_stat
 /**
  *  @brief
  *  	A vnode becomes available when its state transitions towards no bits
- *  	with VNODE_UNAVAILABLE set.
- * 		If the node was associated to a reservation and the reservation was degraded
- * 		then the reservation is adjusted to reflect that one of its associated vnode
- * 		is now back up.
+ *  with VNODE_UNAVAILABLE set.
+ * If the node was associated to a reservation and the reservation was degraded
+ * then the reservation is adjusted to reflect that one of its associated vnode
+ * is now back up.
  *
- * 		If all the vnodes associated to the reservation are back up
- * 		then the reservation does not need to be reconfirmed by the scheduler.
+ * If all the vnodes associated to the reservation are back up
+ * then the reservation does not need to be reconfirmed by the scheduler.
  * @see
  * 		set_vnode_state
  *
@@ -1483,15 +1483,15 @@ vnode_available(struct pbsnode *np)
 /**
  * @brief
  * 		A node is considered unavailable if it is in one of the states:
- * 		OFFLINE, DOWN, DELETED, STALE, or UNKNOWN.
+ * OFFLINE, DOWN, DELETED, STALE, or UNKNOWN.
  *
- * 		If a node is in a reservation and the resv is associated to the soonest
- * 		occurrence then flag the reservation as state degraded and substate
- * 		degraded.
+ * If a node is in a reservation and the resv is associated to the soonest
+ * occurrence then flag the reservation as state degraded and substate
+ * degraded.
  *
- * 		Otherwise, if the reservation is a standing reservation, and the
- * 		node is in a later occurrence, then mark the reservation in substate
- * 		degraded.
+ * Otherwise, if the reservation is a standing reservation, and the
+ * node is in a later occurrence, then mark the reservation in substate
+ * degraded.
  *
  * @param[in]	np	- the unavailable node
  * @param[in]	account_vnode	- register the vnode as down in the reservation's counts.
@@ -1656,19 +1656,19 @@ vnode_unavailable(struct pbsnode *np, int account_vnode)
 /**
  * @brief
  * 		Search all reservations for an associated node that matches the one
- * 		passed as argument.
+ * passed as argument.
  *
- * @param[in]	np	-	The node to find in the reservations list
- * @param[in]	vnode_degraded_op	-	To indicate whether to set the degraded time on
- * 										the reservation or not.
+ * @param[in] np - The node to find in the reservations list
+ * @param[in] vnode_degraded_op - To indicate whether to set the degraded time on
+ * the reservation or not.
  *
  * @return	resvinfo *
  * @retval	-	The reservation info structure	- for the matching reservations
  * @retval	NULL	- if none are found.
  *
  * @note
- * 		if none are found. This function allocates memory that has to be freed by
- * 		the caller.
+ * if none are found. This function allocates memory that has to be freed by
+ * the caller.
  *
  * @par MT-safe: No
  */
@@ -1781,15 +1781,15 @@ find_vnode_in_resvs(struct pbsnode *np, enum vnode_degraded_op degraded_op)
 /**
  * @brief
  * 		Walk occurrences of a standing reservation searching for the soonest
- * 		valid degraded occurrence associated to the vnode passed as argument.
+ * valid degraded occurrence associated to the vnode passed as argument.
  *
- * @param[in]	presv	- The reservation being processed
- * @param[in]	np	- The node affected, either available or unavailable
- * @param[in]	vnode_degraded_op	- determines if a degraded time should be set
+ * @param[in] presv - The reservation being processed
+ * @param[in] np - The node affected, either available or unavailable
+ * @param[in] vnode_degraded_op - determines if a degraded time should be set
  *
  * @return	int
  * @retval	1	- upon success finding the node in the reservation (including its
- * 					occurrences when a standing reservation)
+ * occurrences when a standing reservation)
  * @retval 0	- if the node was not found.
  *
  * @par Side-effects: this function will also set the degraded time of the
@@ -1937,7 +1937,7 @@ free_rinf_list(struct resvinfo *rinfp)
  * @brief
  * 		Unset all reservations retry attributes and variables.
  *
- * @param[in]	presv - The reservation to process
+ * @param[in] presv - The reservation to process
  *
  * @return	void
  *
@@ -1966,13 +1966,13 @@ unset_resv_retry(resc_resv *presv)
 /**
  * @brief
  * 		Set reservation retry attributes and variables.
- * 		The reservation attribute RESV_ATR_retry is recovered upon a server
- * 		restart. The field ri_resv_retry is not.
- * 		If RESV_ATR_retry is set, we add that already existing time as the
- * 		event time, otherwise we compute the event time
+ * The reservation attribute RESV_ATR_retry is recovered upon a server
+ * restart. The field ri_resv_retry is not.
+ * If RESV_ATR_retry is set, we add that already existing time as the
+ * event time, otherwise we compute the event time
  *
- * @param[in]	presv	-	The reservation to process
- * @param[in]	retry_time	-	The retry time to set
+ * @param[in] presv - The reservation to process
+ * @param[in] retry_time - The retry time to set
  *
  * @return	void
  *
@@ -2007,18 +2007,18 @@ set_resv_retry(resc_resv *presv, long retry_time)
 /**
  * @brief
  * 		search string big for exact occurrence of string little. The preceding
- * 		and successsor characters of the occurring string should be legal vnode
- * 		characters. The pattern defined by 'little' consists only of legal vnode
- * 		characters.
+ * and successsor characters of the occurring string should be legal vnode
+ * characters. The pattern defined by 'little' consists only of legal vnode
+ * characters.
  *
- * 		This function is used to find an exact match of a vnode name within an
- * 		execvnode string, for example searching for "node1" in the execvnode
- * 		(node12:ncpus=1)+(node1node1:ncpus=2)+(node1:npcus=3)+(node3:mem=5000:npcus=1)
+ * This function is used to find an exact match of a vnode name within an
+ * execvnode string, for example searching for "node1" in the execvnode
+ * (node12:ncpus=1)+(node1node1:ncpus=2)+(node1:npcus=3)+(node3:mem=5000:npcus=1)
  * @see
  * 		vnode_unavailable and find_degraded_occurrence
  *
- * @param[in]	big	-	the original string to search
- * @param[in]	little	-	the pattern to find
+ * @param[in] big - the original string to search
+ * @param[in] little - the pattern to find
  *
  * @return	int
  * @retval	1	- if the pattern is found
@@ -2076,7 +2076,7 @@ find_vnode_in_execvnode(char *big, char *little)
 /**
  * @brief
  * 		decode_stat_update - decodes body of status update request from MOM
- *		number of jobs should already be decoded by caller
+ *	number of jobs should already be decoded by caller
  * @see
  * 		stat_update and recv_job_obit.
  *
@@ -2126,14 +2126,14 @@ decode_stat_update(int stream, struct resc_used_update *prused)
 
 /**
  * @brief
- *		Update job resource usage based on information sent from Mom.
- *		All updates include the lastest information on resource usage.
+ *	Update job resource usage based on information sent from Mom.
+ *	All updates include the lastest information on resource usage.
  * @par Functionality:
- *		An update from Mom also contains certain attributes which
- *		need to be recorded,  the most inportant of which is the job's
- *		session id.  When the session id is modified, the job's substate is
- *		changed from PRERUN to RUNNING; this also saves the job to the database,
- *		otherwise it is saved explicitly.
+ *	An update from Mom also contains certain attributes which
+ *	need to be recorded,  the most inportant of which is the job's
+ *	session id.  When the session id is modified, the job's substate is
+ *	changed from PRERUN to RUNNING; this also saves the job to the database,
+ *	otherwise it is saved explicitly.
  * @see
  * 		is_request
  *
@@ -2265,7 +2265,7 @@ stat_update(int stream)
  * @brief
  * 		receive a job_obit IS (rpp) message from a Mom.
  *
- *		Decode the message into a resc_used_update structure and call
+ *	Decode the message into a resc_used_update structure and call
  *		job_obit() to start the end of job procedures
  * @see
  * 		is_request
@@ -2325,7 +2325,7 @@ recv_job_obit(int stream)
 /**
  * @brief
  * 		received bad obit for a job from mom on "stream".
- * 		Need to tell her so.  She will then just delete the job.
+ * Need to tell her so.  She will then just delete the job.
  *
  * @param[in]	stream	-	the RPP stream connecting to the Mom
  * @param[in]	jobid	-	job id to be deleted.
@@ -2349,9 +2349,9 @@ reject_obit(int stream, char *jobid)
  * 		acknowledge that we received obit for a job from mom on stream.
  *
  * @par Functionality:
- *		Normally this is taken care of by telling Mom what to do with the
- *		job, but in the case of checkpointed jobs, there isnt anything for
- *		her to do.
+ *	Normally this is taken care of by telling Mom what to do with the
+ *	job, but in the case of checkpointed jobs, there isnt anything for
+ *	her to do.
  *
  * @param[in]	stream	-	the RPP stream connecting to the Mom
  * @param[in]	jobid	-	job id to be deleted.
@@ -2374,15 +2374,15 @@ ack_obit(int stream, char *jobid)
  * @brief
  * 		Tell Mom to discard (kill) a running job.
  *
- *		This is done in certain circumstances, such as
+ *	This is done in certain circumstances, such as
  *
- *   	1. If Mom was marked down and jobs where requeued on node_down_requeue,
- *		Mom will kill off the job and then send an OBIT which wil be rejected
- *		because the run version will not match.
+ *   1. If Mom was marked down and jobs where requeued on node_down_requeue,
+ *	Mom will kill off the job and then send an OBIT which wil be rejected
+ *	because the run version will not match.
  *
- *   	2. Mother Superior or a Sister failed to acknowledge the Delete Job request
- *		at the end of job processing.  This tells all Moms involved to delete
- *		the job and free the resources.
+ *   2. Mother Superior or a Sister failed to acknowledge the Delete Job request
+ *	at the end of job processing.  This tells all Moms involved to delete
+ *	the job and free the resources.
  *
  * @param[in]	stream	-	the RPP stream connecting to the Mom
  * @param[in]	jobid		-	job id to be discarded.
@@ -2426,24 +2426,24 @@ send_discard_job(int stream, char *jobid, int runver, char *txt)
 /**
  * @brief
  * 		During the execution of a job, one or more Moms involved with
- *		the job apparent went down.
+ *	the job apparent went down.
  *
  * @par
- *		To make sure that the resources allocated
- *		to the job by the Moms are released for other jobs, we send a
- *		IS_DISCARD_JOB message to each Mom.
+ *	To make sure that the resources allocated
+ *	to the job by the Moms are released for other jobs, we send a
+ *	IS_DISCARD_JOB message to each Mom.
  * @par
- *		A structure (struct jbdscrd) is hung off of the the job structure
- *		to track which Moms have acknowledge the IS_DISCARD_JOB message, see
- *		post_discard_job(), and which Moms are down, see mom_ptrdown().
+ *	A structure (struct jbdscrd) is hung off of the the job structure
+ *	to track which Moms have acknowledge the IS_DISCARD_JOB message, see
+ *	post_discard_job(), and which Moms are down, see mom_ptrdown().
  * @par
- *		The "txt" message is logged one time only to prevent flooding the log
- *		with duplicate messages.
+ *	The "txt" message is logged one time only to prevent flooding the log
+ *	with duplicate messages.
  * @par
- *		If the "noack" flag is true, then we do not wish to wait for the
- *		Mom's acknowledgement because the job is being requeued/deleted
- *		immediately.   In this case we do not set ji_discard and do not
- *		call post_discard_job() for the first check.
+ *	If the "noack" flag is true, then we do not wish to wait for the
+ *	Mom's acknowledgement because the job is being requeued/deleted
+ *	immediately.   In this case we do not set ji_discard and do not
+ *	call post_discard_job() for the first check.
  *
  * @param[in,out]	pjob	-	job structure
  * @param[in]	txt		-	The "txt" message is logged one time only to prevent flooding the log with duplicate messages.
@@ -2559,13 +2559,13 @@ discard_job(job *pjob, char *txt, int noack)
 /**
  * @brief
  * 		receive message that a job is suspended/resumed because
- *		the cycle harvesting workstation has gone busy/idle.
+ *	the cycle harvesting workstation has gone busy/idle.
  *
- *		Note, the JOB_SVFLG_Actsuspd bit which is set in the job is independent
- *		of the JOB_SVRFLG_Suspend bit which is set by qsig -s suspend.
- *		Both may be set.
+ *	Note, the JOB_SVFLG_Actsuspd bit which is set in the job is independent
+ *	of the JOB_SVRFLG_Suspend bit which is set by qsig -s suspend.
+ *	Both may be set.
  *
- *		Data received:	integer  job state (1 suspended, 0 resumed)
+ *	Data received:	integer  job state (1 suspended, 0 resumed)
  *			string	 jobid
  *
  * @param[in]	stream	-	the RPP stream connecting to the Mom
@@ -2694,7 +2694,7 @@ mark_nodes_unknown(int all)
  * @brief
  * 		Send a ping to any node that is in an unknown stat.
  * @par
- *		If wt_parm1 is NULL, set up a worktask to ping again.
+ *	If wt_parm1 is NULL, set up a worktask to ping again.
  *
  * @param[in]	ptask	-	work task strucure.
  *
@@ -2763,7 +2763,7 @@ ping_nodes(struct work_task *ptask)
 /**
  * @brief
  * 		Do a GSS handshake exchange with the plan of using gss_wrap to
- *		send a random key to the MOM.
+ *	send a random key to the MOM.
  *
  * @param[in]	node	-	MOM
  * @param[in]	inbuf	-	value to the gss_buffer_desc structure
@@ -2866,7 +2866,7 @@ err:
  * 		update2_to_vnode and is_request
  *
  * @param[in]	namestr	-	The namestr paramenter is a comma separated set of strings
- * 							Each separate name is added only if it isn't already in pnames
+ *	Each separate name is added only if it isn't already in pnames
  * @return	int
  * @retval	0	- success
  * @retval	1	- failure
@@ -3084,12 +3084,12 @@ cross_link_mom_vnode(struct pbsnode *pnode, mominfo_t *pmom)
 /**
  * @brief
  * 		create/update vnodes from the information sent by Mom in the UPDATE2
- * 		message.
+ * message.
  *
- * @param[in]  pvnal 	- info on one vnode from Mom
- * @param[in]  new   	- true if ok to create new vnode
- * @param[in]  pmom  	- the Mom which sent this update
- * @param[out] madenew 	- set non-zero if any new vnodes were created
+ * @param[in]  pvnal - info on one vnode from Mom
+ * @param[in]  new   - true if ok to create new vnode
+ * @param[in]  pmom  - the Mom which sent this update
+ * @param[out] madenew - set non-zero if any new vnodes were created
  * @param[out] from_hook- set non-zero if request coming from hook
  *
  * @return int
@@ -3616,7 +3616,7 @@ update2_to_vnode(vnal_t *pvnal, int new, mominfo_t *pmom, int *madenew, int from
 /**
  * @brief
  * 		Check if vnode shares the resource "host" with any other vnode, and
- * 		set vnode attribute "in_multivnode_host" accordingly.
+ * set vnode attribute "in_multivnode_host" accordingly.
  * @see
  * 		update2_to_vnode
  *
@@ -3628,9 +3628,9 @@ update2_to_vnode(vnal_t *pvnal, int new, mominfo_t *pmom, int *madenew, int from
  *
  * @par Esoteric Side-case:
  * 		In a multivnode host, all vnodes being processed
- * 		that have not been checked by this function are assumed to be in state
- * 		stale; this is needed to handle the case of two vnodes that would swap
- * 		resources_available.host on an update.
+ * that have not been checked by this function are assumed to be in state
+ * stale; this is needed to handle the case of two vnodes that would swap
+ * resources_available.host on an update.
  */
 static void
 check_and_set_multivnode(struct pbsnode *pnode)
@@ -3731,9 +3731,9 @@ compare_short_hostname(char *shost, char *lhost)
 /**
  * @brief
  * 		read the list of running jobs sent by Mom in a
- *		HELLO3/4 message and validate them against their state known to the
- *		Server.  Message contains the following:
- * @par
+ *	HELLO3/4 message and validate them against their state known to the
+ *	Server.  Message contains the following:
+ *	@par
  *		count of number of jobs which follows
  *		for each job
  *		   string - job id
@@ -3909,14 +3909,14 @@ err:
  * 		Input is coming from another server (MOM) over a DIS rpp stream.
  *
  * @par
- *		Read the stream to get a Inter-Server request.
- *		Some error cases call stream_eof instead of rpp_close because
- *		a customer encountered a stream mixup (spid 183257) where a
- *		stream that should not have been found by tfind2 was found.
+ *	Read the stream to get a Inter-Server request.
+ *	Some error cases call stream_eof instead of rpp_close because
+ *	a customer encountered a stream mixup (spid 183257) where a
+ *	stream that should not have been found by tfind2 was found.
  *
  * @param[in] stream  - id of rpp stream on which the request is arriving
  * @param[in] version - Version of protoocl;  not to be changed lightly as
- *						it makes everything incompatable.
+ *			it makes everything incompatable.
  *
  * @return none
  */
@@ -4519,6 +4519,7 @@ found:
 					 * cycle harvesting?
 					 */
 					if (s & MOM_STATE_CONF_HARVEST) {
+
 						if (np->nd_attr[(int)ND_ATR_ResvEnable].at_val.at_long) {
 							np->nd_attr[(int)ND_ATR_ResvEnable].at_val.at_long = 0;
 							change = 1;
@@ -4919,7 +4920,7 @@ found:
 				}
 
 				if (add_to_svrattrl_list(&reported_hooks, hname,
-					NULL, NULL, 0, NULL) == -1) {
+					NULL, NULL, 0, NULL, SET) == -1) {
 					log_event(PBSEVENT_DEBUG3,
 						PBS_EVENTCLASS_HOOK,
 						LOG_INFO, hname,
@@ -5010,10 +5011,10 @@ err:
  * 		Save a single node's state/comments to the database.
  *
  * @par
- *		This function updates a single node's
- *  	state/comment to the respective attributes in the DB.
+ *  This function updates a single node's
+ *  state/comment to the respective attributes in the DB.
  *
- * @param[in]	np	- Pointer to the node whose state/comment is to be saved
+ * @param[in] np - Pointer to the node whose state/comment is to be saved
  *
  * @return	int
  * @retval  0 if okay
@@ -5043,7 +5044,6 @@ write_single_node_state(struct pbsnode *np)
 	obj.pbs_db_un.pbs_db_attr = &attr;
 	attr.parent_obj_type = PARENT_TYPE_NODE;
 	isoff = np->nd_state & (INUSE_OFFLINE|INUSE_OFFLINE_BY_MOM);
-
 	if (isoff) {
 		sprintf(offline_bits, "%d", isoff);
 		p = get_vnode_state_str(offline_bits);
@@ -5148,9 +5148,9 @@ write_single_node_state(struct pbsnode *np)
  * 		Save node states/comments to the database.
  *
  * @par
- *		This function loops through the node list
- *  	and updates the state/comment to the
- *  	respective attributes in the DB.
+ *  This function loops through the node list
+ *  and updates the state/comment to the
+ *  respective attributes in the DB.
  *
  * @return	void
  */
@@ -5222,8 +5222,8 @@ free_prop(struct prop *prop)
  * @brief
  * 		Parse a number in a spec.
  *
- * @param[in]	ptr	- The string being parsed
- * @param[out]	num	- The number parsed
+ * @param[in] ptr - The string being parsed
+ * @param[out] num - The number parsed
  * @param[in]	znotok	- (zero not ok) set true means a zero value is an error
  *
  *@return	int
@@ -5262,7 +5262,7 @@ number(char **ptr, int	*num, int znotok)
  * 		Check string to see if it is a legal property name.
  *
  * @param[in]	ptr	- The string being parsed
- * @param[out]	prop	- set to static char array containing the property
+ * @param[out] prop - set to static char array containing the property
  *
  * @see
  * 		proplist and ctcpus
@@ -5840,7 +5840,7 @@ cvt_overflow(size_t buflen, size_t needed)
  * @param[in,out] bplen is a pointer to the current buffer's length
  * @param[in,out] curbp is the current pointer into the buffer
  * @param[in,out] bpfree is a pointer to the amount of free space in the
- * 					current buffer
+ * current buffer
  *
  * @return	int
  * @retval	1	- success
@@ -5868,18 +5868,18 @@ cvt_realloc(char **bp, size_t *bplen, char **curbp, size_t *bpfree)
  * @brief
  * 		update the Server FLicenses attribute
  *
- * 		pbs_max_license maintains count of maximum licenses a server can have.
- * 		In some cases actual licenses remaining (pbs_max_license - used) could be
- * 		lesser than the sum of available and global floating licenses.
- * 		In such cases FLicense count is updated by number of licenses that can
- * 		actually be used. This is done to make sure that scheduler gets the right
- * 		count of floating licenses to schedule jobs.
+ * pbs_max_license maintains count of maximum licenses a server can have.
+ * In some cases actual licenses remaining (pbs_max_license - used) could be
+ * lesser than the sum of available and global floating licenses.
+ * In such cases FLicense count is updated by number of licenses that can
+ * actually be used. This is done to make sure that scheduler gets the right
+ * count of floating licenses to schedule jobs.
  *
  * @par
- *		lb_aval_floating is number of licenses available here,
+ *	lb_aval_floating is number of licenses available here,
  *		either local PBS floating or license manager that are checked
  *		out to me
- *		lb_glob_floating is the number license manager reports as being free
+ *	lb_glob_floating is the number license manager reports as being free
  *
  * @return	void
  */
@@ -5900,8 +5900,8 @@ update_FLic_attr(void)
  * 		add a job pointer into the index array of a mominfo_t.
  *
  * @par
- *		The index of the entry is used in the exec_host string following the
- *		slash character to be unique for each job running on that Mom
+ *	The index of the entry is used in the exec_host string following the
+ *	slash character to be unique for each job running on that Mom
  *
  * @param[in,out]	pnode	- pbsnode structure
  * @param[in]	pjob	- a job pointer
@@ -5954,9 +5954,9 @@ add_job_index_to_mom(struct pbsnode *pnode, job *pjob)
  * 		add a job pointer into the index array of a mominfo_t.
  *
  * @par
- *		using a known, old, slot number.   Used to restore the index for a
- *		running job on server recovery.   If for some reason the correct slot
- *		is inuse by a different job, slot -1 is returned.
+ *	using a known, old, slot number.   Used to restore the index for a
+ *	running job on server recovery.   If for some reason the correct slot
+ *	is inuse by a different job, slot -1 is returned.
  *
  * @param[in,out]	pnode	- pbsnode structure
  * @param[in]	pjob	- a job pointer
@@ -6010,14 +6010,14 @@ set_old_job_index(struct pbsnode *pnode, job *pjob, int slot)
 /**
  * @brief
  * 		build an exec_vnode string when the operator only provided a list of
- * 		nodes.
+ * nodes.
  *
  * @par
- * 		From the select spec, assign each
- *		chunk on a round-robin basis to the nodes given as the destination.
+ * 	From the select spec, assign each
+ *	chunk on a round-robin basis to the nodes given as the destination.
  *
- *		This may very well overload some nodes or end up with chunks on nodes
- *		on which they do not belong,  the operator must be aware.
+ *	This may very well overload some nodes or end up with chunks on nodes
+ *	on which they do not belong,  the operator must be aware.
  *
  * @param[in]	pjob	- a job pointer
  * @param[in]	nds		- list of nodes
@@ -6207,50 +6207,50 @@ which_parent_mom(pbsnode *pnode, mominfo_t *pcur_mom)
 #define EHBUF_SZ 500
 /**
  * @brief
- *	 	set_nodes - take the node plus resource spec from the scheduler or
- *		operator and allocate the named nodes internally.
+ *	 set_nodes - take the node plus resource spec from the scheduler or
+ *	operator and allocate the named nodes internally.
  *
  * @par Functionality:
  *
- *		Takes the node plus resource spec from the scheduler or operator and
- *		allocate the named nodes internally.  If the operator only provides
- *		a list of nodes,  we attempt to associate the resource chunks from the
- *		select spec with the nodes, see build_execvnode().
+ *	Takes the node plus resource spec from the scheduler or operator and
+ *	allocate the named nodes internally.  If the operator only provides
+ *	a list of nodes,  we attempt to associate the resource chunks from the
+ *	select spec with the nodes, see build_execvnode().
  *
- *		"mk_new_host" set true (non-zero) directs that (1) a new exec_host
- *		string should be created and returned and the job should be added to
- *		the job index array on each Mom,  or if false the existing exec_host
- *		string should be used to reset the job_index array on the Moms to
- *		the indices already listed in the existing exec_host.
+ *	"mk_new_host" set true (non-zero) directs that (1) a new exec_host
+ *	string should be created and returned and the job should be added to
+ *	the job index array on each Mom,  or if false the existing exec_host
+ *	string should be used to reset the job_index array on the Moms to
+ *	the indices already listed in the existing exec_host.
  *
- *		The job index array is used to provide a "unique" number for each chunk
- *		on a given Mom.  This appears in the exec_host string following the "/"
- *		and was used by Mom on an IBM SP to set the switch interface; it is
- *		currently maintained only for backward compatibility.
+ *	The job index array is used to provide a "unique" number for each chunk
+ *	on a given Mom.  This appears in the exec_host string following the "/"
+ *	and was used by Mom on an IBM SP to set the switch interface; it is
+ *	currently maintained only for backward compatibility.
  *
- *		On a non error (zero) exit, "execvnod_out" is set to point to either
- *		the original or possibly modified exec_vnode string.
+ *	On a non error (zero) exit, "execvnod_out" is set to point to either
+ *	the original or possibly modified exec_vnode string.
  *
- *		On a non error exit,  "hoststr" is set to point to a new exec_host
- *		string if "mk_new_host" is true or left pointing to the orignal
- *		exec_host string if "mk_new_host" is false.
+ *	On a non error exit,  "hoststr" is set to point to a new exec_host
+ *	string if "mk_new_host" is true or left pointing to the orignal
+ *	exec_host string if "mk_new_host" is false.
  *
- *		execvnod_out and hoststr should NOT be freed as they point
- *		either to the original strings or a string living in a static buffer.
+ *	execvnod_out and hoststr should NOT be freed as they point
+ *	either to the original strings or a string living in a static buffer.
  *
- *		"svr_init" is only set to TRUE when the server is recovering running
- *		jobs on startup.   This flag tells the function to ingnore certain
- *		errors, such as:
- *	   	- unknown resources
- *			It is possible that a resource definition has been removed,
- *			we still wish to have the job show up on the nodes; so ignore
- *			this error.
- *	   	- unlicensed nodes
- *			On initialization, the nodes have not yet been Licensed, and
- *			since they may use fixed licenses, ignore this step.
- *	   	- Job exclusive allocation
- *			Since the node was assigned to the job, just reassigne it
- *			without this check.
+ *	"svr_init" is only set to TRUE when the server is recovering running
+ *	jobs on startup.   This flag tells the function to ingnore certain
+ *	errors, such as:
+ *	   - unknown resources
+ *		It is possible that a resource definition has been removed,
+ *		we still wish to have the job show up on the nodes; so ignore
+ *		this error.
+ *	   - unlicensed nodes
+ *		On initialization, the nodes have not yet been Licensed, and
+ *		since they may use fixed licenses, ignore this step.
+ *	   - Job exclusive allocation
+ *		Since the node was assigned to the job, just reassigne it
+ *		without this check.
  *
  * @param[in]	pobj         -  pointer to an object, either job or reservation
  * @param[in]	objtype      -  set to JOB_OBJECT if pobj points to a job,
@@ -6987,9 +6987,9 @@ free_nodes(job *pjob)
  * @brief
  * 		free nodes allocated to a reservation object
  *
- *		This function is the analog of "free_nodes" for job objects
+ *	This function is the analog of "free_nodes" for job objects
  *
- * @param[in]	presv	- The reservation for which nodes are freed
+ * @param[in] presv - The reservation for which nodes are freed
  *
  * @return void
  *
@@ -7058,8 +7058,8 @@ free_resvNodes(resc_resv *presv)
  * 		adjust the resources_assigned on a node.
  *
  * @par
- *		Called with the node name, the node ordinal (0 for first node),
- *		the +/- operator, the resource name, and the resource value.
+ *	Called with the node name, the node ordinal (0 for first node),
+ *	the +/- operator, the resource name, and the resource value.
  *
  * @param[out]	noden	- node name
  * @param[in]	aflag	- node ordinal (0 for first node)
@@ -7173,17 +7173,17 @@ adj_resc_on_node(char *noden, int aflag, enum batch_op op, resource_def *prdef, 
 /**
  * @brief
  * 		update the resources assigned at the vnode level
- *		for a job.   Resources_assigned.X is incremented or decremented
- *		based on the operator.
+ *	for a job.   Resources_assigned.X is incremented or decremented
+ *	based on the operator.
  *
  * @par
- *		The resource list is taken from the exec_vnode string of the job.
- *		It is in the form: NodeA:resc=val:resc=val+NodeB:...
+ *	The resource list is taken from the exec_vnode string of the job.
+ *	It is in the form: NodeA:resc=val:resc=val+NodeB:...
  * @par
- *		Each "chunk" (subspec between plus signs) is broken into the vnode
- *		name and a key_value_pair array of resources and values.  For each
- *		resource, the corresponding resource (if present) in the vnodes's
- *		resources_assigned is adjusted.
+ *	Each "chunk" (subspec between plus signs) is broken into the vnode
+ *	name and a key_value_pair array of resources and values.  For each
+ *	resource, the corresponding resource (if present) in the vnodes's
+ *	resources_assigned is adjusted.
  *
  * @param[in]	pexech	- exec_vnode string
  * @param[in]	op	- operator of type enum batch_op.
@@ -7255,7 +7255,7 @@ mark_node_down(char *nodename, char *why)
 
 /**
  * @brief
- * 		Mark mom (by ptr) down and log message given by 'why'.
+ * 	Mark mom (by ptr) down and log message given by 'why'.
  *
  * @param[in]	pmom - a mom entry
  * @param[in]	why - node comment
@@ -7283,7 +7283,7 @@ momptr_offline_by_mom(mominfo_t *pmom, char *why)
 
 /**
  * @brief
- * 		offline_by_mom vnodes whose parent mom is 'nodename'.
+ * 	offline_by_mom vnodes whose parent mom is 'nodename'.
  *
  * @param[in]	nodename - node to mark offline_by_mom state
  * @param[in]	why - comment to put in the node
@@ -7307,7 +7307,7 @@ mark_node_offline_by_mom(char *nodename, char *why)
 
 /**
  * @brief
- * 		Clear mom (by ptr) offline_by_mom state and log message given by 'why'.
+ * 	Clear mom (by ptr) offline_by_mom state and log message given by 'why'.
  *
  * @param[in]	pmom - a mom entry
  * @param[in]	why - node comment
@@ -7331,7 +7331,7 @@ momptr_clear_offline_by_mom(mominfo_t *pmom, char *why)
 
 /**
  * @brief
- * 		clears offline_by_mom vnodes whose parent mom is 'nodename'.
+ * 	clears offline_by_mom vnodes whose parent mom is 'nodename'.
  *
  * @param[in]	nodename - node to clear offline_by_mom state
  * @param[in]	why - comment to put in the node
@@ -7359,8 +7359,8 @@ clear_node_offline_by_mom(char *nodename, char *why)
  * 		send Mom on each node a shutdown command.
  *
  * @par
- *		Note, there is no error checking or retry.   If Mom doesn't go down,
- *		so be it.
+ *	Note, there is no error checking or retry.   If Mom doesn't go down,
+ *	so be it.
  */
 void
 shutdown_nodes(void)
@@ -7396,7 +7396,7 @@ shutdown_nodes(void)
  * 		count number of processors specified in node string.
  *
  * @param[out] *hascpp	- is set non-zero if :cpp or :ncpus appears in string
- *						indicating that user has specified fixed placement of cpus
+ *		indicating that user has specified fixed placement of cpus
  *
  * @return	totalcpu
  */
@@ -7471,9 +7471,9 @@ ctcpus(char *buf, int *hascpp)
  * 		should be called from function pbsd_init.
  *
  * @par
- *		Its purpose is to re-establish the resvinfo for any reservation
- *		having state "CONFIRMED", which is still "time-viable" and which
- *		had a set of nodes allocated to it when the server was taken down.
+ *	Its purpose is to re-establish the resvinfo for any reservation
+ *	having state "CONFIRMED", which is still "time-viable" and which
+ *	had a set of nodes allocated to it when the server was taken down.
  *
  *	Specifically:
  *	   a) examine reservation attribute RESV_ATR_resv_nodes to
@@ -7575,13 +7575,13 @@ set_old_subUniverse(resc_resv	*presv)
 /**
  * @brief
  * 		Walk all vnodes and invoke vnode_unavailable for all those that were
- *  	set offline or offline_by_mom.
+ *  set offline or offline_by_mom.
  *
- * 		We assume that the reservation is in the state prior to it being degraded,
- * 		which would be either CONFIRMED, UNCONFIRMED, or RUNNING.
+ * We assume that the reservation is in the state prior to it being degraded,
+ * which would be either CONFIRMED, UNCONFIRMED, or RUNNING.
  *
- * 		If some of the nodes do not come back up, then the process of degrading
- * 		the reservation is followed by detecting a node as unavailable
+ * If some of the nodes do not come back up, then the process of degrading
+ * the reservation is followed by detecting a node as unavailable
  *
  * @return void
  *
@@ -7618,11 +7618,11 @@ degrade_offlined_nodes_reservations(void)
 /**
  * @brief
  * 		Walk all vnodes and invoke vnode_unavailable for all those that have
- *  	remained (unknown | down | stale) since the server restarted.
+ *  remained (unknown | down | stale) since the server restarted.
  *
  * @return	void
  *
- * @par MT-safe: No
+ *  @par MT-safe: No
  */
 void
 degrade_downed_nodes_reservations(void)

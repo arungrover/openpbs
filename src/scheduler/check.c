@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 1994-2016 Altair Engineering, Inc.
  * For more information, contact Altair at www.altair.com.
- *  
+ *
  * This file is part of the PBS Professional ("PBS Pro") software.
- * 
+ *
  * Open Source License Information:
  *  
  * PBS Pro is free software. You can redistribute it and/or modify it under the
@@ -108,10 +108,10 @@
  * @brief
  *		check to see if jobs can be run in a queue
  *
- * @param[in]	policy	-	policy info
- * @param[in]	qinfo	-	queue in question
+ *        @param[in] policy - policy info
+ *	  @param[in] qinfo - queue in question
  *
- * @return	int
+ *	@return int
  * @retval	SUCCESS	: on success or
  * @retval	scheduler failure code	: jobs can' run in queue
  *
@@ -151,8 +151,8 @@ is_ok_to_run_queue(status *policy, queue_info *qinfo)
  * @brief
  * 		Time before dedicated time boundary if the job is hitting the boundary.
  *
- *	@param[in]	policy	-	policy structure
- *	@param[in]	njob	-	resource resv
+ *	@param[in] policy  - policy structure
+ *	@param[in] njob    - resource resv
  *
  *	@return	time duration up to dedicated boundary
  *	@retval sch_resource_t:	time duration upto dedicated boundary
@@ -244,10 +244,10 @@ time_to_ded_boundary(status *policy, resource_resv *njob)
  *		Time to prime time boundary if the job is hitting prime/non-prime boundary
  *
  *
- *	@param[in]	policy	-	policy structure
- *	@param[in]	njob	-	resource resv
+ *	@param[in] policy -	policy structure
+ *	@param[in] njob   -	resource resv
  *
- *	@return	time duration upto prime/non-prime boundary
+ *	@return time duration upto prime/non-prime boundary
  *	@retval sch_resource_t	: time duration upto prime/non-prime boundary
  *								or full duration of the job if not hitting
  *	@retval UNSPECIFIED	: if job's minimum duration is hitting prime/non-prime boundary
@@ -286,22 +286,22 @@ time_to_prime_boundary(status *policy, resource_resv *njob)
 /**
  *	@brief
  *		Shrink job to dedicated/prime time boundary(Job's duration will be set),
- *		if hitting and see if job can run. If job is not hitting a boundary see if it
- *		can run with full duration.
- *		Job duration may be set inside this function and it is caller's responsibility
- *		to keep track of the earlier value of job duration  if needed.
+ *	if hitting and see if job can run. If job is not hitting a boundary see if it
+ *	can run with full duration.
+ *	Job duration may be set inside this function and it is caller's responsibility
+ *	to keep track of the earlier value of job duration  if needed.
  *
- *	@param[in]	policy	-	policy structure
- *	@param[in]	pbs_sd  -	the connection descriptor to the pbs_server
- *	@param[in]	sinfo	-	server info
- *	@param[in]	qinfo	-	queue info
- *	@param[in]	resresv -	resource resv
- *	@param[in,out]	err	-	error reply structure
+ *	@param[in] policy  - policy structure
+ *	@param[in] pbs_sd  - the connection descriptor to the pbs_server
+ *	@param[in] sinfo   - server info
+ *	@param[in] qinfo   - queue info
+ *	@param[in] resresv - resource resv
+ *	@param[in,out] err     - error reply structure
  *
  *	@par NOTE
  *			return value is required to be freed by caller
  *
- *	@return	node solution of where job will run - more info in err
+ *	@return node solution of where job will run - more info in err
  *	@retval	nspec**	: array
  *	@retval NULL	: if job/resv can not run/error
  *
@@ -350,20 +350,20 @@ shrink_to_boundary(status *policy, int pbs_sd, server_info *sinfo,
  *
  *	@brief
  *		Shrink the job to it's minimum duration and see if it can run
- *		(Job's duration will be set to minimum duration)
- *		Job duration may be set inside this function and it is caller's responsibility
- *		to keep track of the earlier value of job duration  if needed.
+ *	(Job's duration will be set to minimum duration)
+ *	Job duration may be set inside this function and it is caller's responsibility
+ *	to keep track of the earlier value of job duration  if needed.
  *
- *	@param[in]	policy	-	policy structure
- *	@param[in]	pbs_sd	-	the connection descriptor to the pbs_server
- *	@param[in]	sinfo	-	server info
- *	@param[in]	qinfo   -	queue info
- *	@param[in]	resresv -	resource resv
- *	@param[out]	err     -	error reply structure
+ *	@param[in] policy  - policy structure
+ *	@param[in] pbs_sd  - the connection descriptor to the pbs_server
+ *	@param[in] sinfo   - server info
+ *	@param[in] qinfo   - queue info
+ *	@param[in] resresv - resource resv
+ *	@param[out] err     - error reply structure
  *	@par NOTE
  *		return value is required to be freed by caller
- *	@return	node solution of where job will run - more info in err
- *	@retval	nspec** array
+ *	@return node solution of where job will run - more info in err
+ *	@retval nspec** array
  *	@retval NULL	: if job/resv can not run/error
  **/
 nspec **
@@ -382,73 +382,73 @@ shrink_to_minwt(status *policy, int pbs_sd, server_info *sinfo,
  *
  *	@brief
  *		Shrink upto a run event and see if it can run
- *		Try only upto SHRINK_MAX_RETRY=5 events.
- *		Initially retry_count=SHRINK_MAX_RETRY.
+ *	Try only upto SHRINK_MAX_RETRY=5 events.
+ *	Initially retry_count=SHRINK_MAX_RETRY.
  *	@par Algorithm:
- *		In each iteration:
- *		1.	Calculate job's possible_shrunk_duration. This should be
- *			the duration between min_end_time and last tried event's event_time.
- *			If it is the first event to be tried, possible_shrunk_duration should be
- *			the duration between min_end_time and farthest_event's event_time.
- *		2.	Divide the possible_shrunk_duration into retry_count equal segments.
- *		3.	try shrinking to the last event of the last segment.
- *		4.	If job still can't run, traverse backwards and skip rest of the events in that segment.
- *			and try last event of the next segment.
- *		5.	reduce the retry_count by 1.
- *		Repeat these iterations until either retry_count==0 or job is ok to run.
+ *	In each iteration:
+ *	1.	Calculate job's possible_shrunk_duration. This should be
+ *		the duration between min_end_time and last tried event's event_time.
+ *		If it is the first event to be tried, possible_shrunk_duration should be
+ *		the duration between min_end_time and farthest_event's event_time.
+ *	2.	Divide the possible_shrunk_duration into retry_count equal segments.
+ *	3.	try shrinking to the last event of the last segment.
+ *	4.	If job still can't run, traverse backwards and skip rest of the events in that segment.
+ *		and try last event of the next segment.
+ *	5.	reduce the retry_count by 1.
+ *	Repeat these iterations until either retry_count==0 or job is ok to run.
  *
- *		So what this algorithm does, is:
- *		First try shrinking to the farthest event. If it fails, divide the
- *		possible_shrunk_duration(duration between min_end_time and this event's event_time)
- *		into 5 equal segments. Skip rest of the events in the 5th segment.
- *		Try last event of the 4th segment. If it fails, recalculate possible_shrunk_duration and divide it
- *		into 4 equal segments. Skip rest of the events in the 4th segment.
- *		Try last event of the 3rd segment. If it fails, recalculate possible_shrunk_duration and divide it
- *		into 3 equal segments. Skip rest of the events in the 3rd segment.
- *		Try last event of the 2nd segment. If it fails, recalculate possible_shrunk_duration and divide it
- *		into 2 equal segments. Skip rest of the events in the 2nd segment.
- *		Try last event of the 1st segment.
- *		Example:
- *		The farthest event within job's duration is 100 hours after min_end_time.
- *		Try shrinking to this event's start time i.e. 100 hours.
- *		Let's say shrinking fails, now divide 100 hours into 5 equal segments
- *		of 20 hours each. Skip rest of the events of the last(5th) segment, since
- *		we have tried one event in this segment already. We keep traversing
- *		and skipping events untill we found an event that falls in the
- *		4th segment e.g. within (100-20=80)hours.
- *		Try shrinking to this event's start time say it is: 56 hours.
- *		Let's say shrinking fails, divide 56 hours into 4 equal segments
- *		of 14 hours each. Skip rest of the events of the last(4th) segment, since
- *		we have tried one event in this segment already. We keep traversing
- *		and skipping events untill we found an event that falls in the
- *		3rd segment e.g. within (56-14=42)hours.
- *		Try shrinking to this event's start time say it is: 36 hours.
- *		Let's say shrinking fails, divide 36 hours into 3 equal segments
- *		of 12 hours each. Skip rest of the events of the last(3rd) segment, since
- *		we have tried one event in this segment already. We keep traversing
- *		and skipping events untill we found an event that falls in the
- *		2nd segment e.g. within (36-12=24)hours.
- *		Try shrinking to this event's start time say it is: 20 hours.
- *		Let's say shrinking fails, divide 20 hours into 2 equal segments
- *		of 10 hours each. Skip rest of the events of the last(2nd) segment, since
- *		we have tried one event in this segment already. We keep traversing
- *		and skipping events untill we found an event that falls in the
- *		1st segment e.g. within (20-10=10)hours.
- *		Try shrinking to this event's start time say it is: 6 hours.
- *		If job still can't run, indicate failure.
+ *	So what this algorithm does, is:
+ *	First try shrinking to the farthest event. If it fails, divide the
+ *	possible_shrunk_duration(duration between min_end_time and this event's event_time)
+ *	into 5 equal segments. Skip rest of the events in the 5th segment.
+ *	Try last event of the 4th segment. If it fails, recalculate possible_shrunk_duration and divide it
+ *	into 4 equal segments. Skip rest of the events in the 4th segment.
+ *	Try last event of the 3rd segment. If it fails, recalculate possible_shrunk_duration and divide it
+ *	into 3 equal segments. Skip rest of the events in the 3rd segment.
+ *	Try last event of the 2nd segment. If it fails, recalculate possible_shrunk_duration and divide it
+ *	into 2 equal segments. Skip rest of the events in the 2nd segment.
+ *	Try last event of the 1st segment.
+ *	Example:
+ *	The farthest event within job's duration is 100 hours after min_end_time.
+ *	Try shrinking to this event's start time i.e. 100 hours.
+ *	Let's say shrinking fails, now divide 100 hours into 5 equal segments
+ *	of 20 hours each. Skip rest of the events of the last(5th) segment, since
+ *	we have tried one event in this segment already. We keep traversing
+ *	and skipping events untill we found an event that falls in the
+ *	4th segment e.g. within (100-20=80)hours.
+ *	Try shrinking to this event's start time say it is: 56 hours.
+ *	Let's say shrinking fails, divide 56 hours into 4 equal segments
+ *	of 14 hours each. Skip rest of the events of the last(4th) segment, since
+ *	we have tried one event in this segment already. We keep traversing
+ *	and skipping events untill we found an event that falls in the
+ *	3rd segment e.g. within (56-14=42)hours.
+ *	Try shrinking to this event's start time say it is: 36 hours.
+ *	Let's say shrinking fails, divide 36 hours into 3 equal segments
+ *	of 12 hours each. Skip rest of the events of the last(3rd) segment, since
+ *	we have tried one event in this segment already. We keep traversing
+ *	and skipping events untill we found an event that falls in the
+ *	2nd segment e.g. within (36-12=24)hours.
+ *	Try shrinking to this event's start time say it is: 20 hours.
+ *	Let's say shrinking fails, divide 20 hours into 2 equal segments
+ *	of 10 hours each. Skip rest of the events of the last(2nd) segment, since
+ *	we have tried one event in this segment already. We keep traversing
+ *	and skipping events untill we found an event that falls in the
+ *	1st segment e.g. within (20-10=10)hours.
+ *	Try shrinking to this event's start time say it is: 6 hours.
+ *	If job still can't run, indicate failure.
  *
- *	@param[in]	policy	-	policy structure
- *	@param[in]	pbs_sd	-	the connection descriptor to the pbs_server
- *	@param[in]	sinfo	-	server info
- *	@param[in]	qinfo   -	queue info
- *	@param[in]	resresv -	resource resv
- *	@param[in,out]	err	-	error reply structure
+ *	@param[in] policy  - policy structure
+ *	@param[in] pbs_sd  - the connection descriptor to the pbs_server
+ *	@param[in] sinfo   - server info
+ *	@param[in] qinfo   - queue info
+ *	@param[in] resresv - resource resv
+ *	@param[in,out] err     - error reply structure
  *
  *	@par NOTE:
  *		return value is required to be freed by caller
  *
- *	@return	node solution of where job will run - more info in err
- *	@retval	nspec** array
+ *	@return node solution of where job will run - more info in err
+ *	@retval nspec** array
  *	@retval	NULL	: if job/resv can not run/error
  *
  */
@@ -554,18 +554,18 @@ shrink_to_run_event(status *policy, int pbs_sd, server_info *sinfo,
  *	@brief
  *		Generic algorithm for shrinking a job
  *
- *	@param[in]	policy	-	policy structure
- *	@param[in]	pbs_sd	-	the connection descriptor to the pbs_server
- *	@param[in]	sinfo	-	server info
- *	@param[in]	qinfo	-	queue info
- *	@param[in]	resresv	-	resource resv
- *	@param[in,out]	err	-	error reply structure
+ *	@param[in] policy  - policy structure
+ *	@param[in] pbs_sd  - the connection descriptor to the pbs_server
+ *	@param[in] sinfo   - server info
+ *	@param[in] qinfo   - queue info
+ *	@param[in] resresv - resource resv
+ *	@param[in,out] err     - error reply structure
  *
  *	@par NOTE:
  *		return value is required to be freed by caller
  *
- *	@return	node solution of where job will run - more info in err
- *	@retval	nspec** array
+ *	@return node solution of where job will run - more info in err
+ *	@retval nspec** array
  *	@retval NULL	: if job/resv can not run/error
  **/
 nspec **
@@ -630,17 +630,17 @@ shrink_job_algorithm(status *policy, int pbs_sd, server_info *sinfo,
  *	@brief
  *		check to see if the STF job is OK to run.
  *
- *	@param[in]	pbs_sd	-	the connection descriptor to the pbs_server
- *	@param[in]	policy	-	policy structure
- *	@param[in]	sinfo	-	server info
- *	@param[in]	qinfo	-	queue info
- *	@param[in]	resresv	-	resource resv
- *	@param[out]	err	-	error reply structure
+ *	@param[in] pbs_sd - the connection descriptor to the pbs_server
+ *	@param[in] policy - policy structure
+ *	@param[in] sinfo - server info
+ *	@param[in] qinfo - queue info
+ *	@param[in] resresv - resource resv
+ *	@param[out] err     - error reply structure
  *	@par NOTE:
  *		return value is required to be freed by caller
  *
- *	@return	node solution of where job will run - more info in err
- *	@retval	nspec** array
+ *	@return node solution of where job will run - more info in err
+ *	@retval nspec** array
  *	@retval NULL	: if job/resv can not run/error
  */
 nspec **
@@ -680,7 +680,7 @@ is_ok_to_run_STF(status *policy, int pbs_sd, server_info *sinfo,
  *
  *  @brief
  *  	Check to see if the resresv can fit within the system limits
- *	  	Used for both job to run and confirming/running of reservations.
+ *	  Used for both job to run and confirming/running of reservations.
  * 
  *  @par the err structure can be set in two ways: 
  *	1. For simple check functions, the error code comes from the function.
@@ -690,20 +690,20 @@ is_ok_to_run_STF(status *policy, int pbs_sd, server_info *sinfo,
  *	* As an extension of #2, even more complex check functions may construct
  *	  a list of error structures.
  *
- * @param[in] policy	-	policy info
- * @param[in] pbs_sd	-	the connection descriptor to the pbs_server
- * @param[in] sinfo	-	server info
- * @param[in] qinfo	-	queue info
- * @param[in] resresv	-	resource resv
+ *	  @param[in] policy - policy info
+ *	  @param[in] pbs_sd - the connection descriptor to the pbs_server
+ *	  @param[in] sinfo - server info
+ *	  @param[in] qinfo - queue info
+ *	  @param[in] resresv - resource resv
  * @param[in] flags	-	RETURN_ALL_ERR - return all reasons why the job
  * 							can not run, not just the first.  @warning: may be expensive.
- * @param[in,out]	perr	-	pointer to error structure or NULL.
+ *	  @param[in,out] perr  - pointer to error structure or NULL.
  *
  * @par NOTE:
  *		return value is required to be freed by caller (using free_nspecs())
  *
- * @return	node solution of where job/resv will run - more info in err
- * @retval	nspec** array
+ *	@return node solution of where job/resv will run - more info in err
+ *	@retval nspec** array
  * @retval	NULL	: if job/resv can not run/error
  *
  *
@@ -719,6 +719,8 @@ is_ok_to_run(status *policy, int pbs_sd, server_info *sinfo,
 	int endtime;			/* end time of job if started now */
 	nspec **ns_arr;			/* node solution of where request will run */
 	node_partition *allpart;	/* all partition to use (queue's or servers) */
+	int is_conditional = 0;
+	int i;
 	schd_error *prev_err = NULL;
 	schd_error *err;
 	
@@ -821,7 +823,16 @@ is_ok_to_run(status *policy, int pbs_sd, server_info *sinfo,
 		if (resresv->job == NULL || resresv->job->priority != NAS_HWY101)
 #endif /* localmod 032 */
 		if (resresv->is_job) {
-			if ((rc = check_limits(sinfo, qinfo, resresv, err, flags | CHECK_LIMIT))) {
+			
+			for(i=0; resresv->select->chunks[i] != NULL; i++)
+			{
+				if (is_conditional_resreq(resresv->select->chunks[i]->req))
+				{
+					is_conditional = 1;
+					break;
+				}
+			}
+			if ((is_conditional == 0) && (rc = check_limits(sinfo, qinfo, resresv, err, flags | CHECK_LIMIT))) {
 
 				add_err(&prev_err, err);
 				if (rc == SCHD_ERROR)
@@ -833,6 +844,7 @@ is_ok_to_run(status *policy, int pbs_sd, server_info *sinfo,
 					return NULL;
 
 			}
+			
 
 			if ((rc = check_prime_boundary(policy, resresv, err))) {
 				add_err(&prev_err, err);
@@ -883,7 +895,7 @@ is_ok_to_run(status *policy, int pbs_sd, server_info *sinfo,
 					return NULL;
 			}
 #ifdef NAS /* localmod 034 */
-				if ((rc = site_check_cpu_share(sinfo, policy, resresv))) {
+			if ((rc = site_check_cpu_share(sinfo, policy, resresv))) {
 					set_schd_error_codes(err, NOT_RUN, rc);
 					add_err(&prev_err, err);
 					if (!(flags & RETURN_ALL_ERR))
@@ -891,8 +903,8 @@ is_ok_to_run(status *policy, int pbs_sd, server_info *sinfo,
 
 					err = new_schd_error();
 					if (err == NULL)
-						return NULL;
-					}
+				return NULL;
+			}
 #endif /* localmod 034 */
 		}
 	}
@@ -961,7 +973,7 @@ is_ok_to_run(status *policy, int pbs_sd, server_info *sinfo,
 
 						err = new_schd_error();
 						if (err == NULL)
-							return NULL;
+						return NULL;
 					}
 				}
 			}
@@ -1051,50 +1063,158 @@ is_ok_to_run(status *policy, int pbs_sd, server_info *sinfo,
 	}
 
 	ns_arr = check_nodes(policy, resresv, ninfo_arr, nodepart, flags, err);
-	
-	if (err->error_code != SUCCESS)
+
+	if (err->error_code != SUCCESS){
+		if (!(flags & RETURN_ALL_ERR)) {
+			if (err != perr)
+				free_schd_error(err);
+			return NULL;
+		}
 		add_err(&prev_err, err);
-	
-	/* If any more checks are added after check_nodes(), 
-	 * the RETURN_ALL_ERR case must be added here */
-	
+		err = new_schd_error();
+		if (err == NULL)
+			return NULL;
+	}
+
+	if ((sinfo->qrun_job == NULL) && (resresv->is_job) && (is_conditional == 1))
+	{
+		resource_req *temp_req = dup_resource_req_list(resresv->resreq);
+		if (temp_req == NULL)
+		{
+			free_nspecs(ns_arr);
+			return NULL;
+		}
+		update_resc_assn(ns_arr, resresv);
+		if ((rc = check_limits(sinfo, qinfo, resresv, err, CHECK_LIMIT)))
+		{
+			free_nspecs(ns_arr);
+			add_err(&prev_err, err);
+			if (rc == SCHD_ERROR) {
+				if (err != perr)
+					free_schd_error(err);
+				return NULL;
+			}
+			if (!(flags & RETURN_ALL_ERR)) {
+				if (err != perr)
+					free_schd_error(err);
+				return NULL;
+			}
+		}
+		free_resource_req_list(resresv->resreq);
+		resresv->resreq = temp_req;
+	}
+
 	/* This is the case where we allocated a error structure for use, but 
 	 * didn't end up using it.  We have to check against perr, so we don't
 	 * free the caller's memory.
 	 */
 	if(err->status_code == SCHD_UNKWN && err != perr)
 		free_schd_error(err);
-	
+
 	return ns_arr;
 }
 
 /**
  *
- * @brief
- * 		This function will calculate the number of
- *		multiples of the requested resources in reqlist
+ *  @brief  It's a wrapper over is_ok_to_run. The function handles jobs with
+ *	    multiple select specification and call is_ok_to_run for each of these
+ *	    select specification until it finds a node solution or run out of
+ *	    select specifications.
+ * 
+ *	  @param[in] policy - policy info
+ *	  @param[in] pbs_sd - the connection descriptor to the pbs_server
+ *	  @param[in] sinfo - server info
+ *	  @param[in] qinfo - queue info
+ *	  @param[in] resresv - resource resv
+ *
+ *	  @param[in,out] perr  - pointer to error structure or NULL.
+ *
+ *	@par NOTE - return value is required to be freed by caller (using free_nspecs())
+ *
+ *	@return node solution of where job/resv will run - more info in err
+ *	@retval nspec** array
+ *	@retval NULL if job/resv can not run/error
+ *
+ */
+nspec **
+can_run_job(status *policy, int pbs_sd, server_info *sinfo,
+	queue_info *qinfo, resource_resv *njob, schd_error *err)
+{
+	int num = 0;
+	int can_run = NEVER_RUN;
+	nspec **ns_arr = NULL;		    /* node solution */
+	char log_buf[2*MAX_LOG_SIZE];	    /* buffer for log message */
+	char log_msg[MAX_LOG_SIZE];	    /* buffer for log message */
+
+
+	for(;(num < njob -> num_selspec) && (njob -> multi_select[num] != NULL); num++)
+	{
+		njob -> select = njob -> multi_select[num]->spec;
+		njob -> multi_select[num] -> selspec_status = 0;
+		if (njob->job->is_multiselect)
+			make_job_rassn (sinfo->policy, njob);
+		clear_schd_error(err);
+		clear_schd_error(njob->multi_select[num]->err);
+		if (njob->is_shrink_to_fit) {
+			/* Pass the suitable heuristic for shrinking */
+			ns_arr = is_ok_to_run_STF(policy, pbs_sd, sinfo, qinfo, njob, err, shrink_job_algorithm);
+		}
+		else
+			ns_arr = is_ok_to_run(policy, pbs_sd, sinfo, qinfo, njob, NO_FLAGS, err);
+
+		if (ns_arr == NULL) {
+			if (num < njob -> num_selspec) {
+				translate_fail_code(err, NULL, log_msg);
+				snprintf(log_buf, sizeof(log_msg) -1, "No match for %s, reason: %s",
+					njob -> multi_select[num] -> str_spec, log_msg);
+				schdlog(PBSEVENT_DEBUG2, PBS_EVENTCLASS_JOB, LOG_DEBUG,
+					njob->name,log_buf); 
+			}
+			set_schd_error_codes(njob->multi_select[num]->err, err->status_code, err->error_code);
+			if (njob->multi_select[num]->err->status_code != NEVER_RUN){
+				/* We know that at least one of the select spec can run */
+				can_run = NOT_RUN;
+			}
+		}
+		else {
+			njob -> multi_select[num] -> selspec_status = 1;
+			break;
+		}
+	}
+	if (ns_arr == NULL) {
+		schdlog(PBSEVENT_SCHED, PBS_EVENTCLASS_JOB, LOG_INFO, njob->name,
+		    "None of the select specification could be satisfied");
+		if (can_run == NEVER_RUN)
+			njob->can_never_run = 1;
+	}
+	return ns_arr;
+}
+/**
+ *
+ *	@brief This function will calculate the number of
+ *				multiples of the requested resources in reqlist
  *		which can be satisfied by the resources
  *		available in the reslist for the resources in checklist
  *
- * @param[in]	reslist	-	resources list
- * @param[in]	reqlist	-	the list of resources requested
- * @param[in]	flags	-	valid flags:
- *							CHECK_ALL_BOOLS - always check all boolean resources
- *							UNSET_RES_ZERO - a resource which is unset defaults to 0
- *							COMPARE_TOTAL - do comparisons against resource total rather
- *							than what is currently available
- *	        				ONLY_COMP_NONCONS - only compare non-consumable resources
- *							ONLY_COMP_CONS - only compare consumable resources
- * @param[in]	checklist	-	array of resources to check
- *                         		If NULL, all resources are checked.
- * @param[in]	fail_code	-	error code if resource request is rejected
- *	@param[out]	perr	-	if not NULL the the reason request is not
- *			  				satisfiable (i.e. the resource there is not
- *			   				enough of).  If err is NULL, no error reason is
- *			  				 returned.
+ *	  @param[in] reslist   - resources list
+ *	  @param[in] reqlist   - the list of resources requested
+ *	  @param[in] flags     - valid flags:
+ *		CHECK_ALL_BOOLS - always check all boolean resources
+ *		UNSET_RES_ZERO - a resource which is unset defaults to 0
+ *		COMPARE_TOTAL - do comparisons against resource total rather
+ *				than what is currently available
+ *	        ONLY_COMP_NONCONS - only compare non-consumable resources
+ *		ONLY_COMP_CONS - only compare consumable resources
+ *	  @param[in] checklist - array of resources to check
+ *                         If NULL, all resources are checked.
+ *        @param[in] fail_code - error code if resource request is rejected
+ *	  @param[out] perr       - if not NULL the the reason request is not
+ *			   satisfiable (i.e. the resource there is not
+ *			   enough of).  If err is NULL, no error reason is
+ *			   returned.
  *
- * @return	int
- * @retval	number of chunks which can be allocated
+ *      @return int
+ *      @retval number of chunks which can be allocated
  * @retval	-1	: on error
  *
  */
@@ -1122,6 +1242,7 @@ check_avail_resources(schd_resource *reslist, resource_req *reqlist,
 	char resbuf1[MAX_LOG_SIZE];
 	char resbuf2[MAX_LOG_SIZE];
 	char resbuf3[MAX_LOG_SIZE];
+	int found = 0;
 	char buf[MAX_LOG_SIZE];
 
 	if (reslist == NULL || reqlist == NULL) {
@@ -1185,8 +1306,9 @@ check_avail_resources(schd_resource *reslist, resource_req *reqlist,
 						set_schd_error_codes(err, NOT_RUN, fail_code);
 						err->rdef = res->def;
 
-						snprintf(buf, sizeof(buf), "(%s != %s)",
-							res_to_str_r(resreq, RF_REQUEST, resbuf1, sizeof(resbuf1)),
+						
+						snprintf(buf, sizeof(buf), "(%s %s %s)",
+							res_to_str_r(resreq, RF_REQUEST, resbuf1, sizeof(resbuf1)), batch_op_to_str(resreq->op),
 							res_to_str_r(res, RF_AVAIL, resbuf2, sizeof(resbuf2)));
 						set_schd_error_arg(err, ARG1, buf);
 					}
@@ -1206,7 +1328,8 @@ check_avail_resources(schd_resource *reslist, resource_req *reqlist,
 				 * available
 				 */
 				if (avail != SCHD_INFINITY && resreq->amount != 0) {
-					if (avail < resreq->amount) {
+					found = find_resreq_availability(avail, resreq->amount, resreq->op);
+					if (!found) {
 						fail = 1;
 						if (err != NULL) {
 							set_schd_error_codes(err, NOT_RUN, fail_code);
@@ -1220,13 +1343,37 @@ check_avail_resources(schd_resource *reslist, resource_req *reqlist,
 								res_to_str_r(res, RF_AVAIL, resbuf3, sizeof(resbuf3));
 							snprintf(buf, sizeof(buf), "(R: %s A: %s T: %s)", resbuf1, resbuf2, resbuf3);
 							set_schd_error_arg(err, ARG1, buf);
-
 						}
+
 					}
 					else {
-						cur_chunk = avail / resreq->amount;
-						if (cur_chunk < num_chunk || num_chunk == SCHD_INFINITY)
-							num_chunk = cur_chunk;
+						switch (resreq -> op)
+						{
+							case GE:
+							case GT:
+							case NE:
+								cur_chunk = 1;
+								if (cur_chunk < num_chunk || num_chunk == SCHD_INFINITY)
+									num_chunk = cur_chunk;
+								break;
+							case LT:
+								if ((resreq->amount-1) <= 0)
+									cur_chunk = 0;
+								else {
+									if (avail < resreq->amount)
+										cur_chunk = 1;
+									else
+										cur_chunk = avail/(resreq->amount-1);
+								}
+								if (cur_chunk < num_chunk || num_chunk == SCHD_INFINITY)
+									num_chunk = cur_chunk;
+								break;
+							case LE:
+							default:
+								cur_chunk = avail / resreq->amount;
+								if (cur_chunk < num_chunk || num_chunk == SCHD_INFINITY)
+									num_chunk = cur_chunk;
+						}
 					}
 				}
 			}
@@ -1262,7 +1409,7 @@ check_avail_resources(schd_resource *reslist, resource_req *reqlist,
 
 /**
  * @brief
- *		dynamic_avail - find out how much of a resource is available on a
+ *	dynamic_avail - find out how much of a resource is available on a
  *			server.  If the resources_available attribute is
  *			set, use that, else use resources_max.
  *
@@ -1285,7 +1432,7 @@ dynamic_avail(schd_resource *res)
 
 /**
  * @brief
- *		count_res_by_user - count a user's current running resource usage
+ *	count_res_by_user - count a user's current running resource usage
  *
  * @param[in]	resresv_arr	-	the resource resvs to accumulate from
  * @param[in]	user	-	the user
@@ -1329,12 +1476,12 @@ count_res_by_user(resource_resv **resresv_arr, char *user,
  *		  If res arg is NULL return 'running' element.
  *		  otherwise return named resource
  *
- * @param[in]	cts_list	-	counts list to search
- * @param[in]	name	-	name of counts structure to find
- * @param[in]	res	-	resource to find or if NULL,
- *						return number of running
+ *	@param[in] cts_list - counts list to search
+ *	@param[in] name     - name of counts structure to find
+ *	@param[in] res      - resource to find or if NULL,
+ *				return number of running
  *
- * @return	resource amount
+ *	@return resource amount
  */
 sch_resource_t
 find_counts_elm(counts *cts_list, char *name, char *res)
@@ -1363,7 +1510,7 @@ find_counts_elm(counts *cts_list, char *name, char *res)
  * 		check to see if a resource resv will cross
  *		  into dedicated time
  *
- * @param[in]	resresv	-	the resource resv to check
+ *	  @param[in] resresv - the resource resv to check
  *
  * @retval	0	: will not cross a ded time boundary
  * @retval	CROSS_DED_TIME_BOUNDRY	: will cross a ded time boundary
@@ -1403,7 +1550,7 @@ check_ded_time_boundary(resource_resv *resresv)
 
 /**
  * @brief
- *		dedtime_conflict - check for dedtime conflicts
+ *	dedtime_conflict - check for dedtime conflicts
  *
  * @param[in]	resresv	-	resource resv to check for conflects
  *
@@ -1466,15 +1613,15 @@ dedtime_conflict(resource_resv *resresv)
  *	@brief
  *		check to see if there is sufficient nodes available to run a job.
  *
- * @param[in]	policy	-	policy info
- * @param[in]	pbs_sd	-	communication descriptor to the pbs server
- * @param[in]	resresv	-	resource resv to check
- * @param[in]	nodes	-	the nodes available
- * @param[in]	nodepart	-	the node partitioning array
- * @param[out]	err	-	error structure on why job can't run
+ *        @param[in] policy - policy info
+ *	  @param[in] pbs_sd   - communication descriptor to the pbs server
+ *	  @param[in] resresv  - resource resv to check
+ *	  @param[in] nodes    - the nodes available
+ *	  @param[in] nodepart - the node partitioning array
+ *	  @param[out] err	  -  error structure on why job can't run
  *
- * @return	nspec **
- * @retval	node solution of where the job will run
+ *	@return nspec **
+ *	@retval node solution of where the job will run
  * @retval	NULL	: if the job can't run now
  *
  */
@@ -1534,14 +1681,14 @@ check_nodes(status *policy, resource_resv *resresv, node_info **ninfo_arr,
 
 /**
  * @brief
- *		check_ded_time_queue - check if it is the approprate time to run jobs
+ *	check_ded_time_queue - check if it is the approprate time to run jobs
  *			       in a dedtime queue
  *
  * @param[in]	qinfo	-	the queue
  *
  * @return	int
  * @retval	0	: if it is dedtime and qinfo is a dedtime queue or
- *	     			if it is not dedtime and qinfo is not a dedtime queue
+ *	     if it is not dedtime and qinfo is not a dedtime queue
  * @retval	DED_TIME	: if jobs can not run in queue because of dedtime restrictions
  *
  */
@@ -1567,7 +1714,7 @@ check_ded_time_queue(queue_info *qinfo)
 
 /**
  * @brief
- *		should_check_resvs - do some simple checks to see if it is possible
+ *	should_check_resvs - do some simple checks to see if it is possible
  *			     for a job to interfere with reservations.
  *			     This function is called for two cases.  One we
  *			     are checking for reseservations on a specific
@@ -1642,7 +1789,7 @@ should_check_resvs(server_info *sinfo, node_info *ninfo, resource_resv *job)
  * @param[in]	qinfo	-	the queue to check
  *
  * @retval	0	: if the queue is an anytime queue or if it is a primetime
- * 					queue and its is currently primetime
+ * 			queue and its is currently primetime
  * @retval	PRIME_ONLY	: its a primetime queue and its not primetime
  *
  */
@@ -1665,12 +1812,12 @@ check_prime_queue(status *policy, queue_info *qinfo)
  *			       queue is a nonprime queue and it is nonprimetime
  *			       of the queue is an anytime queue, jobs can run
  *
- * @param[in]	policy	-	policy info
- * @param[in]	qinfo	-	the queue to check
+ *	  @param[in] policy - policy info
+ *	  @param[in] qinfo  - the queue to check
  *
- * @return	int
+ *	@return int
  * @retval	0	: if the queue is an anytime queue or if it is nonprimetime
- * 	             	and the queue is a nonprimetime queue
+ * 	             and the queue is a nonprimetime queue
  * @retval	NONPRIME_ONLY	: its a nonprime queue and its primetime
  *
  */
@@ -1692,9 +1839,9 @@ check_nonprime_queue(status *policy, queue_info *qinfo)
  * 		check to see if the resource resv can run before
  *		the prime status changes (from primetime to nonprime etc)
  *
- * @param[in]	policy	-	policy info
- * @param[in]	resresv	-	the resource_resv to check
- * @param[out]	err     -	error structure to return
+ *	  @param[in] policy  - policy info
+ *	  @param[in] resresv - the resource_resv to check
+ *	  @param[out] err     - error structure to return
  *
  * @retval	CROSS_PRIME_BOUNDARY	: if the resource resv crosses
  * @retval	0	: if it doesn't
@@ -1858,14 +2005,14 @@ zero_res()
  * 		find the correct node_info and node partition
  *			     arrays to use for satisfying a job/resv
  *
- * @param[in]	policy	-	policy info
- * @param[in]	sinfo	-	server associated with job/resv
- * @param[in]	qinfo	-	queue associated with job (NULL if resv)
- * @param[in]	resresv -	the job/resv
- * @param[out]	ninfo_arr	-	the correct node array
- * @param[out]	nodepart	-	the correct node partition array
+ *        @param[in] policy - policy info
+ *	  @param[in] sinfo - server associated with job/resv
+ *	  @param[in] qinfo - queue associated with job (NULL if resv)
+ *	  @param[in] resresv - the job/resv
+ *	  @param[out] ninfo_arr - the correct node array
+ *	  @param[out] nodepart - the correct node partition array
  *
- * @return	int
+ *	@return int
  * @retval	1	: on success
  * @retval	0	: on failure/error
  *
@@ -1964,4 +2111,56 @@ find_correct_nodes(status *policy, server_info *sinfo, queue_info *qinfo, resour
 		return 0;
 
 	return 1;
+}
+
+/**
+ * @brief
+ *  find_resreq_availability - checks if amount requested and available match according to the
+ *				operator.
+ * @param[in] avail - amount available
+ * @prama[in] req - amount requested
+ * @param[in] op - conditional operator
+ *
+ * @return int - whether there is a match or not.
+ * @retval 1 - when there is a match
+ * @retval 0 - when there is no match
+ */
+int
+find_resreq_availability(sch_resource_t avail, sch_resource_t req, enum batch_op op)
+{
+	int match = 0;
+	switch (op)
+	{
+		/* EQ and GE are handled the same way, If resources
+		 * available are greater than requested then in EQ
+		 * case resource requested will be selected to run the 
+		 * job and if GE is requested then available is selected
+		 * to run.
+		 */
+		case EQ:
+		case GE:
+			if (avail >= req)
+			    match = 1;
+			break;
+		case LE:
+			if (avail > 0)
+				match = 1;
+			break;
+		case GT:
+			if (avail > req)
+				match = 1;
+			break;
+		case LT:
+			if (avail > 0)
+				match = 1;
+			break;
+		case NE:
+			if (avail != req)
+				match = 1;
+			break;
+		default:
+			match = 0;
+			break;
+	}
+	return match;
 }

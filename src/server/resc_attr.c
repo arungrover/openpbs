@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 1994-2016 Altair Engineering, Inc.
  * For more information, contact Altair at www.altair.com.
- *  
+ *
  * This file is part of the PBS Professional ("PBS Pro") software.
  * 
  * Open Source License Information:
@@ -117,12 +117,12 @@ ctnodes(char *spec)
 
 /**
  * @brief
- * 		set_node_ct = set node count
+ * set_node_ct = set node count
  * @par
- *		This is the "at_action" routine for the resource "nodes".
- *		When the resource_list attribute changes, then set/update
- *		the value of the resource "nodect" for use by the scheduler.
- *		Also updates "ncpus" in most circumstances.
+ *	This is the "at_action" routine for the resource "nodes".
+ *	When the resource_list attribute changes, then set/update
+ *	the value of the resource "nodect" for use by the scheduler.
+ *	Also updates "ncpus" in most circumstances.
  *
  * @param[in]	pnodesp	-	pointer to resource
  * @param[in,out]	pattr	-	pointer to attribute
@@ -314,7 +314,7 @@ decode_place(struct attribute *patr, char *name, char *rescn, char *val)
 
 /**
  * @brief
- * 		to_kbsize - decode a "size" string to a value in kilobytes
+ * to_kbsize - decode a "size" string to a value in kilobytes
  *
  * @param[in]	val	-	"size" string
  *
@@ -386,17 +386,17 @@ to_kbsize(char *val)
 
 /**
  * @brief
- * 		preempt_targets_action - A function which is used to validate the <attribute>
+ * preempt_targets_action - A function which is used to validate the <attribute>
  *                          out of "<attribute>=<value>" pair assigned to preempt_targets
  *
- * @param[in]	presc    -       pointer to resource
+ * @param[in]   presc    -       pointer to resource
  * @param[in]   pattr    -       pointer to attribute
  * @param[in]   pobj     -       pointer to job or reservation
  * @param[in]   type     -       if job or reservation
  * @param[in]   actmode  -       mode of action routine
  *
- * @return	int
- * @retval	PBSE_NONE	: success
+ * @return      int
+ * @retval       PBSE_NONE : success
  * @retval	PBSE_BADATVAL	: if a non existent attribute is given
  */
 
@@ -477,8 +477,8 @@ preempt_targets_action(resource *presc, attribute *pattr, void *pobject, int typ
 #ifndef PBS_MOM
 /**
  * @brief
- * 		host_action - action routine for job's resource_list host resource
- *		validate the legality of the host name syntax
+ * host_action - action routine for job's resource_list host resource
+ *	validate the legality of the host name syntax
  *
  * @param[in]	presc    -       pointer to resource
  * @param[in]   pattr    -       not used here
@@ -529,15 +529,15 @@ host_action(resource *presc, attribute *pattr, void *pobj, int type, int actmode
  * @param[in]   type     -       if job or reservation
  * @param[in]   actmode  -       mode of action routine
  *
- * @return	int
- * @retval	PBSE_NONE	: success if no provisioning needed
- * @retval	PBSE_IVAL_AOECHUNK	: if rules not met
- * @retval	PBSE_SYSTEM	: if error
+ * @return      int
+ * @retval       PBSE_NONE : success if no provisioning needed
+ * @retval       PBSE_IVAL_AOECHUNK : if rules not met
+ * @retval       PBSE_SYSTEM : if error
  *
  * @par Side Effects:
- *		None
+ *	None
  *
- * @par	MT-safe: Yes
+ * @par MT-safe: Yes
  *
  */
 
@@ -545,9 +545,31 @@ int
 resc_select_action(resource *presc, attribute *pattr, void *pobj,
 	int type, int actmode)
 {
+	char *val = NULL;
+	char *sel_or = NULL;
+	char *temp = NULL;
 	int rc = 0;
+	char *id = "resc_select_action";
+	job *pjob = (job *)pobj;
+
 	if ((actmode != ATR_ACTION_NEW) && (actmode != ATR_ACTION_ALTER))
 		return PBSE_NONE;
+
+	if (type == PARENT_TYPE_JOB)
+	{
+		val = presc->rs_value.at_val.at_str;
+		if (strstr(val,"||") != NULL)
+		{
+		    job_attr_def[(int)JOB_ATR_multiselect].at_decode(
+			    &pjob->ji_wattr[(int)JOB_ATR_multiselect], NULL, NULL, "true");
+		}
+	}
+	else if (type == PARENT_TYPE_RESV)
+	{
+		val = presc->rs_value.at_val.at_str;
+		if (strstr(val,"||") != NULL)
+			return PBSE_INVALSELECTRESC;
+	}
 	rc = apply_select_inchunk_rules(presc, pattr, pobj, type, actmode);
 	if (rc != PBSE_NONE)
 	    	return rc;
@@ -557,6 +579,37 @@ resc_select_action(resource *presc, attribute *pattr, void *pobj,
 	 */
 	if (type == PARENT_TYPE_JOB && actmode == ATR_ACTION_NEW)
 		return PBSE_NONE;
+
+	if ((type == PARENT_TYPE_JOB) && (pjob->ji_wattr[(int)JOB_ATR_multiselect].at_flags & ATR_VFLAG_SET))
+	{
+		val = strdup(presc->rs_value.at_val.at_str);
+		if (val == NULL)
+			return PBSE_SYSTEM;
+		sel_or = parse_select_or_string(val);
+		if (sel_or == NULL) {
+			sprintf(log_buffer, "failed to parse ORed select spec: %s", val);
+			log_err(errno, id, log_buffer);
+			free(val);
+			return PBSE_SYSTEM;
+		}
+		while (sel_or)
+		{
+			temp = presc->rs_value.at_val.at_str;
+			presc->rs_value.at_val.at_str = sel_or;
+			rc = apply_aoe_inchunk_rules(presc, pattr, pobj, type);
+			if  (rc != PBSE_NONE)
+			{
+				presc->rs_value.at_val.at_str = temp;
+				free(val);
+				free(sel_or);
+				return rc;
+			}
+			presc->rs_value.at_val.at_str = temp;
+			free(sel_or);
+			sel_or = parse_select_or_string(NULL);
+		}
+		return rc;
+	}
 
 	return apply_aoe_inchunk_rules(presc, pattr, pobj, type);
 }
@@ -578,13 +631,13 @@ resc_select_action(resource *presc, attribute *pattr, void *pobj,
  * @param[in]   pobj     -       pointer to job or reservation
  * @param[in]   type     -       if job or reservation
  *
- * @return	int
- * @retval	PBSE_NONE	: success if no provisioning needed
- * @retval	PBSE_IVAL_AOECHUNK	: if rules not met
- * @retval	PBSE_SYSTEM	: if error
+ * @return      int
+ * @retval       PBSE_NONE : success if no provisioning needed
+ * @retval       PBSE_IVAL_AOECHUNK : if rules not met
+ * @retval       PBSE_SYSTEM : if error
  *
  * @par Side Effects:
- *		None
+ *	None
  *
  * @par MT-safe: Yes
  *
@@ -695,18 +748,18 @@ apply_aoe_inchunk_rules(resource *presc, attribute *pattr, void *pobj,
  *      action routine for built-in resources to check if its value is zero 
  *      or positive whose datatype is long.
  *
- * @param[in]   presc	-	pointer to resource
- * @param[in]   pattr	-	pointer to attribute
- * @param[in]   pobj	-	pointer to job or reservation
- * @param[in]   type	-	if job or reservation
- * @param[in]   actmode	-	mode of action routine
+ * @param[in]   presc    -       pointer to resource
+ * @param[in]   pattr    -       pointer to attribute
+ * @param[in]   pobj     -       pointer to job or reservation
+ * @param[in]   type     -       if job or reservation
+ * @param[in]   actmode  -       mode of action routine
  *
- * @return	int
- * @retval	PBSE_NONE	: success(if value is greater than or equal to zero)
- * @retval	PBSE_BADATVAL	: if value is less than zero
+ * @return      int
+ * @retval       PBSE_NONE : success(if value is greater than or equal to zero)
+ * @retval       PBSE_BADATVAL : if value is less than zero
  *
  * @par Side Effects:
- *		None
+ *	None
  *
  * @par MT-safe: Yes
  *
@@ -732,18 +785,18 @@ int zero_or_positive_action(resource *presc, attribute *pattr, void *pobj, int t
  *      3. Calls resource action function for each resource in a chunk if
  *	   the resource is of type long.
  *
- * @param[in]   presc	-	pointer to resource
- * @param[in]   pattr	-	pointer to attribute
- * @param[in]   pobj	-	pointer to job
- * @param[in]   type	-	if job or reservation
- * @param[in]   actmode	-	mode of action routine
+ * @param[in]   presc    -       pointer to resource
+ * @param[in]   pattr    -       pointer to attribute
+ * @param[in]   pobj     -       pointer to job
+ * @param[in]   type     -       if job or reservation
+ * @param[in]   actmode  -       mode of action routine
  *
- * @return	int
- * @retval	PBSE_NONE	: success
+ * @return      int
+ * @retval       PBSE_NONE : success 
  * @retval	> 0	: if error
  *
  * @par Side Effects:
- *		None
+ *	None
  *
  */
 int apply_select_inchunk_rules(resource *presc, attribute *pattr, void *pobj, int type, int actmode)
@@ -756,37 +809,64 @@ int apply_select_inchunk_rules(resource *presc, attribute *pattr, void *pobj, in
 	int          j;
 	struct       resource     tmp_resc;
 	char         *select_str = NULL;
+	char         *sel_or = NULL;
+	char         *val = NULL;
+	char	    *id = "apply_select_inchunk_rules";
 
 	select_str = presc->rs_value.at_val.at_str;
 	if ((select_str == NULL) || (select_str[0] == '\0'))
 		return PBSE_BADATVAL;
-	chunk = parse_plus_spec(select_str, &rc); /* break '+' seperated substrings */
-	if (rc != 0)
-		return (rc);
-	while (chunk) {
-#ifdef NAS
-		if (parse_chunk(chunk, 0, &nchk, &nelem, &pkvp, NULL) == 0)
-#else
-		if (parse_chunk(chunk, &nchk, &nelem, &pkvp, NULL) == 0)
-#endif
-		{
-			for (j = 0; j < nelem; ++j) {
-			    	tmp_resc.rs_defin = find_resc_def(svr_resc_def, pkvp[j].kv_keyw, svr_resc_size);
-				if ((tmp_resc.rs_defin != NULL) && (tmp_resc.rs_defin->rs_type == ATR_TYPE_LONG)) {
-					tmp_resc.rs_value.at_val.at_long = atol(pkvp[j].kv_val);
-					if (tmp_resc.rs_defin->rs_action) {
-						if ((rc=tmp_resc.rs_defin->rs_action(&tmp_resc, pattr, pobj,
-							type, actmode))!=0)
-							return (rc);
-					}
-				}
-			}
-		} else {
-			return PBSE_BADATVAL;
-		}
-		chunk = parse_plus_spec(NULL, &rc);
+	val = strdup(select_str);
+	if(val == NULL)
+		return PBSE_SYSTEM;
+
+	sel_or = parse_select_or_string(val);
+	if (sel_or == NULL) {
+		sprintf(log_buffer, "failed to parse ORed select spec: %s", val);
+		log_err(errno, id, log_buffer);
+		free(val);
+		return PBSE_SYSTEM;
+	}
+	while (sel_or) {
+		chunk = parse_plus_spec(sel_or, &rc); /* break '+' seperated substrings */
 		if (rc != 0)
 			return (rc);
-	} /* while */
+		while (chunk) {
+#ifdef NAS
+			if (parse_chunk(chunk, 0, &nchk, &nelem, &pkvp, NULL) == 0)
+#else
+			if (parse_chunk(chunk, &nchk, &nelem, &pkvp, NULL) == 0)
+#endif
+			{
+				for (j = 0; j < nelem; ++j) {
+					tmp_resc.rs_defin = find_resc_def(svr_resc_def, pkvp[j].kv_keyw, svr_resc_size);
+					if ((tmp_resc.rs_defin != NULL) && (tmp_resc.rs_defin->rs_type == ATR_TYPE_LONG)) {
+						tmp_resc.rs_value.at_val.at_long = atol(pkvp[j].kv_val);
+						if (tmp_resc.rs_defin->rs_action) {
+							if ((rc=tmp_resc.rs_defin->rs_action(&tmp_resc, pattr, pobj,
+								type, actmode))!=0) {
+								free (val);
+								free (sel_or);
+								return (rc);
+							}
+						}
+					}
+				}
+			} else {
+				free (val);
+				free(sel_or);
+				return PBSE_BADATVAL;
+			}
+			chunk = parse_plus_spec(NULL, &rc);
+			if (rc != 0) {
+				free (val);
+				free (sel_or);
+				return (rc);
+			}
+		} /* while */
+		free(sel_or);
+		sel_or = parse_select_or_string(NULL);
+	} /* while sel_or */
+	free(val);
 	return PBSE_NONE;
 }

@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 1994-2016 Altair Engineering, Inc.
  * For more information, contact Altair at www.altair.com.
- *  
+ *
  * This file is part of the PBS Professional ("PBS Pro") software.
- * 
+ *
  * Open Source License Information:
  *  
  * PBS Pro is free software. You can redistribute it and/or modify it under the
@@ -112,7 +112,7 @@
 
 /**
  * @brief
- *		string_dup - duplicate a string
+ *	string_dup - duplicate a string
  *
  * @param[in]	str	-	string to duplicate
  *
@@ -140,7 +140,7 @@ string_dup(char *str)
 
 /**
  * @brief
- *		concat_str - contactenate up to three strings together in newly
+ *	concat_str - contactenate up to three strings together in newly
  *		     allocated memory
  *
  * @param[in]	str1	-	first string to concat
@@ -186,9 +186,9 @@ concat_str(char *str1, char *str2, char *str3 , int append)
  * @brief
  * 		add a string to a string to a string array only if it is unique
  *
- * @param[in,out]	str_arr	-	array of strings of unique values
- * @param[in]	str	-	string to add
- * @return	int
+ * @param[in,out] str_arr - array of strings of unique values
+ * @param[in] str - string to add
+ * @return int
  * @retval	index in array if success	: string is added to array
  * @retval	-1 failure	: string could not be added to the array
  */
@@ -210,11 +210,11 @@ add_str_to_unique_array(char ***str_arr, char *str)
  * @brief
  * 		add string to string array
  *
- * @param[in]	str_arr	-	pointer to an array of strings to be added to(i.e. char ***)
- * @param[in]	str	-	string to add to array
+ * @param[in] str_arr - pointer to an array of strings to be added to(i.e. char ***)
+ * @param[in] str - string to add to array
  *
- * @return	int
- * @retval	index	-	index of string on success
+ * @return int
+ * @retval index - index of string on success
  * @retval	-1	: failure
  */
 int
@@ -245,10 +245,10 @@ add_str_to_array(char ***str_arr, char *str)
 
 /**
  * @brief
- * 		res_to_num - convert a resource string to a  sch_resource_t to
+ *      res_to_num - convert a resource string to a  sch_resource_t to
  *                      kilobytes
  *                      example: 1mb -> 1024
- *				 	1mw -> 1024 * SIZE_OF_WORD
+ *				 1mw -> 1024 * SIZE_OF_WORD
  *
  * @param[in]	res_str	-	the resource string
  * @param[out]	type	-	the type of the resource
@@ -391,13 +391,13 @@ skip_line(char *line)
  * @brief
  *		schdlog - write a log entry to the scheduler log file using log_record
  *
- * @param[in] event	-	the event type
- * @param[in] class	-	the event class
- * @param[in] sev   -	the severity of the log message
- * @param[in] name  -	the name of the object
- * @param[in] text  -	the text of the message
- *
- * @return nothing
+ *	  @param[in] event - the event type
+ *	  @param[in] class - the event class
+ *	  @param[in] sev   - the severity of the log message
+ *	  @param[in] name  - the name of the object
+ *	  @param[in] text  - the text of the message
+ * 
+ *	@return nothing
  */
 
 void
@@ -466,21 +466,21 @@ schdlogerr(int event, int class, int sev, char *name, char *text,
  *             member.  This can be used with any standard scheduler array
  *	       like resource_resv or node_info or resdef
  *
- * @param[in] ptrarr	-	the array to filter
- * @param[in] filter_func	-	pointer to a function that will filter the array
- * @param[in] arg	-	an optional arg passed to filter_func
- * @param[in] flags	-	control how ptrs are filtered
- *						FILTER_FULL - leave the filtered array full size
+ *        @param[in] ptrarr - the array to filter
+ *        @param[in] filter_func - pointer to a function that will filter the array
+ *        @param[in] arg - an optional arg passed to filter_func
+ *        @param[in] flags - control how ptrs are filtered
+ *			FILTER_FULL - leave the filtered array full size
  *
  * @par
- * 	   filter_func prototype: @fn int func( void *, void * )
+ *      filter_func prototype: @fn int func( void *, void * )
  *                                           object   arg
  *		  object - specific member of ptrarr[]
  *		  arg    - arg parameter
- *               - returns 1: ptr will be added to filtered array
- *               - returns 0: ptr will NOT be added to filtered array
+ *              - returns 1: ptr will be added to filtered array
+ *              - returns 0: ptr will NOT be added to filtered array
  *
- * @return	void ** filtered array.
+ *      @return void ** filtered array.
  */
 void **
 filter_array(void **ptrarr, int (*filter_func)(void*, void*),
@@ -523,7 +523,7 @@ filter_array(void **ptrarr, int (*filter_func)(void*, void*),
 
 /**
  * @brief
- *		free_string_array - free an array of strings with a NULL as a sentinal
+ *	free_string_array - free an array of strings with a NULL as a sentinal
  *
  * @param[in,out]	arr	-	the array to free
  *
@@ -578,10 +578,10 @@ dup_string_array(char **ostrs)
  * @brief
  *		find a string in a NULL terminated string array
  *
- * @param[in]	strarr	-	the string array to search
- * @param[in]	str	-	the string to find
+ *	  @param[in] strarr - the string array to search
+ *	  @param[in] str    - the string to find
  *
- * @return	int
+ *	@return int
  * @retval	1	: if the string is found
  * @retval	0	: the string is not found or on error
  *
@@ -606,8 +606,8 @@ find_string(char **strarr, char *str)
  * @param[in]	strarr	-	the string array to search
  * @param[in]	str	-	the string to find
  *
- * @return	int
- * @retval	index of string
+ * @return int
+ * @retval index of string
  * @retval	-1	: if not found
  */
 int
@@ -627,7 +627,7 @@ find_string_ind(char **strarr, char *str)
 
 /**
  * @brief
- *		match_string_to_array - see if a string array contains a single string
+ *	match_string_to_array - see if a string array contains a single string
  *
  * @param[in]	strarr	-	the string array to search
  * @param[in]	str	-	the string to find
@@ -652,12 +652,12 @@ enum match_string_array_ret match_string_to_array(char *str, char **strarr)
  * @param[in]	strarr	-	the string array to search
  * @param[in]	str	-	the string to find
  *
- * @return	enum match_string_array_ret
- * @retval	SA_FULL_MATCH	: full match
- * @retval	SA_SUB_MATCH		: full match of one array and it is
- *									a subset of the other
- * @retval	SA_PARTIAL_MATCH	: at least one match but not all
- * @retval	SA_NO_MATCH	: no match
+ *	@return enum match_string_array_ret
+ *	@retval SA_FULL_MATCH		: full match
+ *	@retval SA_SUB_MATCH		: full match of one array and it is
+ *						a subset of the other
+ *	@retval SA_PARTIAL_MATCH	: at least one match but not all
+ *	@retval SA_NO_MATCH		: no match
  *
  */
 enum match_string_array_ret match_string_array(char **strarr1, char **strarr2)
@@ -693,11 +693,11 @@ enum match_string_array_ret match_string_array(char **strarr1, char **strarr2)
  * @brief
  * 		convert a string array into a printable string
  *
- * @param[in]	strarr	-	string array to convert
+ *      @param[in] strarr - string array to convert
  *
- * @return	converted string stored in local static ptr (no need to free)
+ * @return converted string stored in local static ptr (no need to free)
  *
- * @par MT-safe:	no
+ * @par MT-safe: no
  *
  */
 char *
@@ -742,14 +742,14 @@ string_array_to_str(char **strarr)
 
 /**
  * @brief
- *		string_array_verify - verify two string arrays are equal
+ *	string_array_verify - verify two string arrays are equal
  *
  * @param[in]	sa1	-	string array 1
  * @param[in]	sa2	-	string array 2
  *
  * @return	int
  * @retval	0	: array equal
- *					number of the first unequal string
+ *		number of the first unequal string
  * @retval	(unsigned) -1	: on error
  *
  */
@@ -775,9 +775,9 @@ unsigned string_array_verify(char **sa1, char **sa2)
  * @brief
  * 		calc_used_walltime - calculate the  used amount of a resource resv
  *
- * @param[in]	resresv	-	the resource resv to calculate
+ * 	@param[in]		resresv - the resource resv to calculate
  *
- * @return	used amount of the resource resv
+ * 	@return  		used amount of the resource resv
  * @retval	0	: if resresv starts in the future
  *					or if the resource used for walltime is NULL
  * @retval	NULL	: if the resource used for walltime is NULL
@@ -811,12 +811,12 @@ calc_used_walltime(resource_resv *resresv)
 /**
  * @brief
  * 		calc_time_left_STF - calculate the amount of time left
- *  	for minimum duration and maximum duration of a STF resource resv
+ *  for minimum duration and maximum duration of a STF resource resv
  *
- * 	@param[in]	resresv	-	the resource resv to calculate
- * 	@param[out]	min_time_left	-	time left to complete minimum duration
+ * 	@param[in]		resresv - the resource resv to calculate
+ * 	@param[out] 	min_time_left - time left to complete minimum duration
  *
- * 	@return	time left to complete maximum duration of the job
+ * 	@return  		time left to complete maximum duration of the job
  * 	@retval	0	: if used amount is greater than duration
  * 	@retval	-1	: on error
  */
@@ -835,7 +835,7 @@ calc_time_left_STF(resource_resv *resresv, sch_resource_t* min_time_left)
 }
 /**
  * @brief
- *		calc_time_left - calculate the remaining time of a resource resv
+ *	calc_time_left - calculate the remaining time of a resource resv
  *
  * @param[in]	resresv	-	the resource resv to calculate
  *
@@ -858,7 +858,7 @@ calc_time_left(resource_resv *resresv)
 
 /**
  * @brief
- *		cstrcmp	- check string compare - compares two strings but doesn't bomb
+ *	cstrcmp - check string compare - compares two strings but doesn't bomb
  *		  if either one is null
  *
  * @param[in]	s1	-	string one
@@ -887,7 +887,7 @@ cstrcmp(char *s1, char *s2)
 
 /**
  * @brief
- *		is_num - checks to see if the string is a number, size, float
+ *	is_num - checks to see if the string is a number, size, float
  *		 or time in string form
  *
  * @param[in]	str	-	the string to test
@@ -951,7 +951,7 @@ is_num(char *str)
 
 /**
  * @brief
- *		count_array - count the number of elements in a NULL terminated array
+ *	count_array - count the number of elements in a NULL terminated array
  *		      of pointers
  *
  * @param[in]	arr	-	the array to count
@@ -975,7 +975,7 @@ count_array(void **arr)
 
 /**
  * @brief
- *		remove_ptr_from_array - remove a pointer from a ptr list and move
+ *	remove_ptr_from_array - remove a pointer from a ptr list and move
  *				the rest of the pointers up to fill the hole
  *				Pointer array size will not change - an extra
  *				NULL is added to the end
@@ -1009,7 +1009,7 @@ remove_ptr_from_array(void **arr, void *ptr)
 
 /**
  * @brief
- *		is_valid_pbs_name - is str a valid pbs username (POSIX.1 + ' ')
+ *	is_valid_pbs_name - is str a valid pbs username (POSIX.1 + ' ')
  *			    a valid name is: alpha numeric '-' '_' '.' ' '
  * 			    For fairshare entities: colen ':'
  *
@@ -1052,9 +1052,9 @@ is_valid_pbs_name(char *str, int len)
  * @brief
  * 		clear an schd_error structure for reuse
  *
- * @param[in]	err	-	error structure to clear
+ *	@param[in] err - error structure to clear
  *
- * @return	void
+ * @return void
  */
 void
 clear_schd_error(schd_error *err)
@@ -1167,10 +1167,10 @@ dup_schd_error(schd_error *oerr) {
  * 		make a shallow copy of a schd_error and move all argument data
  *		to err.
  *
- * @param[in]	err	-	schd_error to move TO
- * @param[in]	oerr-	schd_error to move FROM
+ * @param[in] err - schd_error to move TO
+ * @param[in] oerr- schd_error to move FROM
  *
- * @return	nothing
+ * @return nothing
  */
 void move_schd_error(schd_error *err, schd_error *oerr)
 {
@@ -1200,11 +1200,11 @@ void move_schd_error(schd_error *err, schd_error *oerr)
  * @brief
  * 		safely set the schd_config arg buffers without worrying about leaking
  * 
- * @param[in,out]	err	-	object to set
- * @param[in]	arg_field	-	arg buffer to set
- * @param[in]	arg	-	string to set arg to
+ * @param[in,out] err - object to set
+ * @param[in] arg_field - arg buffer to set
+ * @param[in] arg - string to set arg to
  * 
- * @return	nothing
+ * @return nothing
  */
 void set_schd_error_arg(schd_error *err, int arg_field, char *arg) {
 	
@@ -1241,11 +1241,11 @@ void set_schd_error_arg(schd_error *err, int arg_field, char *arg) {
  *	@note
  *		this ensures both codes are set together
  * 
- * @param[in,out]	err	-	error structure to set
- * @param[in]	status_code	-	status code
- * @param[in]	error_code	-	error code
+ *	@param[in,out] err - error structure to set
+ *	@param[in] status_code - status code
+ *	@param[in] error_code - error code
  * 
- * @return	nothing
+ *	@return nothing
  */
 void set_schd_error_codes(schd_error *err, enum schd_err_status status_code, enum sched_error error_code)
 {
@@ -1305,10 +1305,10 @@ free_schd_error_list(schd_error *err_list) {
  * @brief
  * 		create a simple schd_error with no arguments
  * 
- * @param[in]	error_code	-	error code for new schd_error
+ *	@param[in] error_code - error code for new schd_error
  * @param[in]	status_code -	status code for new schd_error
  * 
- * @return	new schd_error
+ *	@return new schd_error
  */
 schd_error *create_schd_error(int error_code, int status_code) 
 {
@@ -1332,8 +1332,8 @@ schd_error *create_schd_error(int error_code, int status_code)
  * @param[in]	arg2	-	Argument 2
  * @param[in]	arg3	-	Argument 3
  * @param[in]	specmsg	-	string to set arg to
- *
- * @return	new schd_error
+ * 
+ * @return new schd_error
  */
 schd_error *create_schd_error_complex(int error_code, int status_code, char *arg1, char *arg2, char *arg3, char *specmsg)
 {
@@ -1360,11 +1360,11 @@ schd_error *create_schd_error_complex(int error_code, int status_code, char *arg
 /**
  * @brief
  * 		add a schd_error to a linked list of schd_errors.
- *		The way this works: head of the schd_error list is already created and
- *		passed into the caller (e.g., from main_sched_loop() -> is_ok_to_run()).  The caller will maintain
- *		a 'prev_err' pointer.  The address of the prev_err(i.e., &prev_err) is passed into this function.
- *		The first call, we add the head.  Each additional call, we set up the next pointers.
- *		If err-> next is not NULL, we assume we're adding a sublist of schd_error's to the main list.
+ *	The way this works: head of the schd_error list is already created and
+ *	passed into the caller (e.g., from main_sched_loop() -> is_ok_to_run()).  The caller will maintain
+ *	a 'prev_err' pointer.  The address of the prev_err(i.e., &prev_err) is passed into this function.
+ *	The first call, we add the head.  Each additional call, we set up the next pointers.
+ *	If err-> next is not NULL, we assume we're adding a sublist of schd_error's to the main list.
  * 
  *	@example
  *		main_sched_loop(): foo_err = new_schd_error()
@@ -1376,12 +1376,12 @@ schd_error *create_schd_error_complex(int error_code, int status_code, char *arg
  *		Note: main_sched_loop() did not pass the address of foo_err into is_ok_to_run()
  *		Note2: main_sched_loop() holds the head of the list, so we don't return the list
  * 
- * @param[in]	prev_err	-	address of the pointer previous to the end of the list (i.e. (*prev_err)->next->next == NULL
- * @param[in]	err	-	schd_error to add to the list (may be a list of schd_error's)
+ * @param[in] prev_err - address of the pointer previous to the end of the list (i.e. (*prev_err)->next->next == NULL
+ * @param[in] err - schd_error to add to the list (may be a list of schd_error's)
  *
- * @return	nothing
+ * @return nothing
  * 
- * @note	nothing stops duplicate entries from being added
+ * @note nothing stops duplicate entries from being added
  */
 void add_err(schd_error **prev_err, schd_error *err)
 {
@@ -1410,11 +1410,11 @@ void add_err(schd_error **prev_err, schd_error *err)
  * @brief
  * 		Convert a duration to HH:MM:SS format string
  *
- * @param[in]	duration	-	the duration
- * @param[out]	buf	-	the buffer to be filled
- * @param[in]	bufsize	-	size of the buffer
+ * 	@param[in]	duration - the duration
+ * 	@param[out]	buf - the buffer to be filled
+ * 	@param[in]	bufsize - size of the buffer
  *
- * @return	void
+ * 	@return		void
  */
 void
 convert_duration_to_str(time_t duration, char* buf, int bufsize)
@@ -1438,16 +1438,16 @@ convert_duration_to_str(time_t duration, char* buf, int bufsize)
  * @param[in]	p	-	pointer to resource/req
  * @param[in] fld	-	the field of the resource to print
  *
- * @return	char *
- * @retval	the resource in string format (in internal static string)
- * @retval	"" on error
+ * @return char *
+ * @retval the resource in string format (in internal static string)
+ * @retval "" on error
  *
- * @par	MT-Safe: No
+ * @par MT-Safe: No
  *
  * @note
  * 		This function can not be used more than once in a printf() type func
- *	 	The static string will be overwritten before printing and you will get
- *	 	the same value for all calls.  Use res_to_str_r().
+ *	 The static string will be overwritten before printing and you will get
+ *	 the same value for all calls.  Use res_to_str_r().
  */
 char *
 res_to_str(void *p, enum resource_fields fld)
@@ -1464,19 +1464,42 @@ res_to_str(void *p, enum resource_fields fld)
 }
 
 /**
- * @brief
- * 		convert a number that is a resource into a string with a provided
- * 		non-expandable buffer.  This is useful for size types or scheduler constants
+ * @brief turn a resource/resource_req into a string for printing by allocating 
+ *		a buffer.
+ * @param[in] p	  pointer to resource/req
+ * @param[in] fld the field of the resource to print
+ * @return char *
+ * @retval the resource in string format
+ * @retval NULL on error
+ *
+ * @par MT-Safe: Yes
+ *
+ */
+char *
+res_to_str_alloc(void *p, enum resource_fields fld)
+{
+	char *resbuf = NULL;
+	int resbuf_size = 0;
+
+	resbuf = res_to_str_re(p, fld, &resbuf, &resbuf_size, NO_FLAGS);
+	if (resbuf[0] == '\0')
+		return NULL;
+	return resbuf;
+}
+
+/**
+ * @brief convert a number that is a resource into a string with a provided
+ * non-expandable buffer.  This is useful for size types or scheduler constants
  *
  * @param[in]	amount	-	amount of resource
  * @param[in]	def	-	resource definition of amount
  * @param[in]	fld	-	the field of the resource to print - Should be RF_REQUEST or
- *              		RF_AVAIL
+ *              RF_AVAIL
  * @param[in,out]	buf	-	buffer for res to str conversion -- not expandable
  * @param[in]	bufsize	-	size of buf
  *
- * @return	char *
- * @retval	the resource in string format (in provided buffer)
+ * @return char *
+ * @retval the resource in string format (in provided buffer)
  * @retval	""	: on error
  */
 char *
@@ -1527,8 +1550,8 @@ res_to_str_c(sch_resource_t amount, resdef *def, enum resource_fields fld,
  * @param[in]	buf	-	buffer for res to str conversion -- not expandable
  * @param[in,out]	bufsize	-	size of buf
  *
- * @return	char *
- * @retval	the resource in string format (in provided buffer)
+ * @return char *
+ * @retval the resource in string format (in provided buffer)
  * @retval	""	: on error
  */
 char *
@@ -1540,21 +1563,21 @@ res_to_str_r(void *p, enum resource_fields fld, char *buf, int bufsize)
 /**
  * @brief
  * 		turn a resource (resource/resource_req) into
- *      a string for printing.  If the buffer needs expanding, it
- *		will be expanded(except when specified by flags).
+ *                 a string for printing.  If the buffer needs expanding, it
+ *		   will be expanded(except when specified by flags).
  *
- * @param[in]	p	-	a pointer to a resource/req
- * @param[in]	fld	-	The field of the resource type to print.  This is
- *						used to determine if p is a resource or a resource_req
- * @param[in,out]	buf	-	buffer to copy string into
- * @param[in,out]	buf_size	-	size of buffer
- * @param[in]	flags	-	flags to control printing
- *							PRINT_INT_CONST - print internal constant names
- *							NOEXPAND - don't expand the buffer, just fill upto the max size
+ *      @param[in] p   - a pointer to a resource/req
+ *      @param[in] fld - The field of the resource type to print.  This is
+ *			used to determine if p is a resource or a resource_req
+ *	@param[in,out] buf - buffer to copy string into
+ *	@param[in,out] buf_size - size of buffer
+ *	@param[in] flags - flags to control printing
+ *		PRINT_INT_CONST - print internal constant names
+ *		NOEXPAND - don't expand the buffer, just fill upto the max size
  *
- * @return	char *
- * @retval	the resource in string format (in buf)
- * @retval	""  on error
+ *    @return char *
+ *    @retval the resource in string format (in buf)
+ *    @retval ""  on error
  */
 char *
 res_to_str_re(void *p, enum resource_fields fld, char **buf,

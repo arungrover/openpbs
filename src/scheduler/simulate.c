@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 1994-2016 Altair Engineering, Inc.
  * For more information, contact Altair at www.altair.com.
- *  
+ *
  * This file is part of the PBS Professional ("PBS Pro") software.
- * 
+ *
  * Open Source License Information:
  *  
  * PBS Pro is free software. You can redistribute it and/or modify it under the
@@ -112,7 +112,7 @@
  *
  * @brief
  * 		structure to map a function pointer to string name
- * 		for printing of policy change events
+ * for printing of policy change events
  */
 struct policy_change_func_name
 {
@@ -132,13 +132,13 @@ static const struct policy_change_func_name policy_change_func_name[] =
  * @brief
  * 		simulate the future of a PBS universe
  *
- * @param[in] 	policy   - policy info
- * @param[in] 	sinfo    - PBS universe to simulate
- * @param[in] 	cmd      - simulation command
- * @param[in] 	arg      - optional argument
- * @param[out] 	sim_time - the time in the simulated universe
+ *        @param[in] policy   - policy info
+ *	  @param[in] sinfo    - PBS universe to simulate
+ *	  @param[in] cmd      - simulation command
+ *	  @param[in] arg      - optional argument
+ *	  @param[out] sim_time - the time in the simulated universe
  *
- * @return	bitfield of what type of event(s) were simulated
+ *	@return bitfield of what type of event(s) were simulated
  */
 unsigned int
 simulate_events(status *policy, server_info *sinfo,
@@ -216,7 +216,7 @@ simulate_events(status *policy, server_info *sinfo,
 
 /**
  * @brief
- *		is_timed - check if an event_ptr has timed elements
+ *	is_timed - check if an event_ptr has timed elements
  * 			 (i.e. has a start and end time)
  *
  * @param[in]	event_ptr	-	the event to check
@@ -245,14 +245,14 @@ is_timed(event_ptr_t *event_ptr)
  * @brief
  * 		get the next_event from an event list
  *
- * @param[in]	elist	-	the event list
+ *	  @param[in] elist - the event list
  *
  * @par NOTE:
  * 			If prime status events matter, consider using
- *			next_event(sinfo, DONT_ADVANCE).  This function only
- *			returns the next_event pointer of the event list.
+ *		   next_event(sinfo, DONT_ADVANCE).  This function only
+ *		   returns the next_event pointer of the event list.
  *
- * @return	the current event from the event list
+ *	@return the current event from the event list
  * @retval	NULL	: elist is null
  *
  */
@@ -271,9 +271,9 @@ get_next_event(event_list *elist)
  *	     If the next event is a prime status event,  created
  *	     on the fly and returned.
  *
- * @param[in] 	sinfo 	- server containing the calendar
- * @param[in] 	advance - advance to the next event or not.  Prime status
- *			   				event creation happens if we advance or not.
+ *	  @param[in] sinfo - server containing the calendar
+ *	  @param[in] advance - advance to the next event or not.  Prime status
+ *			   event creation happens if we advance or not.
  *
  * @return	the next event
  * @retval	NULL	: if there are no more events
@@ -342,20 +342,20 @@ next_event(server_info *sinfo, int advance)
  * @brief
  * 		find the initial event based on a timed_event
  *
- * @param[in]	event            - the current event
- * @param[in] 	ignore_disabled  - ignore disabled events
- * @param[in] 	search_type_mask - bitmask of types of events to search
+ *	  @param[in] event            - the current event
+ *	  @param[in] ignore_disabled  - ignore disabled events
+ *	  @param[in] search_type_mask - bitmask of types of events to search
  *
- * @return	the initial event of the correct type/disabled or not
+ *	@return the initial event of the correct type/disabled or not
  * @retval	NULL	: event is NULL.
  *
  * @par NOTE:
  * 			IGNORE_DISABLED_EVENTS exists to be passed in as the
- *		   	ignore_disabled parameter.  It is non-zero.
+ *		   ignore_disabled parameter.  It is non-zero.
  *
  * @par NOTE:
  * 			ALL_MASK can be passed in for search_type_mask to search
- *		    for all events types
+ *		   for all events types
  */
 timed_event *
 find_init_timed_event(timed_event *event, int ignore_disabled, unsigned int search_type_mask)
@@ -381,19 +381,19 @@ find_init_timed_event(timed_event *event, int ignore_disabled, unsigned int sear
  * @brief
  * 		find the first event based on a timed_event while iterating backwards
  *
- * @param[in] event            - the current event
- * @param[in] ignore_disabled  - ignore disabled events
- * @param[in] search_type_mask - bitmask of types of events to search
+ *	@param[in] event            - the current event
+ *	@param[in] ignore_disabled  - ignore disabled events
+ *	@param[in] search_type_mask - bitmask of types of events to search
  *
- * @return the previous event of the correct type/disabled or not
+ *	@return the previous event of the correct type/disabled or not
  *
  * @par NOTE:
  * 			IGNORE_DISABLED_EVENTS exists to be passed in as the
- *		   	ignore_disabled parameter.  It is non-zero.
+ *		   ignore_disabled parameter.  It is non-zero.
  *
  * @par NOTE:
  * 			ALL_MASK can be passed in for search_type_mask to search
- *		   	for all events types
+ *		   for all events types
  */
 timed_event *
 find_first_timed_event_backwards(timed_event *event, int ignore_disabled, unsigned int search_type_mask)
@@ -418,11 +418,11 @@ find_first_timed_event_backwards(timed_event *event, int ignore_disabled, unsign
  * @brief
  * 		find the next event based on a timed_event
  *
- * @param[in] event            - the current event
- * @param[in] ignore_disabled  - ignore disabled events
- * @param[in] search_type_mask - bitmask of types of events to search
+ *	  @param[in] event            - the current event
+ *	  @param[in] ignore_disabled  - ignore disabled events
+ *	  @param[in] search_type_mask - bitmask of types of events to search
  *
- * @return	the next timed event of the correct type and disabled or not
+ *	@return the next timed event of the correct type and disabled or not
  * @retval	NULL	: event is NULL.
  */
 timed_event *
@@ -437,11 +437,11 @@ find_next_timed_event(timed_event *event, int ignore_disabled, unsigned int sear
  * @brief
  * 		find the previous event based on a timed_event
  *
- * @param[in] event            - the current event
- * @param[in] ignore_disabled  - ignore disabled events
- * @param[in] search_type_mask - bitmask of types of events to search
+ *	  @param[in] event            - the current event
+ *	  @param[in] ignore_disabled  - ignore disabled events
+ *	  @param[in] search_type_mask - bitmask of types of events to search
  *
- * @return	the previous timed event of the correct type and disabled or not
+ *	@return the previous timed event of the correct type and disabled or not
  * @retval	NULL	: event is NULL.
  */
 timed_event *
@@ -455,10 +455,10 @@ find_prev_timed_event(timed_event *event, int ignore_disabled, unsigned int sear
  * @brief
  * 		set the timed_event disabled bit
  *
- * @param[in]	te       - timed event to set
- * @param[in] 	disabled - used to set the disabled bit
+ *	  @param[in] te       - timed event to set
+ *	  @param[in] disabled - used to set the disabled bit
  *
- * @return	nothing
+ *	@return nothing
  */
 void
 set_timed_event_disabled(timed_event *te, int disabled)
@@ -472,18 +472,18 @@ set_timed_event_disabled(timed_event *te, int disabled)
 /**
  * @brief
  * 		find a timed_event by any or all of the following:
- *		event name, time of event, or event type.  At times
- *		multiple search parameters are needed to
- *		differentiate between similar events.
+ *		   event name, time of event, or event type.  At times
+ *		   multiple search parameters are needed to
+ *		   differentiate between similar events.
  *
- * @param[in]	te_list 	- timed_event list to search in
- * @param[in] 	name    	- name of timed_event to search or NULL to ignore
- * @param[in] 	event_type 	- event_type or TIMED_NOEVENT to ignore
- * @param[in] 	event_time 	- time or 0 to ignore
+ *	  @param[in] te_list - timed_event list to search in
+ *	  @param[in] name    - name of timed_event to search or NULL to ignore
+ *	  @param[in] event_type - event_type or TIMED_NOEVENT to ignore
+ *	  @param[in] event_time - time or 0 to ignore
  *
- * @par NOTE:
- *			If all three search parameters are ignored,  the first event
- *			of te_list will be returned
+ *	@par NOTE:
+ *	If all three search parameters are ignored,  the first event
+ *	of te_list will be returned
  *
  * @return	found timed_event
  * @retval	NULL	: on error
@@ -524,9 +524,9 @@ find_timed_event(timed_event *te_list, char *name,
  *		required by the event to be completed.
  *
  * @param[in] policy	-	status
- * @param[in] event 	- 	the event to perform
+ *	  @param[in] event - the event to perform
  *
- * @return int
+ *      @return int
  * @retval 1	: success
  * @retval 0	: failure
  */
@@ -599,11 +599,11 @@ perform_event(status *policy, timed_event *event)
 /**
  * @brief
  * 		returns 1 if there exists a timed run event in
- *		the event list between the current event
- *		and the last event, or the end time if it is set
+ *			the event list between the current event
+ *			and the last event, or the end time if it is set
  *
- * @param[in] calendar 	- event list
- * @param[in] end 		- optional end time (0 means search all events)
+ *	  @param[in] calendar - event list
+ *	  @param[in] end - optional end time (0 means search all events)
  *
  * @return	int
  * @retval	1	: there exists a run event
@@ -641,14 +641,14 @@ exists_run_event(event_list *calendar, time_t end)
  * 		calculate the run time of a resresv through simulation of
  *		future calendar events
  *
- * @param[in] name 	- the name of the resresv to find the start time of
- * @param[in] sinfo - the pbs environment
- * 					  NOTE: sinfo will be modified, it should be a copy
- * @param[in] flags - some flags to control the function
- *						SIM_RUN_JOB - simulate running the resresv
+ *	  @param[in] name - the name of the resresv to find the start time of
+ *	  @param[in] sinfo - the pbs environment
+ * 		NOTE: sinfo will be modified, it should be a copy
+ *	  @param[in] flags - some flags to control the function
+ *		SIM_RUN_JOB - simulate running the resresv
  *
  * @return	int
- * @retval	time_t of when the job will run
+ *	@retval time_t of when the job will run
  *	@retval	0	: can not determine when job will run
  *	@retval	1	: on error
  *
@@ -667,6 +667,7 @@ calc_run_time(char *name, server_info *sinfo, int flags)
 	timed_event *te_start;
 	timed_event *te_end;
 	int desc;
+	int num = 0;
 	nspec **ns = NULL;
 
 	if (name == NULL || sinfo == NULL)
@@ -692,8 +693,20 @@ calc_run_time(char *name, server_info *sinfo, int flags)
 		desc = describe_simret(ret);
 		if (desc > 0 || (desc == 0 && policy_change_info(sinfo, resresv))) {
 			clear_schd_error(err);
-			if (resresv->is_job)
-				ns = is_ok_to_run(sinfo->policy, -1, sinfo, resresv->job->queue, resresv, NO_FLAGS, err);
+			if (resresv->is_job) {
+				if (resresv -> job -> is_multiselect) {
+					for(;(num < resresv -> num_selspec) && (ns == NULL); num++)
+					{
+						if (resresv -> multi_select[num] -> err -> status_code != NEVER_RUN) {
+							resresv -> select = resresv -> multi_select[num]->spec;
+							make_job_rassn (sinfo->policy, resresv);
+							ns = is_ok_to_run (sinfo->policy, -1, sinfo, NULL, resresv, NO_FLAGS, err);
+						}
+					}
+				}
+				else
+					ns = is_ok_to_run(sinfo->policy, -1, sinfo, resresv->job->queue, resresv, NO_FLAGS, err);
+			}
 			else
 				ns = is_ok_to_run(sinfo->policy, -1, sinfo, NULL, resresv, NO_FLAGS, err);
 		}
@@ -769,9 +782,9 @@ calc_run_time(char *name, server_info *sinfo, int flags)
  * @brief
  * 		create an event_list from running jobs and confirmed resvs
  *
- * @param[in]	sinfo	-	server universe to act upon
+ *	  @param[in] sinfo - server universe to act upon
  *
- * @return	event_list
+ *	@return event_list
  */
 event_list *
 create_event_list(server_info *sinfo)
@@ -794,7 +807,7 @@ create_event_list(server_info *sinfo)
 
 /**
  * @brief
- *		create_events - creates an timed_event list from running jobs
+ *	create_events - creates an timed_event list from running jobs
  *			    and confirmed reservations
  *
  * @param[in] sinfo - server universe to act upon
@@ -851,7 +864,7 @@ create_events(server_info *sinfo)
 
 /**
  * @brief
- * 		new_event_list() - event_list constructor
+ * new_event_list() - event_list constructor
  *
  * @return	event_list *
  * @retval	NULL	: malloc failed
@@ -876,7 +889,7 @@ new_event_list()
 
 /**
  * @brief
- * 		dup_event_list() - evevnt_list copy constructor
+ * 	dup_event_list() - evevnt_list copy constructor
  *
  * @param[in] oelist - event list to copy
  * @param[in] nsinfo - new universe
@@ -927,7 +940,7 @@ dup_event_list(event_list *oelist, server_info *nsinfo)
 
 /**
  * @brief
- * 		free_event_list - event_list destructor
+ * free_event_list - event_list destructor
  *
  * @param[in] elist - event list to freed
  */
@@ -943,7 +956,7 @@ free_event_list(event_list *elist)
 
 /**
  * @brief
- * 		new_timed_event() - timed_event constructor
+ * new_timed_event() - timed_event constructor
  *
  * @return	timed_event *
  * @retval	NULL	: malloc error
@@ -974,7 +987,7 @@ new_timed_event()
 
 /**
  * @brief
- * 		dup_timed_event() - timed_event copy constructor
+ * dup_timed_event() - timed_event copy constructor
  *
  * @param[in]	ote 	- timed_event to copy
  * @param[in] 	nsinfo 	- "new" universe where to find the event_ptr
@@ -1017,7 +1030,7 @@ dup_timed_event(timed_event *ote, server_info *nsinfo)
 
 /**
  * @brief
- *		find_event_ptr - find the correct event pointer for the duplicated
+ *	find_event_ptr - find the correct event pointer for the duplicated
  *			 event based on event type
  *
  * @param[in]	ote		- old event
@@ -1075,7 +1088,7 @@ find_event_ptr(timed_event *ote, server_info *nsinfo)
 
 /**
  * @brief
- *		dup_timed_event_list() - timed_event copy constructor for a list
+ *	dup_timed_event_list() - timed_event copy constructor for a list
  *
  * @param[in]	ote_list 	- list of timed_events to copy
  * @param[in]	nsinfo		- "new" universe where to find the event_ptr
@@ -1112,7 +1125,7 @@ dup_timed_event_list(timed_event *ote_list, server_info *nsinfo)
 
 /**
  * @brief
- * 		free_timed_event - timed_event destructor
+ * free_timed_event - timed_event destructor
  *
  * @param[in]	te	-	timed event.
  */
@@ -1127,7 +1140,7 @@ free_timed_event(timed_event *te)
 
 /**
  * @brief
- * 		free_timed_event_list - destructor for a list of timed_event structures
+ * free_timed_event_list - destructor for a list of timed_event structures
  *
  * @param[in]	te_list	-	timed event list
  */
@@ -1153,8 +1166,8 @@ free_timed_event_list(timed_event *te_list)
  * @brief
  * 		add a timed_event to an event list
  *
- * @param[in] calendar - event list
- * @param[in] te       - timed event
+ *	  @param[in] calendar - event list
+ *	  @param[in] te       - timed event
  *
  * @retval 1 : success
  * @retval 0 : failure
@@ -1208,10 +1221,10 @@ add_event(event_list *calendar, timed_event *te)
 
 /**
  * @brief
- * 		add_timed_event - add an event to a sorted list of events
+ *	add_timed_event - add an event to a sorted list of events
  *
  * @note
- *		ASSUMPTION: if multiple events are at the same time, all
+ *	ASSUMPTION: if multiple events are at the same time, all
  *		    end events will come first
  *
  * @param	events - event list to add event to
@@ -1259,10 +1272,10 @@ add_timed_event(timed_event *events, timed_event *te)
  * @brief
  * 		delete a timed event from an event_list
  *
- * @param[in] sinfo    - sinfo which contains calendar to delete from
- * @param[in] e        - event to delete
- * @param[in] flags    - flag bitfield
- *						 DE_UNLINK - unlink event and don't free
+ *	@param[in] sinfo    - sinfo which contains calendar to delete from
+ *	@param[in] e        - event to delete
+ *	@param[in] flags    - flag bitfield
+ *				DE_UNLINK - unlink event and don't free
  *
  * @return int
  * @retval 1 event was successfully deleted
@@ -1308,7 +1321,7 @@ delete_event(server_info *sinfo, timed_event *e, unsigned int flags)
 
 /**
  * @brief
- *		create_event - create a timed_event with the passed in arguemtns
+ *	create_event - create a timed_event with the passed in arguemtns
  *
  * @param[in]	event_type - event_type member
  * @param[in] 	event_time - event_time member
@@ -1348,14 +1361,14 @@ create_event(enum timed_event_types event_type,
 
 /**
  * @brief
- *		determine_event_name - determine a timed events name based off of
+ *	determine_event_name - determine a timed events name based off of
  *				event type and sets it
  *
  * @param[in]	te	-	the event
  *
  * @par Side Effects
- *		te -> name is set to static data or data owned by other entities.
- *		It should not be freed.
+ *	te -> name is set to static data or data owned by other entities.
+ *	It should not be freed.
  *
  * @return	int
  * @retval	1	: if the name was successfully set
@@ -1409,10 +1422,10 @@ determine_event_name(timed_event *te)
  * @brief
  * 		update dedicated time policy
  *
- * @param[in] policy - policy info (contains dedicated time policy)
- * @param[in] arg    - "START" or "END"
+ *	  @param[in] policy - policy info (contains dedicated time policy)
+ *	  @param[in] arg    - "START" or "END"
  *
- * @return int
+ *	@return int
  * @retval 1 : success
  * @retval 0 : failure/error
  *
@@ -1444,8 +1457,8 @@ dedtime_change(status *policy, void  *arg)
  * @brief
  * 		add the dedicated time events from conf
  *
- * @param[in] elist 	- the event list to add the dedicated time events to
- * @param[in] policy 	- status structure for the dedicated time events
+ *	  @param[in] elist - the event list to add the dedicated time events to
+ *	  @param[in] policy - status structure for the dedicated time events
  *
  *	@retval 1 : success
  *	@retval 0 : failure
@@ -1481,11 +1494,11 @@ add_dedtime_events(event_list *elist, status *policy)
 /**
  * @brief
  * 		simulate the minimum amount of a resource list
- *		for an event list until a point in time.  The
- *		comparison we are simulating the minimum for is
- *		(resources_available.foo - resources_assigned.foo)
- *		The minimum is simulated by holding resources_available
- *		constant and maximizing the resources_assigned value
+ *		  for an event list until a point in time.  The
+ *		  comparison we are simulating the minimum for is
+ *		  (resources_available.foo - resources_assigned.foo)
+ *		  The minimum is simulated by holding resources_available
+ *		  constant and maximizing the resources_assigned value
  *
  * @note
  * 		This function only simulates START and END events.  If at some
@@ -1493,13 +1506,13 @@ add_dedtime_events(event_list *elist, status *policy)
  *		qmgr -c 's s resources_available.ncpus + =5' this function will
  *		will have to be revisited.
  *
- * @param[in] reslist  	- resource list to simulate
- * @param[in] end	  	- end time
- * @param[in] calendar 	- calendar to simulate
- * @param[in] incl_arr 	- only use events for resresvs in this array (can be NULL)
- * @param[in] exclude	- job/resv to ignore (possibly NULL)
+ *	  @param[in] reslist  - resource list to simulate
+ *	  @param[in] end	  - end time
+ *	  @param[in] calendar - calendar to simulate
+ *	  @param[in] incl_arr - only use events for resresvs in this array (can be NULL)
+ *	  @param[in] exclude	  - job/resv to ignore (possibly NULL)
  *
- * @return static pointer to amount of resources available during
+ *	@return static pointer to amount of resources available during
  * @retval the entire length from now to end
  * @retval	NULL	: on error
  *
@@ -1591,9 +1604,9 @@ simulate_resmin(schd_resource *reslist, time_t end, event_list *calendar,
  * @brief
  * 		return a printable name for a policy change event
  *
- * @param[in]	te	-	policy change timed event
+ *	  @param[in] te - policy change timed event
  *
- * @return	printable string name of policy change event
+ *	@return printable string name of policy change event
  * @retval	NULL	: if not found or error
  */
 char *
@@ -1615,8 +1628,8 @@ policy_change_to_str(timed_event *te)
  * @brief
  * 		should we do anything on policy change events
  *
- * @param[in] sinfo 	- server
- * @param[in] resresv 	- a resresv to check
+ *	  @param[in] sinfo - server
+ *	  @param[in] resresv - a resresv to check
  *
  * @return	int
  * @retval	1	: there is something to do
@@ -1698,9 +1711,9 @@ policy_change_info(server_info *sinfo, resource_resv *resresv)
 /**
  * @brief
  * 		takes a bitfield returned by simulate_events and will determine if
- *      the amount resources have gone up down, or are unchanged.  If events
- *	  	caused resources to be both freed and used, we err on the side of
- *	  	caution and say there are more resources.
+ *        the amount resources have gone up down, or are unchanged.  If events
+ *	  caused resources to be both freed and used, we err on the side of
+ *	  caution and say there are more resources.
  *
  * @param[in]	simret	-	return bitfield from simulate_events
  *
@@ -1728,11 +1741,11 @@ describe_simret(unsigned int simret)
  * @brief
  * 		adds event(s) for bringing the node back up after we provision a node
  *
- * @param[in] calnedar 		- event list to add event(s) to
- * @param[in] event_time 	- time of the event
- * @param[in] node 			- node in question
+ * 	@param[in] calnedar - event list to add event(s) to
+ *	@param[in] event_time - time of the event
+ *	@param[in] node - node in question
  *
- * @return	success/failure
+ *	@return success/failure
  * @retval 	1 : on sucess
  * @retval 	0 : in failure/error
  */
@@ -1765,26 +1778,26 @@ add_prov_event(event_list *calendar, time_t event_time, node_info *node)
 /**
  * @brief
  * 		generic simulation function which will call a function pointer over
- *      events of a calendar from now up to (but not including) the end time.
+ *        events of a calendar from now up to (but not including) the end time.
  * @par
- *	  	The simulation works by looping searching for a success or failure.
- *	  	The loop will stop if the function returns 1 for success or -1 for
- *	  	failure.  We continue looping if the function returns 0.  If we run
- *	  	out of events, we return the default passed in.
+ *	  The simulation works by looping searching for a success or failure.
+ *	  The loop will stop if the function returns 1 for success or -1 for
+ *	  failure.  We continue looping if the function returns 0.  If we run
+ *	  out of events, we return the default passed in.
  *
  * @par Function:
  * 		The function can return three return values
- *	 	>0 success - stop looping and return success
- *	  	0 failure - keep looping
- *	 	<0 failure - stop looping and return failure
+ *	 >0 success - stop looping and return success
+ *	  0 failure - keep looping
+ *	 <0 failure - stop looping and return failure
  *
- * @param[in] calendar 		- calendar of timed events
- * @param[in] event_mask 	- mask of timed_events which we want to simulate
- * @param[in] end 			- end of simulation (0 means search all events)
- * @param[in] default_ret 	- default return value if we reach the end of the simulation
- * @param[in] func 			- the function to call on each timed event
- * @param[in] arg1 			- generic arg1 to function
- * @param[in] arg2 			- generic arg2 to function
+ * @param[in] calendar - calendar of timed events
+ * @param[in] event_mask - mask of timed_events which we want to simulate
+ * @param[in] end - end of simulation (0 means search all events)
+ * @param[in] default_ret - default return value if we reach the end of the simulation
+ * @param[in] func - the function to call on each timed event
+ * @param[in] arg1 - generic arg1 to function
+ * @param[in] arg2 - generic arg2 to function
  *
  * @return success of simulate
  * @retval 1 : if simulation is success

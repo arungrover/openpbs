@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 1994-2016 Altair Engineering, Inc.
  * For more information, contact Altair at www.altair.com.
- *  
+ *
  * This file is part of the PBS Professional ("PBS Pro") software.
- * 
+ *
  * Open Source License Information:
  *  
  * PBS Pro is free software. You can redistribute it and/or modify it under the
@@ -598,7 +598,7 @@ node_current_aoe_action(attribute *new, void *pobj, int act)
 
 /**
  * @brief
- * 		decode_rcost - decode string into resource cost value
+ * decode_rcost - decode string into resource cost value
  *
  * @param[in,out]	pattr	-	pointer to attribute
  * @param[in]	name	-	attribute name
@@ -896,15 +896,15 @@ set_node_topology(attribute *pattr, void *pobject, int actmode)
 
 /**
  * @brief
- *		Returns the "external" form of the attribute 'val' given 'name'.
+ *	Returns the "external" form of the attribute 'val' given 'name'.
  *
- * @param[in]	name	-	attribute name
- * @param[in]	val	-	attribute value
+ * @param[in] 	name - attribute name
+ * @param[in] 	val - attribute value
  *
  * @return char *	: the external form for name=state: "3" -> "down,offline"
  * @Note
  *     	Returns a static value that can potentially get cleaned up on next call.
- * 		Must use return value immediately!
+ * 	Must use return value immediately!
  */
 static char *
 return_external_value(char *name, char *val)
@@ -929,15 +929,15 @@ return_external_value(char *name, char *val)
 
 /**
  * @brief
- *		Returns the "internal" form of the attribute 'val' given 'name'.
+ *	Returns the "internal" form of the attribute 'val' given 'name'.
  *
- * @param[in]	name	-	attribute name
- * @param[in]	val	-	attribute value
+ * @param[in] 	name - attribute name
+ * @param[in] 	val - attribute value
  *
  * @return char *	: the external form for name=state: "down,offline" -> "3"
  * @Note
  *     	Returns a static value that can potentially get cleaned up on next call.
- * 		Must use return value immediately!
+ * 	Must use return value immediately!
  *
  * @par MT-safe: No
  */
@@ -974,29 +974,29 @@ return_internal_value(char *name, char *val)
 
 /**
  * @brief
- *		Takes data from input file or stdin of the form:
+ *	Takes data from input file or stdin of the form:
  *		<attribute_name>=<attribute value>
  *		<attribute_name>[<resource_name>]=<resource value>
- *		and populate the given various lists with the value obtained.
+ *	and populate the given various lists with the value obtained.
  *
- * @param[in]	input_file	-	if NULL, will get data from stdin.
- * @param[in]	default_svrattrl	-	the "catch all" list
- * @param[in]	event_svrattrl	-	gets <attribute_name>=EVENT_OBJECT data
- * @param[in]	event_job_svrattrl	-	gets <attribute_name>=EVENT_JOB_OBJECT data
- * @param[in]	event_job_o_svrattrl	-	gets <attribute_name>=EVENT_JOB_O_OBJECT data
- * @param[in]	event_resv_svrattrl	-	gets <attribute_name>=EVENT_RESV_OBJECT data
- * @param[in]	event_vnode_svrattrl	-	gets <attribute_name>=EVENT_VNODE_OBJECT data
- * 			             					Caution: svrattrl values stored in sorted order
- * @param[in]	event_src_queue_svrattrl	-	gets <attribute_name>=EVENT_SRC_QUEUE_OBJECT data
- * @param[in]	event_aoe_svrattrl	-	gets <attribute_name=EVENT_AOE_OBJECT data
- * @param[in]	event_argv_svrattrl	-	gets <attribute_name=EVENT_ARGV_OBJECT data
+ * @param[in] input_file - if NULL, will get data from stdin.
+ * @param[in] default_svrattrl - the "catch all" list
+ * @param[in] event_svrattrl - gets <attribute_name>=EVENT_OBJECT data
+ * @param[in] event_job_svrattrl - gets <attribute_name>=EVENT_JOB_OBJECT data
+ * @param[in] event_job_o_svrattrl - gets <attribute_name>=EVENT_JOB_O_OBJECT data
+ * @param[in] event_resv_svrattrl - gets <attribute_name>=EVENT_RESV_OBJECT data
+ * @param[in] event_vnode_svrattrl - gets <attribute_name>=EVENT_VNODE_OBJECT data
+ * 			             Caution: svrattrl values stored in sorted order
+ * @param[in] event_src_queue_svrattrl - gets <attribute_name>=EVENT_SRC_QUEUE_OBJECT data
+ * @param[in] event_aoe_svrattrl - gets <attribute_name=EVENT_AOE_OBJECT data
+ * @param[in] event_argv_svrattrl - gets <attribute_name=EVENT_ARGV_OBJECT data
  *
- * @param[in]	event_jobs_svrattrl	-	gets <attribute_name>=EVENT_JOBLIST_OBJECT data
- * 			            				Caution: svrattrl values stored in sorted order
- * @return	int
+ * @param[in] event_jobs_svrattrl - gets <attribute_name>=EVENT_JOBLIST_OBJECT data
+ * 			            Caution: svrattrl values stored in sorted order
+ * @return int
  * @retval	0	: success
  * @retval	-1	: failure, and free_attrlist() is used to free the memory
- *					associated with each non-NULL list parameter.
+ *		associated with each non-NULL list parameter.
  *
  */
 int
@@ -1200,24 +1200,24 @@ pbs_python_populate_svrattrl_from_file(char *input_file,
 						snprintf(argv_index, sizeof(argv_index)-1,
 							"%08d", atoi(resc_str));
 				
-						rc = add_to_svrattrl_list_sorted(event_argv_svrattrl, name_str, resc_str, val_str, 0, argv_index);
+						rc = add_to_svrattrl_list_sorted(event_argv_svrattrl, name_str, resc_str, val_str, 0, argv_index, SET);
 					}
 				} else {
 					if (event_svrattrl)
-						rc = add_to_svrattrl_list(event_svrattrl, name_str, resc_str, val_str, 0, NULL);
+						rc = add_to_svrattrl_list(event_svrattrl, name_str, resc_str, val_str, 0, NULL, SET);
 				}
 			} else if( event_job_svrattrl && \
 			(strcmp(obj_name, EVENT_JOB_OBJECT) == 0) ) {
 				rc = add_to_svrattrl_list(event_job_svrattrl, name_str,
-					resc_str, val_str, 0, NULL);
+					resc_str, val_str, 0, NULL, SET);
 			} else if( event_job_o_svrattrl && \
 			(strcmp(obj_name, EVENT_JOB_O_OBJECT) == 0) ) {
 				rc = add_to_svrattrl_list(event_job_o_svrattrl, name_str,
-					resc_str, val_str, 0, NULL);
+					resc_str, val_str, 0, NULL, SET);
 			} else if( event_resv_svrattrl && \
 			     (strcmp(obj_name, EVENT_RESV_OBJECT) == 0) ) {
 				rc = add_to_svrattrl_list(event_resv_svrattrl, name_str,
-					resc_str, val_str, 0, NULL);
+					resc_str, val_str, 0, NULL, SET);
 			} else if( event_vnode_svrattrl && \
 			(strncmp(obj_name, EVENT_VNODELIST_OBJECT,
 				vn_obj_len) == 0)) {
@@ -1279,7 +1279,7 @@ pbs_python_populate_svrattrl_from_file(char *input_file,
 				}
 				rc = add_to_svrattrl_list_sorted(event_vnode_svrattrl,
 					name_str, resc_str,
-					return_internal_value(attr_name, val_str), 0, NULL);
+					return_internal_value(attr_name, val_str), 0, NULL, SET);
 			} else if( event_jobs_svrattrl && \
 			(strncmp(obj_name, EVENT_JOBLIST_OBJECT,
 				job_obj_len) == 0)) {
@@ -1340,15 +1340,15 @@ pbs_python_populate_svrattrl_from_file(char *input_file,
 					continue;
 				}
 				rc = add_to_svrattrl_list_sorted(event_jobs_svrattrl,
-					name_str, resc_str, val_str, 0, NULL);
+					name_str, resc_str, val_str, 0, NULL, EQ);
 			} else if( event_src_queue_svrattrl && \
 			(strcmp(obj_name, EVENT_SRC_QUEUE_OBJECT) == 0) ) {
 				rc = add_to_svrattrl_list(event_src_queue_svrattrl,
-					name_str, resc_str, val_str, 0, NULL);
+					name_str, resc_str, val_str, 0, NULL, EQ);
 			} else if( event_aoe_svrattrl && \
 			 (strcmp(obj_name, EVENT_AOE_OBJECT) == 0) ) {
 				rc = add_to_svrattrl_list(event_aoe_svrattrl, name_str,
-					resc_str, val_str, 0, NULL);
+					resc_str, val_str, 0, NULL, EQ);
 			} else if ((strcmp(obj_name, PBS_OBJ) == 0) &&
 				(strcmp(name_str, GET_NODE_NAME_FUNC) == 0)) {
 				strncpy(svr_interp_data.local_host_name, val_str,
@@ -1356,7 +1356,7 @@ pbs_python_populate_svrattrl_from_file(char *input_file,
 				rc = 0;
 			} else {
 				rc = add_to_svrattrl_list(default_svrattrl,
-					name_str, resc_str, val_str, 0, NULL);
+					name_str, resc_str, val_str, 0, NULL, EQ);
 			}
 
 			if (rc == -1) {
@@ -1403,33 +1403,33 @@ populate_svrattrl_fail:
  *
  * @brief
  *
- * 		This is like populate_svrattrl_from_file() but data is focused
- * 		on pbs.server() type of data.
- *		Takes data from input file or stdin of the form:
+ * 	This is like populate_svrattrl_from_file() but data is focused
+ * 	on pbs.server() type of data.
+ *	Takes data from input file or stdin of the form:
  *		<attribute_name>=<attribute value>
  *		<attribute_name>[<resource_name>]=<resource value>
- *		and populate the given various lists with the value obtained.
+ *	and populate the given various lists with the value obtained.
  *
- * @param[out]	input_file	-	if NULL, will get data from stdin.
- * @param[out]	default_svrattrl	-	the "catch all" list
- * @param[out]	server_svrattrl	-	gets <attribute_name>=SERVER_OBJECT data
- * @param[out]	server_jobs_svrattrl	-	gets <attribute_name>=SERVER_JOB_OBJECT data
- * 			              					Caution: stored in sorted order.
- * @param[out]	server_jobs_ids_svrattrl	-	gets the list of job ids obtained
- * @param[out]	server_queues_svrattrl	-	gets <attribute_name>=SERVER_QUEUE_OBJECT data
- * 			                				Caution: stored in sorted order.
- * @param[out]	server_queues_names_svrattrl	-	gets list of queue names obtained
- * @param[out]	server_resvs_svrattrl	-	gets <attribute_name>=SERVER_RESV_OBJECT data
- * 			               					Caution: stored in sorted order.
- * @param[out]	server_resvs_resvids_svrattrl	-	gets list of reservation ids obtained
- * @param[out]	server_vnodes_svrattrl	-	gets <attribute_name>=SERVER_VNODE_OBJECT data
- * 			                				Caution: stored in sorted order.
- * @param[out]	server_vnodes_names_svrattrl	-	gets list of vnode names obtained.
+ * @param[out] input_file - if NULL, will get data from stdin.
+ * @param[out] default_svrattrl - the "catch all" list
+ * @param[out] server_svrattrl - gets <attribute_name>=SERVER_OBJECT data
+ * @param[out] server_jobs_svrattrl - gets <attribute_name>=SERVER_JOB_OBJECT data
+ * 			              Caution: stored in sorted order.
+ * @param[out] server_jobs_ids_svrattrl - gets the list of job ids obtained
+ * @param[out] server_queues_svrattrl - gets <attribute_name>=SERVER_QUEUE_OBJECT data
+ * 			                Caution: stored in sorted order.
+ * @param[out] server_queues_names_svrattrl - gets list of queue names obtained 
+ * @param[out] server_resvs_svrattrl - gets <attribute_name>=SERVER_RESV_OBJECT data
+ * 			               Caution: stored in sorted order.
+ * @param[out] server_resvs_resvids_svrattrl - gets list of reservation ids obtained
+ * @param[out] server_vnodes_svrattrl - gets <attribute_name>=SERVER_VNODE_OBJECT data
+ * 			                Caution: stored in sorted order.
+ * @param[out] server_vnodes_names_svrattrl - gets list of vnode names obtained.
  *
- * @return	int
+ * @return int
  * @retval	0	: success
  * @retval	-1	: failure, and free_attrlist() is used to free the memory
- *					associated with each non-NULL list parameter.
+ *		associated with each non-NULL list parameter.
  */
 int
 pbs_python_populate_server_svrattrl_from_file(char *input_file,
@@ -1653,7 +1653,7 @@ pbs_python_populate_server_svrattrl_from_file(char *input_file,
 
 			if (strcmp(obj_name, SERVER_OBJECT) == 0) {
 				if (server_svrattrl) {
-					rc = add_to_svrattrl_list(server_svrattrl, name_str, resc_str, val_str, 0, NULL);
+					rc = add_to_svrattrl_list(server_svrattrl, name_str, resc_str, val_str, 0, NULL, EQ);
 				}
 				rc2 = 0;
 			} else if( server_jobs_svrattrl && \
@@ -1719,14 +1719,14 @@ pbs_python_populate_server_svrattrl_from_file(char *input_file,
 					continue;
 				}
 				rc = add_to_svrattrl_list_sorted(server_jobs_svrattrl,
-					name_str, resc_str, val_str, 0, NULL);
+					name_str, resc_str, val_str, 0, NULL, EQ);
 
 				if ((p2=strrchr(name_str, '.')) != NULL)
 					*p2 = '\0'; /* name_str=<jobid> */
 
 				if (!find_svrattrl_list_entry(server_jobs_ids_svrattrl,
 					name_str, NULL))
-					rc2 = add_to_svrattrl_list(server_jobs_ids_svrattrl, name_str, NULL, "", 0, NULL);
+					rc2 = add_to_svrattrl_list(server_jobs_ids_svrattrl, name_str, NULL, "", 0, NULL, SET);
 
 				if (p2 != NULL)
 					*p2 = '.'; /* name_str=<jobid>.<attr> */
@@ -1794,13 +1794,13 @@ pbs_python_populate_server_svrattrl_from_file(char *input_file,
 				}
 				rc = add_to_svrattrl_list_sorted(server_vnodes_svrattrl,
 					name_str, resc_str,
-					return_internal_value(attr_name, val_str), 0, NULL);
+					return_internal_value(attr_name, val_str), 0, NULL, EQ);
 				if ((p2=strrchr(name_str, '.')) != NULL)
 					*p2 = '\0'; /* name_str=<vname> */
 
 				if (!find_svrattrl_list_entry(server_vnodes_names_svrattrl,
 					name_str, NULL))
-					rc2 = add_to_svrattrl_list(server_vnodes_names_svrattrl, name_str, NULL, "", 0, NULL);
+					rc2 = add_to_svrattrl_list(server_vnodes_names_svrattrl, name_str, NULL, "", 0, NULL, SET);
 
 				if (p2 != NULL)
 					*p2 = '.'; /* name_str=<vname>.<attr> */
@@ -1867,13 +1867,13 @@ pbs_python_populate_server_svrattrl_from_file(char *input_file,
 					continue;
 				}
 				rc = add_to_svrattrl_list_sorted(server_queues_svrattrl,
-					name_str, resc_str, val_str, 0, NULL);
+					name_str, resc_str, val_str, 0, NULL, EQ);
 				if ((p2=strrchr(name_str, '.')) != NULL)
 					*p2 = '\0'; /* name_str=<qname> */
 
 				if (!find_svrattrl_list_entry(server_queues_names_svrattrl,
 					name_str, NULL))
-					rc2 = add_to_svrattrl_list(server_queues_names_svrattrl, name_str, NULL, "", 0, NULL);
+					rc2 = add_to_svrattrl_list(server_queues_names_svrattrl, name_str, NULL, "", 0, NULL, SET);
 
 				if (p2 != NULL)
 					*p2 = '.'; /* name_str=<qname>.<attr> */
@@ -1939,18 +1939,18 @@ pbs_python_populate_server_svrattrl_from_file(char *input_file,
 					continue;
 				}
 				rc = add_to_svrattrl_list_sorted(server_resvs_svrattrl,
-					name_str, resc_str, val_str, 0, NULL);
+					name_str, resc_str, val_str, 0, NULL, EQ);
 				if ((p2=strrchr(name_str, '.')) != NULL)
 					*p2 = '\0'; /* name_str=<qname> */
 
 				if (!find_svrattrl_list_entry(server_resvs_resvids_svrattrl, name_str, NULL))
-					rc2 = add_to_svrattrl_list(server_resvs_resvids_svrattrl, name_str, NULL, "", 0, NULL);
+					rc2 = add_to_svrattrl_list(server_resvs_resvids_svrattrl, name_str, NULL, "", 0, NULL, SET);
 
 				if (p2 != NULL)
 					*p2 = '.'; /* name_str=<qname>.<attr> */
 			} else {
 				rc = add_to_svrattrl_list(default_svrattrl,
-					name_str, resc_str, val_str, 0, NULL);
+					name_str, resc_str, val_str, 0, NULL, EQ);
 				rc2 = 0;
 			}
 
@@ -2035,20 +2035,20 @@ populate_server_svrattrl_fail:
 
 /**
  * @brief
- *		Prints out the file on opened stream 'fp', the attribute names or
- *		resources and their values as in:
- *			<attribute_name>=<attribute_value>
- *			<attribute_name>[<resource_name>]=<resource_value>
- *			<vnode_name>.<attribute_name>=<attribute value>
- *			<vnode_name>.<attribute_name>[<resource_name>]=<attribute value>
+ *	Prints out the file on opened stream 'fp', the attribute names or
+ *	resources and their values as in:
+ *		<attribute_name>=<attribute_value>
+ *		<attribute_name>[<resource_name>]=<resource_value>
+ *		<vnode_name>.<attribute_name>=<attribute value>
+ *		<vnode_name>.<attribute_name>[<resource_name>]=<attribute value>
  * @note
- *		Only prints out values that were set in a hook script.
+ *	Only prints out values that were set in a hook script.
  *
- * @param[in]	fp	-	the stream pointer of the file to write output into
+ * @param[in]	fp 	- the stream pointer of the file to write output into
  * @param[in]	head_str	-	some string to print out the beginning.
- * @param[in]	phead	-	pointer to the head of the list containing data.
+ * @param[in]	phead	- pointer to the head of the list containing data.
  *
- * @return	none
+ * @return none
  */
 void
 fprint_svrattrl_list(FILE *fp, char *head_str, pbs_list_head *phead)
@@ -2107,19 +2107,19 @@ fprint_svrattrl_list(FILE *fp, char *head_str, pbs_list_head *phead)
 /**
  *
  * @brief
- *		Prints out to the file opened in stream 'fp', the contents of the
- *		string array 'str_array'.
+ *	Prints out to the file opened in stream 'fp', the contents of the
+ *	string array 'str_array'.
  *
- * @param[in]	fp	-	the stream pointer of the file to write output into
+ * @param[in]	fp 	- the stream pointer of the file to write output into
  * @param[in]	head_str	-	some string to print out the beginning.
- * @param[in]	str_array	-	the array whose contents are being printed.
+ * @param[in]	str_array - the array whose contents are being printed.
  *
- * @return	none
+ * @return none
  */
 void
 fprint_str_array(FILE *fp, char *head_str, void **str_array)
 {
-	int i;
+	int	i;
 
 	for (i = 0; str_array[i]; i++)
 		fprintf(fp, "%s[%d]=%s\n", head_str, i, (char *)str_array[i]);
@@ -2128,17 +2128,17 @@ fprint_str_array(FILE *fp, char *head_str, void **str_array)
 
 /**
  * @brief
- * 		Given an 'argv_list', return a malloc-ed
- * 		string, containing the argv_list->al_values separated
- *		by spaces.
+ * 	Given an 'argv_list', return a malloc-ed
+ * 	string, containing the argv_list->al_values separated
+ *	by spaces.
  * @note
- *		Need to free() returned value.
+ *	Need to free() returned value.
  *
- * @param[in]	argv_list	-	an argv list.
+ * @param[in]		argv_list - an argv list.
  *
  * @return	char *
- * @retval	<string>	-	pointer to a malloced area holding
- *				  			the values of 'argv_list'.
+ * @retval	<string>	- pointer to a malloced area holding
+ *				  the values of 'argv_list'.
  * @retval	NULL	: error
  *
  */
@@ -2196,11 +2196,11 @@ argv_list_to_str(pbs_list_head *argv_list)
  *
  * @brief
  * 		pbs_python is a wrapper to the Python program shipped with
- *      PBS. It will construct a Python search path for modules
- *      (i.e. sys.path/PYTHONPATH) that points to directories in
- *      $PBS_EXEC/python, and then will call the Python interpreter taking
- * 	  	as input arguments from the commandline if they exist; otherwise,
- *	  	the name of the script file to execute as taken from STDIN.
+ *        PBS. It will construct a Python search path for modules
+ *        (i.e. sys.path/PYTHONPATH) that points to directories in
+ *        $PBS_EXEC/python, and then will call the Python interpreter taking
+ * 	  as input arguments from the commandline if they exist; otherwise,
+ *	  the name of the script file to execute as taken from STDIN.
  */
 
 int

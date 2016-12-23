@@ -1,11 +1,11 @@
 /*
  * Copyright (C) 1994-2016 Altair Engineering, Inc.
  * For more information, contact Altair at www.altair.com.
- *  
+ *
  * This file is part of the PBS Professional ("PBS Pro") software.
- * 
+ *
  * Open Source License Information:
- *  
+ *
  * PBS Pro is free software. You can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free 
  * Software Foundation, either version 3 of the License, or (at your option) any 
@@ -23,7 +23,7 @@
  * The PBS Pro software is licensed under the terms of the GNU Affero General 
  * Public License agreement ("AGPL"), except where a separate commercial license 
  * agreement for PBS Pro version 14 or later has been executed in writing with Altair.
- *  
+ *
  * Altair’s dual-license business model allows companies, individuals, and 
  * organizations to create proprietary derivative works of PBS Pro and distribute 
  * them - whether embedded or bundled with other software - under a commercial 
@@ -38,8 +38,8 @@
  * @file	set_resources
  * @brief
  *	Append entries to the attribute list that are from the resource list.
- * 	If the add flag is set, append the resource regardless. Otherwise, append
- * 	it only if it is not already on the list.
+ * If the add flag is set, append the resource regardless. Otherwise, append
+ * it only if it is not already on the list.
  *
  */
 
@@ -73,8 +73,10 @@ set_resources(struct attrl **attrib, char *resources, int add, char **erptr)
 	char *r, *eq, *v, *e;
 	char *str;
 	struct attrl *attr, *ap, *priorap;
+	enum batch_op op;
 	int i, found, len;
 	int haveresc = 0;
+	int offset = 0;
 
 	r = resources;
 	while (*r != '\0') {
@@ -85,7 +87,7 @@ set_resources(struct attrl **attrib, char *resources, int add, char **erptr)
 
 		/* Get the resource name */
 		eq = r;
-		while (*eq != '=' && *eq != ',' && *eq != '\0') eq++;
+		while (*eq != '=' && *eq != ',' && *eq != '\0' && *eq != '<' && *eq != '>' && *eq != '!') eq++;
 
 		/* Make sure there is a resource name */
 		if (r == eq) {
@@ -100,12 +102,32 @@ set_resources(struct attrl **attrib, char *resources, int add, char **erptr)
 		 */
 		for (str=r, len=0; str<eq && !isspace((int)*str); str++)
 			len++;
-
-		/* If separated by an equal sign, get the value */
-		if (*eq == '=') {
+		switch(*eq)
+		{
+		    case '<':
+			op = (*(eq+1) == '=')?LE:LT;
+			offset = (op == LE)?2:1;
+			break;
+		    case '>':
+			op = (*(eq+1) == '=')?GE:GT;
+			offset = (op == GE)?2:1;
+			break;
+		    case '=':
+			op = EQ;
+			offset = 1;
+			break;
+		    case '!':
+			op = NE;
+			offset = 2;
+		    default:
+			op = EQ;
+			offset = 0;
+		}
+		/* If separated by a conditional operator (>,<,!,=), get the value */
+		if (op) {
 			char *t;
 
-			t = eq + 1;
+			t = eq + offset;
 			while (isspace((int)*t))
 				++t;
 
@@ -149,6 +171,7 @@ set_resources(struct attrl **attrib, char *resources, int add, char **erptr)
 		}
 		strcpy(str, ATTR_l);
 		attr->name = str;
+		attr->op = op;
 
 		/* Allocate memory for the resource name and copy */
 		str = (char *) malloc(len + 1);

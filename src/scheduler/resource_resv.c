@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 1994-2016 Altair Engineering, Inc.
  * For more information, contact Altair at www.altair.com.
- *  
+ *
  * This file is part of the PBS Professional ("PBS Pro") software.
- * 
+ *
  * Open Source License Information:
  *  
  * PBS Pro is free software. You can redistribute it and/or modify it under the
@@ -113,11 +113,12 @@
 #include "check.h"
 #include "fifo.h"
 #include "range.h"
+#include "grunt.h"
 
 
 /**
  * @brief
- *		new_resource_resv() - allocate and initialize a resource_resv struct
+ *	new_resource_resv() - allocate and initialize a resource_resv struct
  *
  * @return	ptr to newly allocated resource_resv struct
  *
@@ -165,9 +166,11 @@ new_resource_resv()
 	resresv->min_duration = UNSPECIFIED;
 
 	resresv->resreq = NULL;
+	resresv->resreq_orig = NULL;
 	resresv->server = NULL;
 	resresv->ninfo_arr = NULL;
 	resresv->nspec_arr = NULL;
+	resresv->multi_select = NULL;
 
 	resresv->job = NULL;
 	resresv->resv = NULL;
@@ -186,7 +189,7 @@ new_resource_resv()
 
 /**
  * @brief
- *		free_resource_resv_array - free an array of resource resvs
+ *	free_resource_resv_array - free an array of resource resvs
  *
  * @param[in,out]	resresv_arr	-	resource resv to free
  *
@@ -209,7 +212,7 @@ free_resource_resv_array(resource_resv **resresv_arr)
 
 /**
  * @brief
- *		free_resource_resv - free a resource resv strcture an all of it's ptrs
+ *	free_resource_resv - free a resource resv strcture an all of it's ptrs
  *
  * @param[in]	resresv	-	resource_resv to free
  *
@@ -237,7 +240,10 @@ free_resource_resv(resource_resv *resresv)
 	if (resresv->nodepart_name != NULL)
 		free(resresv->nodepart_name);
 
-	if (resresv->select != NULL)
+	if (resresv->multi_select != NULL)
+		free_multi_selspec_array(resresv->multi_select);
+
+	else if (resresv->select != NULL)
 		free_selspec(resresv->select);
 
 	if (resresv->place_spec != NULL)
@@ -245,6 +251,9 @@ free_resource_resv(resource_resv *resresv)
 
 	if (resresv->resreq != NULL)
 		free_resource_req_list(resresv->resreq);
+
+	if (resresv->resreq_orig != NULL)
+		free_resource_req_list(resresv->resreq_orig);
 
 	if (resresv->ninfo_arr != NULL)
 		free(resresv->ninfo_arr);
@@ -272,7 +281,7 @@ free_resource_resv(resource_resv *resresv)
 
 /**
  * @brief
- *		dup_resource_resv_array - dup a array of pointers of resource resvs
+ *	dup_resource_resv_array - dup a array of pointers of resource resvs
  *
  * @param[in]	oresresv_arr	-	array of resource_resv do duplicate
  * @param[in]	nsinfo	-	new server ptr for new resresv array
@@ -315,7 +324,7 @@ dup_resource_resv_array(resource_resv **oresresv_arr,
 
 /**
  * @brief
- *		dup_resource_resv - duplicate a resource resv structure
+ *	dup_resource_resv - duplicate a resource resv structure
  *
  * @param[in]	oresresv	-	res resv to duplicate
  * @param[in]	nsinfo	-	new server info for resource_resv
@@ -351,6 +360,8 @@ dup_resource_resv(resource_resv *oresresv,
 
 	nresresv->nodepart_name = string_dup(oresresv->nodepart_name);
 	nresresv->select = dup_selspec(oresresv->select);
+	nresresv->num_selspec = oresresv->num_selspec;
+	nresresv->multi_select = dup_multi_selspec_array(oresresv->multi_select);
 
 	nresresv->is_invalid = oresresv->is_invalid;
 	nresresv->can_not_fit = oresresv->can_not_fit;
@@ -371,6 +382,7 @@ dup_resource_resv(resource_resv *oresresv,
 	nresresv->min_duration = oresresv->min_duration;
 
 	nresresv->resreq = dup_resource_req_list(oresresv->resreq);
+	nresresv->resreq_orig = dup_resource_req_list(oresresv->resreq_orig);
 
 	nresresv->place_spec = dup_place(oresresv->place_spec);
 
@@ -451,11 +463,11 @@ dup_resource_resv(resource_resv *oresresv,
  * @brief
  * 		find a resource_resv by name
  *
- * @param[in]	resresv_arr	-	array of resource_resvs to search
- * @param[in]	name        -	name of resource_resv to find
+ *	  @param[in] resresv_arr - array of resource_resvs to search
+ *	  @param[in] name        - name of resource_resv to find
  *
- * @return	resource_resv *
- * @retval	resource_resv if found
+ *	@return resource_resv *
+ *      @retval resource_resv if found
  * @retval	NULL	: if not found or on error
  *
  */
@@ -476,10 +488,10 @@ find_resource_resv(resource_resv **resresv_arr, char *name)
  * @brief
  * 		find a resource_resv by unique numeric rank
  *
- * @param[in]	resresv_arr	-	array of resource_resvs to search
- * @param[in]	rank        -	rank of resource_resv to find
+ *	  @param[in] resresv_arr - array of resource_resvs to search
+ *	  @param[in] rank        - rank of resource_resv to find
  *
- * @return	resource_resv *
+ *	@return resource_resv *
  * @retval resource_resv	: if found
  * @retval NULL	: if not found or on error
  *
@@ -501,11 +513,11 @@ find_resource_resv_by_rank(resource_resv **resresv_arr, int rank)
  * @brief
  * 		find a resource_resv by name and start time
  *
- * @param[in]	resresv_arr -	array of resource_resvs to search
- * @param[in]	name        -	name of resource_resv to find
- * @param[in]	start_time  -	the start time of the resource_resv
+ *    @param[in] resresv_arr - array of resource_resvs to search
+ *    @param[in] name        - name of resource_resv to find
+ *    @param[in] start_time  - the start time of the resource_resv
  *
- * @return	resource_resv *
+ *  @return resource_resv *
  * @retval	resource_resv	: if found
  * @retval	NULL	: if not found or on error
  *
@@ -529,9 +541,9 @@ find_resource_resv_by_time(resource_resv **resresv_arr, char *name, time_t start
  * @brief
  * 		find a resource resv by calling a caller provided comparison function
  *
- * @param[in]	resresv_arr - array of resource_resvs to search
+ *	@param[in] resresv_arr - array of resource_resvs to search
  * @param[in]	fn int cmp_func(resource_resv *rl, void *cmp_arg)
- * @param[in]	cmp_arg - opaque argument for cmp_func()
+ *	@param[in] cmp_arg - opaque argument for cmp_func()
  *
  * @return found resource_resv or NULL
  *
@@ -553,7 +565,7 @@ find_resource_resv_func(resource_resv **resresv_arr,
 /**
  * @brief
  * 		function used by find_resource_resv_func to see if two subjobs are
- *	 	 part of the same job array (e.g., 1234[])
+ *	  part of the same job array (e.g., 1234[])
  *
  * @param[in]	resresv	-	resource_resv structure
  * @param[in]	arg	-	argument resource reservation.
@@ -685,7 +697,7 @@ is_resource_resv_valid(resource_resv *resresv, schd_error *err)
 
 /**
  * @brief
- *		dup_resource_req_list - duplicate a resource_req list
+ *	dup_resource_req_list - duplicate a resource_req list
  *
  * @param[in]	oreq	-	resource_req list to duplicate
  *
@@ -720,7 +732,7 @@ dup_resource_req_list(resource_req *oreq)
 
 /**
  * @brief
- *		dup_resource_req - duplicate a resource_req struct
+ *	dup_resource_req - duplicate a resource_req struct
  *
  * @param[in]	oreq	-	the resource_req to duplicate
  *
@@ -745,6 +757,7 @@ dup_resource_req(resource_req *oreq)
 	memcpy(&(nreq->type), &(oreq->type), sizeof(struct resource_type));
 	nreq->res_str = string_dup(oreq->res_str);
 	nreq->amount = oreq->amount;
+	nreq->op = oreq->op;
 
 
 	return nreq;
@@ -752,7 +765,7 @@ dup_resource_req(resource_req *oreq)
 
 /**
  * @brief
- *		new_resource_req - allocate and initalize new resource_req
+ *	new_resource_req - allocate and initalize new resource_req
  *
  * @return	the new resource_req
  *
@@ -775,6 +788,7 @@ new_resource_req()
 	resreq->amount = 0;
 	resreq->def = NULL;
 	resreq->next = NULL;
+	resreq->op = EQ;
 
 	return resreq;
 }
@@ -783,8 +797,8 @@ new_resource_req()
  * @brief
  * 		Create new resource_req with given data
  *
- * @param[in]	name	-	name of resource
- * @param[in]	value	-	value of resource
+ * @param[in] name	-	name of resource
+ * @param[in] value	-	value of resource
  *
  * @return	newly created resource_req
  * @retval	NULL	: Fail
@@ -808,7 +822,7 @@ create_resource_req(char *name, char *value)
 			resreq->type = rdef->type;
 
 			if (value != NULL)
-				set_resource_req(resreq, value);
+				set_resource_req(resreq, value, EQ);
 		}
 	} else {
 		schdlog(PBSEVENT_DEBUG, PBS_EVENTCLASS_SCHED, LOG_DEBUG, name, "Resource definition does not exist, resource may be invalid");
@@ -823,11 +837,11 @@ create_resource_req(char *name, char *value)
  * 		find resource_req by resource definition or allocate and
  *              initialize a new resource_req also adds new one to the list
  *
- * @param[in]	reqlist	-	list to search
- * @param[in]	name	-	resource_req to find
+ *	  @param[in] reqlist - list to search
+ *	  @param[in] name - resource_req to find
  *
- * @return	resource_req *
- * @retval	found or newly allocated resource_req
+ *	@return resource_req *
+ *      @retval found or newly allocated resource_req
  *
  */
 resource_req *
@@ -864,11 +878,11 @@ find_alloc_resource_req(resource_req *reqlist, resdef *def)
  * 		find resource_req by name or allocate and initialize a new
  *              resource_req also adds new one to the list
  *
- * @param[in]	reqlist	-	list to search
- * @param[in]	name	-	resource_req to find
+ *	  @param[in] reqlist - list to search
+ *	  @param[in] name - resource_req to find
  *
- * @return	resource_req *
- * @retval	found or newly allocated resource_req
+ *	@return resource_req *
+ *      @retval found or newly allocated resource_req
  *
  */
 resource_req *
@@ -901,11 +915,11 @@ find_alloc_resource_req_by_str(resource_req *reqlist, char *name)
  * @brief
  * 		find a resource_req from a resource_req list by string name
  *
- * @param[in]	reqlist	-	the resource_req list
- * @param[in]	name	-	resource name to look for
+ *	  @param[in] reqlist - the resource_req list
+ *	  @param[in] name - resource name to look for
  *
- * @return	resource_req *
- * @retval	found resource request
+ *	@return resource_req *
+ *      @retval found resource request
  * @retval NULL	: if not found
  *
  */
@@ -926,8 +940,8 @@ find_resource_req_by_str(resource_req *reqlist, const char *name)
  * @brief
  * 		find resource_req by resource definition
  *
- * @param	reqlist	-	req list to search
- * @param	def	-	resource definition to search for
+ *	@param reqlist - req list to search
+ *	@param def - resource definition to search for
  *
  * @return	found resource_req
  * @retval	NULL	: if not found
@@ -947,21 +961,23 @@ find_resource_req(resource_req *reqlist, resdef *def)
 
 /**
  * @brief
- *		set_resource_req - set the value and type of a resource req
+ *	set_resource_req - set the value and type of a resource req
  *
  * @param[out]	req	-	the resource_req to set
  * @param[in]	val -	the string value
+ * @param[in]	op -	operator
  *
  * @return	nothing
  *
  */
 void
-set_resource_req(resource_req *req, char *val)
+set_resource_req(resource_req *req, char *val, enum batch_op op)
 {
 	resdef *rdef;
 	/* if val is a string, req -> amount will be set to SCHD_INFINITY */
 	req->amount = res_to_num(val, &(req->type));
 	req->res_str = string_dup(val);
+	req->op = op;
 
 	if (req->def != NULL)
 		rdef = req->def;
@@ -976,7 +992,7 @@ set_resource_req(resource_req *req, char *val)
 
 /**
  * @brief
- *		free_resource_req_list - frees memory used by a resource_req list
+ *	free_resource_req_list - frees memory used by a resource_req list
  *
  * @param[in]	list	-	resource_req list
  *
@@ -997,7 +1013,7 @@ free_resource_req_list(resource_req *list)
 
 /**
  * @brief
- *		free_resource_req - free memory used by a resource_req structure
+ *	free_resource_req - free memory used by a resource_req structure
  *
  * @param[in,out]	req	-	resource_req to free
  *
@@ -1010,20 +1026,69 @@ free_resource_req(resource_req *req)
 	if (req == NULL)
 		return;
 
+	req->name = NULL;
 	if (req->res_str != NULL)
 		free(req->res_str);
+	req->res_str = NULL;
 
 	free(req);
 }
 
 /**
- * @brief
- * 		update information kept in a resource_resv when one is started
+ * @brief is_conditional_resreq - function checks if any of the resource request
+ *	    passed in resource_req list has a conditional operator.
  *
- * @param[in]	resresv	-	the resource resv to update
- * @param[in]	nspec_arr	-	the nodes the job ran in
+ * @param[in] req - resource request list
  *
- * @return	void
+ * @return int - returns 0 or 1 depending on whether conditional operator was found or not.
+ *
+ * @retval 0 - resource_req list had no conditional operator.
+ * @retval 1 - resource_req list has a conditional operator.
+ */
+int 
+is_conditional_resreq(resource_req *req)
+{
+	resource_req *temp = NULL;
+	if (req == NULL)
+		return 0;
+
+	for (temp = req; temp != NULL; temp = temp->next) {
+		if (temp -> op != EQ)
+			return 1;
+	}
+	return 0;
+}
+
+/**
+ * @brief clear_consumable_resreq - function clears the amount requested by the job provided
+ *				    the resource is a consumable node level resource
+ * @param[in] req - resource request list
+ *
+ * @return void
+ */
+void 
+clear_consumable_resreq(resource_req *req)
+{
+	resource_req *temp;
+
+	if (req == NULL)
+		return;
+
+	for (temp = req; temp != NULL; temp = temp->next) {
+		if (temp->type.is_consumable && (temp->def->flags & (ATR_DFLAG_ANASSN|ATR_DFLAG_FNASSN)))
+			temp->amount = 0;
+	}
+
+	return;
+}
+/**
+ *
+ *	@brief update information kept in a resource_resv when one is started
+ *
+ *	  @param[in] resresv - the resource resv to update
+ *	  @param[in] nspec_arr - the nodes the job ran in
+ *
+ *	@return void
  */
 void
 update_resresv_on_run(resource_resv *resresv, nspec **nspec_arr)
@@ -1061,7 +1126,7 @@ update_resresv_on_run(resource_resv *resresv, nspec **nspec_arr)
 			char *selectspec;
 			selectspec = create_select_from_nspec(nspec_arr);
 			if (selectspec != NULL) {
-				resresv->job->execselect = parse_selspec(selectspec);
+				resresv->job->execselect = parse_single_selspec(selectspec);
 				free(selectspec);
 			}
 		}
@@ -1090,7 +1155,7 @@ update_resresv_on_run(resource_resv *resresv, nspec **nspec_arr)
 
 /**
  * @brief
- *		update_resresv_on_end - update a resource_resv structure when
+ *	update_resresv_on_end - update a resource_resv structure when
  *				      it ends
  *
  * @param[out]	resresv	-	the resresv to update
@@ -1153,6 +1218,7 @@ update_resresv_on_end(resource_resv *resresv, char *job_state)
 			free_selspec(resresv->job->execselect);
 			resresv->job->execselect = NULL;
 		}
+		clear_multi_selspec_array(resresv);
 	}
 	else if (resresv->is_adv_resv && resresv->resv !=NULL) {
 		resresv->resv->resv_state = RESV_DELETED;
@@ -1201,13 +1267,13 @@ update_resresv_on_end(resource_resv *resresv, char *job_state)
 
 /**
  * @brief
- *		resource_resv_filter - filters jobs on specified argument
+ *	resource_resv_filter - filters jobs on specified argument
  *
  * @param[in]	resresv_arr	-	array of jobs to filter through
  * @param[in]	size	-	amount of jobs in array
  * @param[in]	filter_func	-	pointer to a function that will filter
- *								- returns 1: job will be added to new array
- *								- returns 0: job will not be added to new array
+ *		- returns 1: job will be added to new array
+ *		- returns 0: job will not be added to new array
  * @param[in]	arg	-	an extra arg to pass to filter_func
  * @param[in]	flags	-	flags to describe the filtering
  *
@@ -1215,7 +1281,7 @@ update_resresv_on_end(resource_resv *resresv, char *job_state)
  *
  * @par	NOTE:	this function allocates a new array
  * @note
- *		filter_func prototype: int func( resource_resv *, void * )
+ *	filter_func prototype: int func( resource_resv *, void * )
  *
  */
 resource_resv **
@@ -1270,7 +1336,7 @@ resource_resv_filter(resource_resv **resresv_arr, int size,
 
 /**
  * @brief
- *		remove_resresv_from_array - remove a resource_resv from an array
+ *	remove_resresv_from_array - remove a resource_resv from an array
  *				    without leaving a hole
  *
  * @param[in,out]	resresv_arr	-	the array
@@ -1303,7 +1369,7 @@ remove_resresv_from_array(resource_resv **resresv_arr,
 
 /**
  * @brief
- *		add_resresv_to_array - add a resource resv to an array
+ *	add_resresv_to_array - add a resource resv to an array
  * 			   note: requires reallocating array
  *
  * @param[in]	resresv_arr	-	job array to add job to
@@ -1351,12 +1417,12 @@ add_resresv_to_array(resource_resv **resresv_arr,
 
 /**
  * @brief
- *		copy_resresv_array - copy an array of resource_resvs by name.
+ *	copy_resresv_array - copy an array of resource_resvs by name.
  *			This is useful  when duplicating a data structure
  *			with a job array in it which isn't easily reproduced.
  *
  * @par NOTE:	if a job in resresv_arr is not in tot_arr, that resresv will be
- *			left out of the new array
+ *		left out of the new array
  *
  * @param[in]	resresv_arr	-	the job array to copy
  * @param[in]	tot_arr   	-	the total array of jobs
@@ -1402,7 +1468,7 @@ copy_resresv_array(resource_resv **resresv_arr,
 
 /**
  * @brief
- *		is_resresv_running - is a resource resv in the running state
+ *	is_resresv_running - is a resource resv in the running state
  *			     for a job it's in the "R" state
  *			     for an advanced reservation it's in RESV_RUNNING
  *
@@ -1441,7 +1507,7 @@ is_resresv_running(resource_resv *resresv)
 
 /**
  * @brief
- *		new_place - allocate and initialize a placement spec
+ *	new_place - allocate and initialize a placement spec
  *
  * @return	newly allocated place
  *
@@ -1471,7 +1537,7 @@ new_place()
 
 /**
  * @brief
- *		free_place - free a placement spec
+ *	free_place - free a placement spec
  *
  * @param[in,out]	pl	-	the placement spec to free
  *
@@ -1492,7 +1558,7 @@ free_place(place *pl)
 
 /**
  * @brief
- *		dup_place - duplicate a place structure
+ *	dup_place - duplicate a place structure
  *
  * @param[in]	pl	-	the place structure to duplicate
  *
@@ -1525,9 +1591,91 @@ dup_place(place *pl)
 	return newpl;
 }
 
-/**
- * @brief
- *		new_chunk - constructor for chunk
+/*
+ *
+ *	parse_placespec - allocate a new place structure and parse
+ *				a placement spec (-l place)
+ *
+ *	  place_str - placespec as a string
+ *
+ *	returns newly allocated place
+ *		NULL: invalid placement spec
+ *
+ */
+place *
+parse_placespec(char *place_str)
+{
+	/* copy place spec into - max log size should be big enough */
+	char str[MAX_LOG_SIZE];
+	char *tok;
+	char *tokptr;
+	int invalid = 0;
+	place *pl;
+
+	if (place_str == NULL)
+		return NULL;
+
+	pl = new_place();
+
+	if (pl == NULL)
+		return NULL;
+
+	strcpy(str, place_str);
+
+	tok = string_token(str, ":", &tokptr);
+
+	while (tok != NULL && !invalid) {
+		if (!strcmp(tok, PLACE_Pack)  )
+			pl->pack = 1;
+		else if (!strcmp(tok, PLACE_Scatter)  )
+			pl->scatter = 1;
+		else if (!strcmp(tok, PLACE_Excl)  )
+			pl->excl = 1;
+		else if (!strcmp(tok, PLACE_Free))
+			pl->free = 1;
+		else if (!strcmp(tok, PLACE_Shared))
+			pl->share = 1;
+		else if (!strcmp(tok, PLACE_VScatter))
+			pl->vscatter = 1;
+		else if (!strcmp(tok, PLACE_ExclHost)) {
+			pl->exclhost = 1;
+			pl->excl = 1;
+		}
+		else if (!strncmp(tok, PLACE_Group, 5)) {
+			/* format: group=res */
+			if (tok[5] == '=') {
+				/* "group=" is 6 characters so tok[6] should be the first character of
+				 * the resource
+				 */
+				pl->group = string_dup(&tok[6]);
+			}
+			else
+				invalid = 1;
+		}
+		else
+			invalid = 1;
+
+		tok = string_token(NULL, ":", &tokptr);
+	}
+
+	/* pack and scatter vscatter, and free are all mutually exclusive */
+	if (pl->pack + pl->scatter + pl->free  + pl->vscatter> 1  )
+		invalid = 1;
+
+	/* if no scatter, vscatter, pack, or free given, default to free */
+	if (pl->pack + pl->scatter + pl->free  + pl->vscatter== 0)
+		pl->free = 1;
+
+	if (invalid) {
+		free_place(pl);
+		return NULL;
+	}
+
+	return pl;
+}
+
+/*
+ *	new_chunk - constructor for chunk
  *
  * @return	new_chunk
  * @retval	NULL	: malloc failed.
@@ -1595,7 +1743,7 @@ dup_chunk_array(chunk **old_chunk_arr)
 
 /**
  * @brief
- *		dup_chunk - copy constructor for chunk
+ *	dup_chunk - copy constructor for chunk
  *
  * @param[in]	ochunk	-	old chunk structure
  *
@@ -1629,7 +1777,7 @@ dup_chunk(chunk *ochunk)
 
 /**
  * @brief
- *		free_chunk_array - array destructor for array of chunk ptrs
+ *	free_chunk_array - array destructor for array of chunk ptrs
  *
  * @param[in,out]	chunk_arr	-	old array of chunk pointers
  *
@@ -1651,7 +1799,7 @@ free_chunk_array(chunk **chunk_arr)
 
 /**
  * @brief
- *		free_chunk - destructor for chunk
+ *	free_chunk - destructor for chunk
  *
  * @param[in,out]	ch	-	chunk structure to be freed.
  */
@@ -1672,7 +1820,7 @@ free_chunk(chunk *ch)
 
 /**
  * @brief
- *		new_selspec - constructor for selspec
+ *	new_selspec - constructor for selspec
  *
  * @return	new selspec
  * @retval	NULL	: Fail
@@ -1697,7 +1845,7 @@ new_selspec()
 
 /**
  * @brief
- *		dup_selspec - copy constructor for selspec
+ *	dup_selspec - copy constructor for selspec
  *
  * @param[in]	oldspec	-	old selspec to be copied
  *
@@ -1732,7 +1880,7 @@ dup_selspec(selspec *oldspec)
 
 /**
  * @brief
- *		free_selspec - destructor for selspec
+ *	free_selspec - destructor for selspec
  *
  * @param[in,out]	spec	-	selspec to be freed.
  */
@@ -1751,15 +1899,505 @@ free_selspec(selspec *spec)
 	free(spec);
 }
 
+/**
+ * @brief
+ *	 new_multi_selspec - constructor for multi_selspec
+ *
+ *  @return multi_selspec* - address of newly allocated memory
+ *  @retval NULL - when fails to allocate memory
+ *  @retval address of newly allocated multi_selspec 
+ */
+multi_selspec *new_multi_selspec()
+{
+	multi_selspec *temp = NULL;
+	temp = (multi_selspec *)malloc(sizeof(multi_selspec));
+	if (temp == NULL)
+	{
+		log_err(errno, __func__, MEM_ERR_MSG);
+		return NULL;
+	}
+	temp->str_spec = NULL;
+	temp->spec = NULL;
+	temp->err = new_schd_error();
+	temp->selspec_status = 0;
+	return temp;
+}
+
+/**
+ * @brief 
+ *	dup_multi_selspec - copy constructor of multi_selspec
+ *
+ * @param[in] sel_in - multi_selspec which needs to be copied.
+ * 
+ * @return multi_selspec* - address of copied multi_selspec structure
+ * @retval NULL - when fails to allocate memory
+ * @retval address of newly allocated multi_selspec structure.
+ */
+multi_selspec *dup_multi_selspec (multi_selspec * sel_in)
+{
+	multi_selspec *sel_out = NULL;
+
+	if (sel_in == NULL)
+		return NULL;
+
+	sel_out = new_multi_selspec();
+	if (sel_out == NULL)
+	{
+		log_err(errno, __func__, MEM_ERR_MSG);
+		return NULL;
+	}
+	sel_out->spec = dup_selspec(sel_in->spec);
+	if (sel_out->spec == NULL)
+	{
+		free_multi_selspec(sel_out);
+		return NULL;
+	}
+	sel_out->str_spec = string_dup(sel_in->str_spec);
+	if (sel_out->str_spec == NULL)
+	{
+		free_multi_selspec(sel_out);
+		return NULL;
+	}
+	sel_out->err = dup_schd_error(sel_in->err);
+	if (sel_out->err == NULL)
+	{
+		free_multi_selspec(sel_out);
+		return NULL;
+	}
+	sel_out->selspec_status = sel_in->selspec_status;
+
+
+	return sel_out;
+}
+
 
 /**
  * @brief
- *		compare_res_to_str - compare a resource structure of type string to
+ *	dup_multi_selspec_array - copy constructor for multi_selspec array
+ *
+ * @param[in] multi_select - multi_selspec array that needs to be copied.
+ *
+ *  @return multi_selspec* - address of copied multi_selspec array
+ *  @retval NULL - when fails to allocate memory
+ *  @retval address of newly allocated multi_selspec array 
+ */
+multi_selspec ** dup_multi_selspec_array(multi_selspec **multi_select)
+{
+	multi_selspec **new_multispec = NULL;
+	multi_selspec **temp_multispec = NULL;
+	multi_selspec *spec = NULL;
+	int i = 0;
+	int spec_size = 0;
+
+	if (multi_select == NULL)
+		return NULL;
+
+	for (; multi_select[i] != NULL; i++)
+	{
+		spec = dup_multi_selspec(multi_select[i]);
+		if (spec == NULL)
+		{
+			free_multi_selspec_array(new_multispec);
+			return NULL;
+		}
+		temp_multispec = add_to_multi_selspec(new_multispec, &spec_size, spec);
+		if (temp_multispec == NULL) {
+			free_multi_selspec_array(new_multispec);
+			return NULL;
+		}
+		else
+			new_multispec = temp_multispec;
+	}
+	return new_multispec;
+}
+
+/**
+ *  @brief 
+ *	free_multi_selspec_array - function to free multi_selspec array
+ *
+ * @param[in] multi_spec - multi_selspec array which needs to be freed.
+ *
+ * @return void
+ */
+void
+free_multi_selspec_array(multi_selspec **multi_spec)
+{
+	int i = 0;
+	if (multi_spec == NULL)
+		return;
+	for (;multi_spec[i] != NULL; i++)
+		free_multi_selspec(multi_spec[i]);
+	free(multi_spec);
+	return;
+}
+
+/**
+ * @brief 
+ *	free_multi_selspec - funtion to free multi_selspec structure
+ *
+ * @param[in] multi_spec - multi_selspec which needs to be freed.
+ *
+ * @return void
+ */
+void 
+free_multi_selspec(multi_selspec *multi_spec)
+{
+	if (multi_spec == NULL)
+		return;
+
+	if (multi_spec->str_spec)
+		free(multi_spec->str_spec);
+
+	if (multi_spec->spec)
+		free_selspec(multi_spec->spec);
+
+	if (multi_spec->err)
+		free_schd_error_list(multi_spec->err);
+	free(multi_spec);
+	return;
+}
+
+/**
+ * @brief 
+ *	add_to_multi_selspec - append selspec into multi_selspec array.
+ *
+ * @param[in,out] spec - multi_selspec array where selspec needs to be appended.
+ * @param[in,out] spec_size - number of elements present in multi_selspec array.
+ * @param[in] lspec - multi_selspec specification that needs to be appended.
+ *
+ * @return multi_selspec ** - array of multiple select specification pointers.
+ * @retval address of multi_selspec array when successfully appended
+ * @retval NULL - when fail to append
+ *
+ */
+multi_selspec **
+add_to_multi_selspec(multi_selspec **spec, int *spec_size, multi_selspec *lspec)
+{
+	multi_selspec **temp = NULL;
+
+	if ((spec == NULL) && (lspec == NULL))
+		return NULL;
+
+	temp = (multi_selspec **)realloc(spec, (*spec_size +2)*sizeof(multi_selspec**));
+	if (temp == NULL)
+	{
+		log_err(errno, __func__, MEM_ERR_MSG);
+		return NULL;
+	}
+	spec = temp;
+	spec[*spec_size] = lspec;
+	*spec_size += 1;
+	spec[*spec_size] = NULL;
+	return spec;
+}
+
+/**
+ * @brief 
+ *	clear_multi_selspec_array - This function clears up slespec_status, error_code and 
+ *				    statuc_code of all multi_selspec array.
+ * @param[in,out] job - job pointer for which multi_selspec is cleared.
+ *
+ * @return void
+ */
+void clear_multi_selspec_array(resource_resv *job)
+{
+	int i = 0;
+	if (job == NULL)
+		return;
+	for (; (i < job->num_selspec) && (job->multi_select[i] != NULL); i++) {
+		job->multi_select[i]->selspec_status = 0;
+		clear_schd_error(job->multi_select[i]->err);
+	}
+	return;
+}
+
+/**
+ * @brief 
+ *	parse_selspec - parse a select spec into a multi_selspec array
+ *
+ * @param[in] selspec - the select spec to parse
+ *
+ * @return multi_selspec**
+ * @retval double pointer to multi_selspec is obtained 
+ * @retval NULL on error or invalid spec
+ */
+multi_selspec **
+parse_selspec(char *select_spec)
+{
+	multi_selspec **multi_spec = NULL;
+	int spec_size = 0;
+	multi_selspec **temp_selspec = NULL;
+	multi_selspec *spec = NULL;
+
+	if (select_spec == NULL)
+		return NULL;
+
+	if (strstr(select_spec,"||")!=NULL)
+	    return(parse_multi_selspec(select_spec));
+	else {
+		selspec *temp = NULL;
+		char *str_spec = NULL;
+		str_spec = string_dup(select_spec);
+		if (str_spec == NULL)
+			return NULL;
+
+		temp = parse_single_selspec(str_spec);
+		if (temp) {
+			spec = new_multi_selspec();
+			if (spec == NULL)
+			{
+				free(str_spec);
+				free_selspec(temp);
+				log_err(errno, __func__, MEM_ERR_MSG);
+				return NULL;
+			}
+			spec->str_spec = str_spec;
+			spec->spec = temp;
+			temp_selspec = add_to_multi_selspec(multi_spec, &spec_size, spec);
+			if (temp_selspec == NULL)
+			{
+				free_multi_selspec(spec);
+				return NULL;
+			}
+			else
+				multi_spec = temp_selspec;
+		}
+		else {
+			free(str_spec);
+			return NULL;
+		}
+		return multi_spec;
+	}
+}
+
+/**
+ * @brief 
+ *	parse_multi_selspec - function used to parse multiple select specification delimited by "||"  and 
+ *			      returns an array of multi_selspec structure where each of its element depicts
+ *			      one single select specification.
+ *
+ * @param[in] select_spec - string having multiple select specifications.
+ *
+ * @return multi_selspec** - array of select specifications.
+ * @retval NULL - if it fails to parse
+ */
+multi_selspec** 
+parse_multi_selspec (char *select_spec)
+{
+	multi_selspec **spec = NULL;
+	char *val = NULL;
+	char * sel_or = NULL;
+	int spec_size = 0;
+	multi_selspec **temp_selspec = NULL;
+	multi_selspec *new_multi_spec = NULL;
+	
+	if (select_spec == NULL)
+		return NULL;
+
+	val = string_dup(select_spec);
+	if (val == NULL)
+		return NULL;
+
+	sel_or = parse_select_or_string(val);
+	if (sel_or == NULL)
+	{
+		log_err(errno, __func__, MEM_ERR_MSG);
+		free(val);
+		return NULL;
+	}
+	while(sel_or != NULL)
+	{
+		selspec *lspec = NULL;
+		lspec = parse_single_selspec(sel_or);
+		if (lspec != NULL) {
+			new_multi_spec = new_multi_selspec();
+			if (new_multi_spec == NULL)
+			{
+				free(val);
+				free_multi_selspec_array(spec);
+				return NULL;
+			}
+			new_multi_spec->spec = lspec;
+			new_multi_spec->str_spec = sel_or;
+			temp_selspec = add_to_multi_selspec(spec, &spec_size, new_multi_spec);
+			if (temp_selspec == NULL)
+			{
+				free(val);
+				free_multi_selspec_array(spec);
+				return NULL;
+			}
+			else
+				spec = temp_selspec;
+		}
+		sel_or = parse_select_or_string(NULL);
+	}
+	free(val);
+	return spec;
+}
+
+/**
+ * @brief 
+ *	parse_single_selspec - parse a select spec into a selspec structure with
+ *			       a dependant array of chunks.  Non-consuamble resources
+ *			       are sorted first in the chunk resource list
+ *
+ * @param[in] select_spec - string having sel spec to parse.
+ *
+ * @retval pointer to a selspec obtained by parsing the select spec of the job/resv.
+ * @retval NULL on error or invalid spec
+ */
+selspec* 
+parse_single_selspec(char *select_spec)
+{
+	static char *specbuf = NULL;
+	static int specbuf_size = 0;
+	int s;
+	char *tmpptr;
+
+	selspec *spec;
+	int num_plus;
+	char *p;
+
+	char *tok;
+	char *endp = NULL;
+
+	resource_req *req_head = NULL;
+	resource_req *req_end = NULL;
+	resource_req *req;
+	int ret;
+	int invalid = 0;
+
+	int num_kv;
+	struct key_value_pair *kv;
+
+	int num_chunks;
+	int num_cpus = 0;
+
+	int seq_num = 0;
+
+	int i;
+	int n = 0;
+
+	if (select_spec == NULL)
+		return NULL;
+
+	if ((spec = new_selspec()) == NULL)
+		return NULL;
+
+	for (num_plus = 0, p = select_spec; *p != '\0'; p++) {
+		if (*p == '+')
+			num_plus++;
+	}
+
+	/* num_plus + 2: 1 for the initial chunk 1 for the NULL ptr */
+	if ((spec->chunks = calloc(num_plus + 2, sizeof(chunk *))) == NULL) {
+		log_err(errno, __func__, MEM_ERR_MSG);
+		free_selspec(spec);
+	}
+
+	s = strlen(select_spec);
+	if (s > specbuf_size) {
+		tmpptr = realloc(specbuf, s * 2 + 1);
+		if (tmpptr == NULL) {
+			log_err(errno, __func__, MEM_ERR_MSG);
+			return NULL;
+		}
+		specbuf_size = s * 2;
+		specbuf = tmpptr;
+	}
+
+	strcpy(specbuf, select_spec);
+
+	tok = string_token(specbuf, "+", &endp);
+
+	tmpptr = NULL;
+	while (tok != NULL && !invalid) {
+		tmpptr = string_dup(tok);
+		ret = parse_chunk(tok, &num_chunks, &num_kv, &kv, NULL);
+
+		if (!ret) {
+			for (i = 0; i < num_kv && !invalid; i++) {
+				req = new_resource_req();
+
+				if (req == NULL)
+					invalid = 1;
+				else  {
+					req->name = string_dup(kv[i].kv_keyw);
+					req->op = kv[i].op;
+					if (req->name == NULL)
+						invalid = 1;
+					else {
+						set_resource_req(req, kv[i].kv_val, req->op);
+						if (strcmp(req->name, "ncpus") == 0) {
+							/* Given: -l select=nchunk1:ncpus=Y + nchunk2:ncpus=Z +... */
+							/* Then: # of cpus = (nchunk1 * Y) + (nchunk2 * Z) + ... */
+							num_cpus += (num_chunks * req->amount);
+						}
+					}
+					if (!invalid && (req->type.is_boolean || conf.res_to_check == NULL ||
+						find_string(conf.res_to_check, kv[i].kv_keyw))) {
+						if (!resdef_exists_in_array(spec->defs, req->def))
+							add_resdef_to_array(&(spec->defs), req->def);
+						if (req_head == NULL)
+							req_end = req_head = req;
+						else {
+							if (req->type.is_consumable) {
+								req_end->next = req;
+								req_end = req;
+							}
+							else {
+								req->next = req_head;
+								req_head = req;
+							}
+						}
+					}
+					else
+						free_resource_req(req);
+				}
+			}
+			spec->chunks[n] = new_chunk();
+			if (spec->chunks[n] != NULL) {
+				spec->chunks[n]->num_chunks = num_chunks;
+				spec->chunks[n]->seq_num = seq_num;
+				spec->total_chunks += num_chunks;
+				spec->total_cpus = num_cpus;
+				spec->chunks[n]->req = req_head;
+				spec->chunks[n]->str_chunk = tmpptr;
+				tmpptr = NULL;
+				req_head = NULL;
+				req_end = NULL;
+				n++;
+			}
+			else
+				invalid = 1;
+		}
+		else
+			invalid = 1;
+
+		tok = string_token(NULL, "+", &endp);
+		seq_num++;
+	}
+
+	if (invalid) {
+		free_selspec(spec);
+		if (tmpptr != NULL)
+			free(tmpptr);
+
+		return NULL;
+	}
+
+	return spec;
+}
+
+/*
+ * @brief
+ *	compare_res_to_str - compare a resource structure of type string to
  *			     a character array string
  *
  * @param[in]	res	-	the resource
  * @param[in]	str	-	the string
  * @param[in]	cmpflag	-	case sensitive or insensitive comparison
+ * @param[in]	op	-	the operator
  *
  * @return	int
  * @retval	1	: if they match
@@ -1767,9 +2405,10 @@ free_selspec(selspec *spec)
  *
  */
 int
-compare_res_to_str(schd_resource *res, char *str , enum resval_cmpflag cmpflag)
+compare_res_to_str(schd_resource *res, char *str , enum resval_cmpflag cmpflag, int op)
 {
 	int i;
+	int ret;
 
 	if (res == NULL || str == NULL)
 		return 0;
@@ -1779,16 +2418,42 @@ compare_res_to_str(schd_resource *res, char *str , enum resval_cmpflag cmpflag)
 
 	for (i = 0; res->str_avail[i] != NULL; i++) {
 		if (cmpflag == CMP_CASE) {
-			if (!strcmp(res->str_avail[i], str))
-				return 1;
+			ret = strcmp(res->str_avail[i], str);
 		}
 		else if (cmpflag == CMP_CASELESS) {
-			if (!strcasecmp(res->str_avail[i], str))
-				return 1;
+			ret = strcasecmp(res->str_avail[i], str);
 		}
 		else {
 			schdlog(PBSEVENT_DEBUG3, PBS_EVENTCLASS_JOB, LOG_NOTICE, res->name, "Incorrect flag for comparison.");
 			return 0;
+		}
+		switch (op)
+		{
+			case EQ:
+			case GE:
+			case LE:
+				if (ret == 0)
+					return 1;
+				else {
+					if (op == GE && ret > 0)
+						return 1;
+					if (op == LE && ret < 0)
+						return 1;
+				}
+				break;
+			case GT:
+				if (ret > 0)
+					return 1;
+				break;
+			case LT:
+				if (ret < 0)
+					return 1;
+				break;
+			case NE:
+				if (ret != 0)
+					return 1;
+			default:
+				break;
 		}
 	}
 	/* if we got here, we didn't match the string */
@@ -1797,7 +2462,7 @@ compare_res_to_str(schd_resource *res, char *str , enum resval_cmpflag cmpflag)
 
 /**
  * @brief
- *		compare_non_consumable - perform the == operation on a non consumable
+ *	compare_non_consumable - perform the == operation on a non consumable
  *				resource and resource_req
  *
  * @param[in]	res	-	the resource
@@ -1847,9 +2512,9 @@ compare_non_consumable(schd_resource *res, resource_req *req)
 	if (req->type.is_string && res != NULL) {
 		/* 'host' to follow IETF rules; 'host' is case insensitive  */
 		if (!strcmp(res->name, "host"))
-			return compare_res_to_str(res, req->res_str, CMP_CASELESS);
+			return compare_res_to_str(res, req->res_str, CMP_CASELESS, req->op);
 		else
-			return compare_res_to_str(res, req->res_str, CMP_CASE);
+			return compare_res_to_str(res, req->res_str, CMP_CASE, req->op);
 	}
 
 	return 0;
@@ -1860,9 +2525,9 @@ compare_non_consumable(schd_resource *res, resource_req *req)
  * 		create a select from an nspec array to place chunks back on the
  *        same nodes as before
  *
- * @param[in]	nspec_array	-	npsec array to convert
+ * @param[in] nspec_array - npsec array to convert
  *
- * @return	converted select string
+ * @return converted select string
  */
 char *
 create_select_from_nspec(nspec **nspec_array)
@@ -1890,7 +2555,7 @@ create_select_from_nspec(nspec **nspec_array)
 				return NULL;
 			}
 			for (req = nspec_array[i]->resreq; req != NULL; req = req->next) {
-				snprintf(buf, sizeof(buf), ":%s=%s", req->name, res_to_str(req, RF_REQUEST));
+				snprintf(buf, sizeof(buf), ":%s%s%s", req->name, batch_op_to_str(req->op), res_to_str(req, RF_REQUEST));
 				if (pbs_strcat(&select_spec, &selsize, buf) == NULL) {
 					if (selsize > 0)
 						free(select_spec);
@@ -1920,9 +2585,9 @@ create_select_from_nspec(nspec **nspec_array)
  *		Reservations are runnable if they are in state RESV_CONFIRMED
  *
  *
- * @param[in] resresv - resource resv to check
+ *	  @param[in] resresv - resource resv to check
  *
- * @return int
+ *	@return int
  * @retval	1	: if the resource resv is in a runnable state
  * @retval  0	: if not
  *

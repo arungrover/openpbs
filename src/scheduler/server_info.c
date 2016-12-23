@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 1994-2016 Altair Engineering, Inc.
  * For more information, contact Altair at www.altair.com.
- *  
+ *
  * This file is part of the PBS Professional ("PBS Pro") software.
- * 
+ *
  * Open Source License Information:
  *  
  * PBS Pro is free software. You can redistribute it and/or modify it under the
@@ -149,18 +149,18 @@
  *		creates a structure of arrays consisting of a server
  *		and all the queues and jobs that reside in that server
  *
- * @par Order of Query
- *		query_server()
- *      -> query_sched()
- *	 	-> query_nodes()
- *	 	-> query_queues()
+ *	@par Order of Query
+ *	query_server()
+ *       -> query_sched()
+ *	 -> query_nodes()
+ *	 -> query_queues()
  *	    -> query_jobs()
- *	 	->query_reservations()
+ *	 ->query_reservations()
  *
- * @param[in]	pol		-	input policy structure - will be dup'd
- * @param[in]	pbs_sd	-	connection to pbs_server
+ *	@param[in]	pol - input policy structure - will be dup'd
+ *	@param[in]	pbs_sd - connection to pbs_server
  *
- * @return	the server_info struct
+ *	@return		the server_info struct
  * @retval	server_info -> policy - policy structure for cycle
 * @retval	NULL	: error
  *
@@ -190,16 +190,16 @@ query_server(status *pol, int pbs_sd)
 		return NULL;
 	}
 
-	/* get server information from pbs server */
-	if ((server = pbs_statserver(pbs_sd, NULL, NULL)) == NULL) {
-		errmsg = pbs_geterrmsg(pbs_sd);
-		if (errmsg == NULL)
-			errmsg = "";
-		sprintf(log_buffer, "pbs_statserver failed: %s (%d)", errmsg, pbs_errno);
-		schdlog(PBSEVENT_SCHED, PBS_EVENTCLASS_SERVER, LOG_NOTICE, "server_info",
-			log_buffer);
-		return NULL;
-	}
+		/* get server information from pbs server */
+		if ((server = pbs_statserver(pbs_sd, NULL, NULL)) == NULL) {
+			errmsg = pbs_geterrmsg(pbs_sd);
+			if (errmsg == NULL)
+				errmsg = "";
+			sprintf(log_buffer, "pbs_statserver failed: %s (%d)", errmsg, pbs_errno);
+			schdlog(PBSEVENT_SCHED, PBS_EVENTCLASS_SERVER, LOG_NOTICE, "server_info",
+				log_buffer);
+			return NULL;
+		}
 
 	/* convert batch_status structure into server_info structure */
 	if ((sinfo = query_server_info(pol, server)) == NULL) {
@@ -221,13 +221,13 @@ query_server(status *pol, int pbs_sd)
 	}
 
 
-	if ((sched = pbs_statsched(pbs_sd, NULL, NULL)) == NULL) {
-		errmsg = pbs_geterrmsg(pbs_sd);
-		if (errmsg == NULL)
-			errmsg = "";
-		sprintf(log_buffer, "pbs_statsched failed: %s (%d)", errmsg, pbs_errno);
-		schdlog(PBSEVENT_SCHED, PBS_EVENTCLASS_SERVER, LOG_NOTICE, "server_info",
-			log_buffer);
+		if ((sched = pbs_statsched(pbs_sd, NULL, NULL)) == NULL) {
+			errmsg = pbs_geterrmsg(pbs_sd);
+			if (errmsg == NULL)
+				errmsg = "";
+			sprintf(log_buffer, "pbs_statsched failed: %s (%d)", errmsg, pbs_errno);
+			schdlog(PBSEVENT_SCHED, PBS_EVENTCLASS_SERVER, LOG_NOTICE, "server_info",
+				log_buffer);
 		pbs_statfree(server);
 		sinfo->fairshare = NULL;
 		free_server(sinfo, 0);
@@ -235,7 +235,6 @@ query_server(status *pol, int pbs_sd)
 	}
 	query_sched_obj(policy, sched, sinfo);
 	pbs_statfree(sched);
-
 
 	/* to avoid a possible race condition in which the time it takes to
 	 * query nodes is long enough that a reservation may have crossed
@@ -346,7 +345,16 @@ query_server(status *pol, int pbs_sd)
 		free_server(sinfo, 1);
 		return NULL;
 	}
-
+	for (i = 0; sinfo->jobs[i] != NULL; i++)
+	{
+		/* If the job is running and multi_select then the job might not have its
+		 * resreq set with resources it ran on.
+		 */
+		if ((sinfo->jobs[i]->job->is_running || sinfo->jobs[i]->job->is_suspended ||
+			    sinfo->jobs[i]->job->is_susp_sched) && (sinfo->jobs[i]->job->is_multiselect ||
+			is_conditional_resreq(sinfo->jobs[i]->resreq)))
+			make_job_rassn(policy, sinfo->jobs[i]);
+	}
 	jobs_not_in_reservations = resource_resv_filter(sinfo->jobs,
 		sinfo->sc.total,
 		check_job_not_in_reservation, NULL, 0);
@@ -428,11 +436,11 @@ query_server(status *pol, int pbs_sd)
  * 		takes info from a batch_status structure about
  *		a server into a server_info structure for easy access
  *
- * @param[in]	pol		-	scheduler policy structure
- * @param[in]	server	-	batch_status struct of server info
- *							chain possibly NULL
+ *	@param[in]	pol - scheduler policy structure
+ *	@param[in]	server - batch_status struct of server info
+ *			chain possibly NULL
  *
- * @return	newly allocated and filled server_info struct
+ *	@return		newly allocated and filled server_info struct
  *
  */
 server_info *
@@ -491,7 +499,7 @@ query_server_info(status *pol, struct batch_status *server)
 		else if (!strcmp(attrp->name, ATTR_NodeGroupKey))
 			sinfo->node_group_key = break_comma_list(attrp->value);
 		else if (!strcmp(attrp->name, ATTR_job_sort_formula)) {
-			sinfo->job_formula = read_formula();
+				sinfo->job_formula = read_formula();
 			if (policy->sort_by[1].res_name != NULL) /* 0 is the formula itself */
 				schdlog(PBSEVENT_DEBUG, PBS_EVENTCLASS_SERVER, LOG_DEBUG,
 					"query_server",
@@ -602,7 +610,7 @@ query_server_info(status *pol, struct batch_status *server)
  * @brief
  * 		execute all configured server_dyn_res scripts
  *
- * @param[in]	sinfo	-	server info
+ * @param[in] sinfo - server info
  *
  * @retval	0	: on success
  * @retval -1	: on error
@@ -705,9 +713,9 @@ query_server_dyn_res(server_info *sinfo)
  * 		query_sched_obj - query the server's scheduler object and
  *		convert attributes to scheduler's internal data structures
  *
- * @param[in,out]	policy 	-	policy object to set policy on
- * @param[in]		sched 	-	result of pbs_statsched()
- * @param[in]		sinfo 	-	server_info to store sched obj attributes
+ *	@param[in,out]	policy - policy object to set policy on
+ *	@param[in]	sched - result of pbs_statsched()
+ *	@param[in]	sinfo - server_info to store sched obj attributes
  *
  * @return	int
  *	@retval	1	: success
@@ -775,13 +783,13 @@ query_sched_obj(status *policy, struct batch_status *sched, server_info *sinfo)
  * 		try and find a resource by resdef, and if it is not
  *		there, allocate space for it and add it to the resource list
  *
- * @param[in]	resplist	- 	the resource list
- * @param[in]	name 		-	the name of the resource
+ *	@param[in]	resplist - the resource list
+ *	@param[in]	name - the name of the resource
  *
  * @return	schd_resource
  * @retval	NULL	: error
  *
- * @par MT-Safe:	no
+ *	@par MT-Safe:	no
  */
 schd_resource *
 find_alloc_resource(schd_resource *resplist, resdef *def)
@@ -817,13 +825,13 @@ find_alloc_resource(schd_resource *resplist, resdef *def)
  * 		try and find a resource by name, and if it is not
  *		there, allocate space for it and add it to the resource list
  *
- * @param[in]	resplist 	- 	the resource list
- * @param[in]	name 		- 	the name of the resource
+ *	@param[in]	resplist - the resource list
+ *	@param[in]	name - the name of the resource
  *
  * @return	schd_resource
  * @retval	NULL :	Error
  *
- * @par MT-Safe:	no
+ *	@par MT-Safe:	no
  */
 schd_resource *
 find_alloc_resource_by_str(schd_resource *resplist, char *name)
@@ -854,13 +862,13 @@ find_alloc_resource_by_str(schd_resource *resplist, char *name)
  * @brief
  * 		finds a resource by string in a resource list
  *
- * @param[in]	reslist - 	the resource list
- * @param[in]	name	- 	the name of the resource
+ *	@param[in]	reslist - the resource list
+ *	@param[in]	name - the name of the resource
  *
  * @return	schd_resource
  * @retval	NULL	: if not found
  *
- * @par MT-Safe:	no
+ *	@par MT-Safe:	no
  */
 schd_resource *
 find_resource_by_str(schd_resource *reslist, const char *name)
@@ -881,8 +889,8 @@ find_resource_by_str(schd_resource *reslist, const char *name)
  * @brief
  * 		find resource by resource definition
  *
- * @param 	reslist - 	resource list to search
- * @param 	def 	- 	resource definition to search for
+ *	@param reslist - resource list to search
+ *	@param def - resource definition to search for
  *
  * @return	the found resource
  * @retval	NULL	: if not found
@@ -908,11 +916,11 @@ find_resource(schd_resource *reslist, resdef *def)
  * 		free_server_info - free the space used by a server_info
  *		structure
  *
- * @param[in]	sinfo	-	the server_info structure to free
+ *	@param[in]	sinfo - the server_info structure to free
  *
- * @return	void
+ *	@return		void
  *
- * @par MT-Safe:	no
+ *	@par MT-Safe:	no
  */
 void
 free_server_info(server_info *sinfo)
@@ -991,11 +999,11 @@ free_server_info(server_info *sinfo)
  * @brief
  *		free_resource_list - frees the memory used by a resource list
  *
- * @param[in]	reslist	-	the resource list to free
+ *	@param[in]	reslist - the resource list to free
  *
- * @return	void
+ *	@return		void
  *
- * @par MT-Safe:	no
+ *	@par MT-Safe:	no
  */
 void
 free_resource_list(schd_resource *reslist)
@@ -1015,11 +1023,11 @@ free_resource_list(schd_resource *reslist)
  * @brief
  * 		free_resource - frees the memory used by a resource structure
  *
- * @param[in]	reslist	-	the resource to free
+ *	@param[in]	reslist - the resource to free
  *
- * @return	void
+ *	@return		void
  *
- * @par MT-Safe:	no
+ *	@par MT-Safe:	no
  */
 void
 free_resource(schd_resource *resp)
@@ -1047,14 +1055,14 @@ free_resource(schd_resource *resp)
  * 		new_server_info - allocate and initialize a new
  *		server_info struct
  *
- * @param[in]	limallocflag	-	if nonzero, a liminfo structure will
- *									also be allocated
+ *	@param[in]	limallocflag - if nonzero, a liminfo structure will
+ *			also be allocated
  *
- * @return	new allocated struct
+ *	@return		new allocated struct
  *
- * @see	lim_alloc_liminfo
+ *	@see		lim_alloc_liminfo
  *
- * @par MT-Safe:	no
+ *	@par MT-Safe:	no
  */
 server_info *
 new_server_info(int limallocflag)
@@ -1143,7 +1151,7 @@ new_server_info(int limallocflag)
  * @return	schd_resource
  * @retval	NULL	: Error
  *
- * @par MT-Safe:	yes
+ *	@par MT-Safe:	yes
  */
 schd_resource *
 new_resource()
@@ -1175,11 +1183,11 @@ new_resource()
  * @brief
  * 		Create new resource with given data
  *
- * @param[in]	name	-	name of resource
- * @param[in] 	value	-	value of resource
- * @param[in] 	field	-	is the value RF_AVAIL or RF_ASSN
+ * @param[in] name	-	name of resource
+ * @param[in] value	-	value of resource
+ * @param[in] field     -	is the value RF_AVAIL or RF_ASSN
  *
- * @see	set_resource()
+ * @see set_resource()
  *
  * @return schd_resource *
  * @retval newly created resource
@@ -1226,21 +1234,21 @@ create_resource(char *name, char *value, enum resource_fields field)
  * 		add_resource_list - add one resource list to another
  *		i.e. r1 += r2
  *
- * @param[in]	policy	-	policy info
- * @param[in]	r1 		- 	lval resource
- * @param[in]	r2 		- 	rval resource
- * @param[in]	flags 	-
- *							NO_UPDATE_NON_CONSUMABLE - do not update
- *							non consumable resources
- *							USE_RESOURCE_LIST - use policy->resdef_to_check
- *							(and all bools) instead of all resources
- *							ADD_UNSET_BOOLS_FALSE - add unset bools as false
+ *      @param[in]      policy - policy info
+ *	@param[in]	r1 - lval resource
+ *	@param[in]	r2 - rval resource
+ *	@param[in]	flags -
+ *				NO_UPDATE_NON_CONSUMABLE - do not update
+ *				non consumable resources
+ *				USE_RESOURCE_LIST - use policy->resdef_to_check
+ *				(and all bools) instead of all resources
+ *				ADD_UNSET_BOOLS_FALSE - add unset bools as false
  *
- * @return	int
+ *	@return		int
  * @retval	1	: success
  * @retval	0	: failure
  *
- * @par MT-Safe:	no
+ *	@par MT-Safe:	no
  */
 int
 add_resource_list(status *policy, schd_resource *r1, schd_resource *r2, unsigned int flags)
@@ -1333,11 +1341,11 @@ add_resource_list(status *policy, schd_resource *r1, schd_resource *r2, unsigned
  *
  * @param[in]	val1		-	value 1
  * @param[in]	val2		-	value 2
- * @param[in]	initial_val - 	value set by resource constructor
+ *	@param[in]	initial_val - value set by resource constructor
  *
- * @return	void
+ *	@return		void
  *
- * @par MT-Safe:	no
+ *	@par MT-Safe:	no
  */
 void
 add_resource_value(sch_resource_t *val1, sch_resource_t *val2,
@@ -1358,16 +1366,16 @@ add_resource_value(sch_resource_t *val1, sch_resource_t *val2,
  * 		Add values from a string array to a string resource (available).
  *		Only add values if they do not exist.
  *
- * @param[in]	res			-	resource to add values to
- * @param[in]	str_arr		-	string array of values to add
- * @param[in]	allow_dup 	- 	should we allow dups or not?
+ *	@param[in]	res - resource to add values to
+ *	@param[in]	str_arr - string array of values to add
+ *	@param[in]	allow_dup - should we allow dups or not?
  *
- * @return	int
+ *	@return		int
  *
  * @retval	1	: success
  * @retval	0	: failure
  *
- * @par MT-Safe:	no
+ *	@par MT-Safe:	no
  */
 int
 add_resource_str_arr(schd_resource *res, char **str_arr, int allow_dup)
@@ -1395,7 +1403,7 @@ add_resource_str_arr(schd_resource *res, char **str_arr, int allow_dup)
  * @param[in] 	r1	-	lval : left side boolean to add to
  * @param[in]	r2 	-	rval : right side boolean - if NULL, treat as false
  *
- * @return int
+ *	@return int
  * @retval	1	: Ok
  * @retval	0	: Error
  */
@@ -1440,13 +1448,13 @@ add_resource_bool(schd_resource *r1, schd_resource *r2)
  * @brief
  * 		free_server - free a server_info and possibly its queues also
  *
- * @param[in]	sinfo 			- 	server_info list head
- * @param[in]	free_queues_too - 	flag to free the queues attached
- *									to server also
+ *	@param[in]	sinfo - server_info list head
+ *	@param[in]	free_queues_too - flag to free the queues attached
+ *			to server also
  *
- * @return	void
+ *	@return		void
  *
- * @par MT-Safe:	no
+ *	@par MT-Safe:	no
  */
 void
 free_server(server_info *sinfo, int free_objs_too)
@@ -1471,15 +1479,15 @@ free_server(server_info *sinfo, int free_objs_too)
  * 		update_server_on_run - update server_info structure
  *				when a resource resv is run
  *
- * @policy[in]	policy 	- 	policy info
- * @param[in]	sinfo 	- 	server_info to update
- * @param[in]	qinfo 	- 	queue_info the job is in
- *							(if resresv is a job)
- * @param[in]	resresv - 	resource_resv that was run
+ *      @policy[in]     policy - policy info
+ *	@param[in]	sinfo - server_info to update
+ *	@param[in]	qinfo - queue_info the job is in
+ *				(if resresv is a job)
+ *	@param[in]	resresv - resource_resv that was run
  *
- * @return	void
+ *	@return		void
  *
- * @par MT-Safe:	no
+ *	@par MT-Safe:	no
  */
 void
 update_server_on_run(status *policy, server_info *sinfo,
@@ -1618,17 +1626,17 @@ update_server_on_run(status *policy, server_info *sinfo,
  * 		update_server_on_end - update a server_info structure when a
  *		resource resv has finished running
  *
- * @param[in]   policy 	- policy info
- * @param[in]	sinfo	- server_info to update
- * @param[in]	qinfo 	- queue_info the job is in
- * @param[in]	resresv - resource_resv that finished running
+ *      @param[in]      policy - policy info
+ *	@param[in]	sinfo - server_info to update
+ *	@param[in]	qinfo - queue_info the job is in
+ *	@param[in]	resresv - resource_resv that finished running
  *
- * @return	void
+ *	@return		void
  *
  * @note
  * 		Job must be in pre-ended state (job_state is new state)
  *
- * @par MT-Safe:	no
+ *	@par MT-Safe:	no
  */
 void
 update_server_on_end(status *policy, server_info *sinfo, queue_info *qinfo,
@@ -1754,13 +1762,13 @@ update_server_on_end(status *policy, server_info *sinfo, queue_info *qinfo,
  *		queue job arrays.  Also create an array of both jobs and
  *		reservations.
  *
- * @param[in]	sinfo	-	the server
+ *	@param[in]	sinfo - the server
  *
- * @return	int
+ *	@return		int
  * @retval	1	: success
  * @retval	0 	: failure
  *
- * @par MT-Safe:	no
+ *	@par MT-Safe:	no
  */
 int
 create_server_arrays(server_info *sinfo)
@@ -1957,12 +1965,12 @@ check_resv_running_on_node(resource_resv *resv, void *arg)
  * @brief
  * 		dup_server_info - duplicate a server_info struct
  *
- * @param[in]	osinfo	-	the struct to copy
+ *	@param[in]	osinfo - the struct to copy
  *
  * @return	duplicated server_info
  * @retval	NULL	: something wrong!
  *
- * @par MT-Safe:	no
+ *	@par MT-Safe:	no
  */
 server_info *
 dup_server_info(server_info *osinfo)
@@ -2158,12 +2166,12 @@ dup_server_info(server_info *osinfo)
  * @brief
  * 		dup_resource_list - dup a resource list
  *
- * @param[in]	res - the resource list to duplicate
+ *	@param[in]	res - the resource list to duplicate
  *
  * @return	duplicated resource list
  * @retval	NULL	: Error
  *
- * @par MT-Safe:	no
+ *	@par MT-Safe:	no
  */
 schd_resource *
 dup_resource_list(schd_resource *res)
@@ -2197,7 +2205,7 @@ dup_resource_list(schd_resource *res)
  * @return	duplicated resource list
  * @retval	NULL	: Error
  *
- * @par MT-Safe:	no
+ *	@par MT-Safe:	no
  */
 schd_resource *
 dup_selective_resource_list(schd_resource *res, resdef **deflist, unsigned flags)
@@ -2254,12 +2262,12 @@ dup_selective_resource_list(schd_resource *res, resdef **deflist, unsigned flags
  * 		dup_ind_resource_list - dup a resource list - if a resource in
  *		the list is indirect, dup the pointed to resource instead
  *
- * @param[in]	res - the resource list to duplicate
+ *	@param[in]	res - the resource list to duplicate
  *
  * @return	duplicated resource list
  * @retval	NULL	: Error
  *
- * @par MT-Safe:	no
+ *	@par MT-Safe:	no
  */
 schd_resource *
 dup_ind_resource_list(schd_resource *res)
@@ -2295,12 +2303,12 @@ dup_ind_resource_list(schd_resource *res)
  * @brief
  * 		dup_resource - duplicate a resource struct
  *
- * @param[in]	res	- the resource to dup
+ *	@param[in]	res - the resource to dup
  *
  * @return	the duplicated resource
  * @retval	NULL	: Error
  *
- * @par MT-Safe:	no
+ *	@par MT-Safe:	no
  */
 schd_resource *
 dup_resource(schd_resource *res)
@@ -2340,13 +2348,13 @@ dup_resource(schd_resource *res)
  * 		is_unassoc_node - finds nodes which are not associated
  *		with queues used with node_filter
  *
- * @param[in]	ninfo - the node to check
+ *	@param[in]	ninfo - the node to check
  *
- * @return	int
- * @retval	1	-	if the node does not have a queue associated with it
- * @retval	0	- 	otherwise
+ *	@return		int
+ *	@retval		1 - if the node does not have a queue associated with it
+ *	@retval		0 - otherwise
  *
- * @par MT-Safe:	yes
+ *	@par MT-Safe:	yes
  */
 int
 is_unassoc_node(node_info *ninfo, void *arg)
@@ -2364,7 +2372,7 @@ is_unassoc_node(node_info *ninfo, void *arg)
  * @return	new counts structure
  * @retval	NULL	: malloc failed
  *
- * @par MT-Safe:	yes
+ *	@par MT-Safe:	yes
  */
 counts *
 new_counts(void)
@@ -2389,11 +2397,11 @@ new_counts(void)
  * @brief
  * 		free_counts - free a counts structure
  *
- * @param[in]	cts	-	the counts structure to free
+ *	@param[in]	cts - the counts structure to free
  *
- * @return	void
+ *	@return		void
  *
- * @par MT-Safe:	no
+ *	@par MT-Safe:	no
  */
 void
 free_counts(counts *cts)
@@ -2416,11 +2424,11 @@ free_counts(counts *cts)
  * @brief
  * 		free_counts_list - free a list of counts structures
  *
- * @param[in]	ctslist	- the counts structure to free
+ *	@param[in]	ctslist - the counts structure to free
  *
- * @return	void
+ *	@return		void
  *
- * @par MT-Safe:	no
+ *	@par MT-Safe:	no
  */
 void
 free_counts_list(counts *ctslist)
@@ -2440,12 +2448,12 @@ free_counts_list(counts *ctslist)
  * @brief
  * 		dup_counts - duplicate a counts structure
  *
- * @param[in]	ctslist	- the counts structure to duplicate
+ *	@param[in]	ctslist - the counts structure to duplicate
  *
  * @return	new counts structure
  * @retval	NULL	: on error
  *
- * @par MT-Safe:	no
+ *	@par MT-Safe:	no
  */
 counts *
 dup_counts(counts *octs)
@@ -2470,12 +2478,12 @@ dup_counts(counts *octs)
  * @brief
  * 		dup_counts_list - duplicate a counts list
  *
- * @param[in]	octs - the counts structure to duplicate
+ *	@param[in]	octs - the counts structure to duplicate
  *
  * @return	duplicated counts list
  * @retval	NULL	: error
  *
- * @par MT-Safe:	no
+ *	@par MT-Safe:	no
  */
 counts *
 dup_counts_list(counts *ctslist)
@@ -2508,13 +2516,13 @@ dup_counts_list(counts *ctslist)
  * @brief
  * 		find_counts - find a counts structure by name
  *
- * @param[in]	ctslist - the counts list to search
- * @param[in]	name 	- the name to find
+ *	@param[in]	ctslist - the counts list to search
+ *	@param[in]	name - the name to find
  *
  * @return	found counts structure
  * @retval	NULL	: error
  *
- * @par MT-Safe:	no
+ *	@par MT-Safe:	no
  */
 counts *
 find_counts(counts *ctslist, char *name)
@@ -2537,13 +2545,13 @@ find_counts(counts *ctslist, char *name)
  * 		find_alloc_counts - find a counts structure by name or allocate
  *		 a new counts, name it, and add it to the end of the list
  *
- * @param[in]	ctslist - the counts list to search
- * @param[in]	name 	- the name to find
+ *	@param[in]	ctslist - the counts list to search
+ *	@param[in]	name - the name to find
  *
  * @return	found or newly-allocated counts structure
  * @retval	NULL	: error
  *
- * @par MT-Safe:	no
+ *	@par MT-Safe:	no
  */
 counts *
 find_alloc_counts(counts *ctslist, char *name)
@@ -2581,12 +2589,12 @@ find_alloc_counts(counts *ctslist, char *name)
  * 		update_counts_on_run - update a counts struct on the running of
  *		a job
  *
- * @param[in]	cts 	- the counts structure to update
- * @param[in]	resreq 	- the resource requirements of the job which ran
+ *	@param[in]	cts - the counts structure to update
+ *	@param[in]	resreq - the resource requirements of the job which ran
  *
- * @return	void
+ *	@return		void
  *
- * @par MT-Safe:	no
+ *	@par MT-Safe:	no
  */
 void
 update_counts_on_run(counts *cts, resource_req *resreq)
@@ -2622,13 +2630,13 @@ update_counts_on_run(counts *cts, resource_req *resreq)
  * 		update_counts_on_end - update a counts structure on the end
  *		of a job
  *
- * @param[in]	cts 	- counts structure to update
- * @param[in]	resreq 	- the resource requirements of the job which
- *							ended
+ *	@param[in]	cts - counts structure to update
+ *	@param[in]	resreq - the resource requirements of the job which
+ *			ended
  *
- * @return	void
+ *	@return		void
  *
- * @par MT-Safe:	no
+ *	@par MT-Safe:	no
  */
 void
 update_counts_on_end(counts *cts, resource_req *resreq)
@@ -2659,11 +2667,11 @@ update_counts_on_end(counts *cts, resource_req *resreq)
  *		than the current max, we free the old, and dup the new
  *		and attach it in.
  *
- * @param[in]	cmax - current max
- * @param[in]	new  - new counts lists.  If anything in this list is
- *						greater than the cur_max, it needs to be dup'd.
+ *	@param[in]	cmax - current max
+ *	@param[in]	new  - new counts lists.  If anything in this list is
+ *			greater than the cur_max, it needs to be dup'd.
  *
- * @return	the new max
+ *	@return		the new max
  * @retval	NULL : error
  */
 counts *
@@ -2726,13 +2734,13 @@ counts_max(counts *cmax, counts *new)
  * 		update_universe_on_end - update a pbs universe when a job/resv
  *		ends
  *
- * @param[in]   policy 		- policy info
- * @param[in]	resresv 	- the resresv itself which is ending
- * @param[in]	job_state 	- the new state of a job if resresv is a job
+ *      @param[in]      policy - policy info
+ *	@param[in]	resresv - the resresv itself which is ending
+ *	@param[in]	job_state - the new state of a job if resresv is a job
  *
- * @return	void
+ *	@return		void
  *
- * @par MT-Safe:	no
+ *	@par MT-Safe:	no
  */
 void
 update_universe_on_end(status *policy, resource_resv *resresv, char *job_state)
@@ -2809,21 +2817,21 @@ update_universe_on_end(status *policy, resource_resv *resresv, char *job_state)
  *		with resources_available value, or the resources_assigned
  *		value.
  *
- * @param[in]	res 	- the resource to set
- * @param[in]	val 	- the value to set upon the resource
- * @param[in]	field 	- the type of field to set (available or assigned)
+ *	@param[in]	res - the resource to set
+ *	@param[in]	val - the value to set upon the resource
+ *	@param[in]	field - the type of field to set (available or assigned)
  *
- * @return	int
+ *	@return		int
  * @retval	1 : success
  * @retval	0 : failure/error
  *
  * @note
  * 		If we have resource type information from the server,
- *		we will use it.  If not, we will try to set the
- *		resource type from the resources_available value first,
- *		then from the resources_assigned
+ *			we will use it.  If not, we will try to set the
+ *			resource type from the resources_available value first,
+ *			then from the resources_assigned
  *
- * @par MT-Safe:	no
+ *	@par MT-Safe:	no
  */
 int
 set_resource(schd_resource *res, char *val, enum resource_fields field)
@@ -2909,13 +2917,13 @@ set_resource(schd_resource *res, char *val, enum resource_fields field)
  * 		find_indirect_resource - follow the indirect resource pointers
  *		to find the real resource at the end
  *
- * @param[in]	res 	- the indirect resource
- * @param[in]	nodes 	- the nodes to search
+ *	@param[in]	res - the indirect resource
+ *	@param[in]	nodes - the nodes to search
  *
  * @return	the indirect resource
  * @retval	NULL	: on error
  *
- * @par MT-Safe:	no
+ *	@par MT-Safe:	no
  */
 schd_resource *
 find_indirect_resource(schd_resource *res, node_info **nodes)
@@ -2976,13 +2984,13 @@ find_indirect_resource(schd_resource *res, node_info **nodes)
  * 		resolve_indirect_resources - resolve indirect resources for node
  *		array
  *
- * @param[in/out]	nodes	-	the nodes to resolve
+ *	@param[in/out]	nodes - the nodes to resolve
  *
- * @return	int
+ *	@return		int
  * @retval	1	: if successful
  * @retval	0	: if there were any errors
  *
- * @par MT-Safe:	no
+ *	@par MT-Safe:	no
  */
 int
 resolve_indirect_resources(node_info **nodes)
@@ -3017,10 +3025,10 @@ resolve_indirect_resources(node_info **nodes)
  * 		update_preemption_on_run - update preemption status when a
  *		job is run
  *
- * @param[in]	sinfo 	- server where job was run
- * @param[in]	resresv - job which was run
+ *	@param[in]	sinfo - server where job was run
+ *	@param[in]	resresv - job which was run
  *
- * @return	void
+ *	@return		void
  *
  * @note
  * 		Must be called after update_server_on_run() and
@@ -3032,7 +3040,7 @@ resolve_indirect_resources(node_info **nodes)
  *		limits. If a user, group, or project goes under a limit because
  *		of this job running, we need to update those jobs
  *
- * @par MT-Safe:	no
+ *	@par MT-Safe:	no
  */
 void
 update_preemption_on_run(server_info *sinfo, resource_resv *resresv)
@@ -3074,7 +3082,7 @@ update_preemption_on_run(server_info *sinfo, resource_resv *resresv)
  * @return	formula in malloc'd buffer
  * @retval	NULL	: on error
  *
- * @par MT-Safe:	no
+ *	@par MT-Safe:	no
  */
 #define RF_BUFSIZE 1024
 char *
@@ -3219,7 +3227,7 @@ free_status(status *st)
  *
  * @param[in]	in_list - List which need to be deleted.
  *
- * @return	void
+ * @return void
  */
 void
 free_queue_list(queue_info *** queue_list)
@@ -3236,19 +3244,19 @@ free_queue_list(queue_info *** queue_list)
 /**
  * @brief
  * 		create_total_counts - This function checks if
- *	    total_*_counts list for user/group/project and alljobcounts
- *	    is empty and if so, it duplicates or creates new counts with the
- *	    user/group/project name mentioned in resource_resv structure.
+ *	        total_*_counts list for user/group/project and alljobcounts
+ *	        is empty and if so, it duplicates or creates new counts with the
+ *	        user/group/project name mentioned in resource_resv structure.
  *
  * @param[in,out]  sinfo	-	server_info structure used to check and set
- *                          	total_*_counts
+ *                          total_*_counts
  * @param[in,out]  qinfo   	-	queue_info structure used to check and set
- *                          	total_*_counts
+ *                          total_*_counts
  * @param[in]      resresv 	-	resource_resv structure to get user/group/project
  * @param[in]      mode    	-	To state whether total_*_counts in server_info
- *                          	structure needs to be created or in queue_info.
+ *                          structure needs to be created or in queue_info.
  *
- * @return	void
+ * @return	   void
  */
 void
 create_total_counts(server_info *sinfo, queue_info * qinfo,
@@ -3332,9 +3340,9 @@ create_total_counts(server_info *sinfo, queue_info * qinfo,
  * @param[in]	qi		-	queue_info structure to use for count updation
  * @param[in]	rr		-	resource_resv structure to use for count updation
  * @param[in]  	mode	-	To state whether total_*_counts in server_info
- *                      	structure needs to be updated or in queue_info.
+ *                      structure needs to be updated or in queue_info.
  *
- * @return	void
+ * @return void
  *
  */
 void
@@ -3376,9 +3384,9 @@ update_total_counts(server_info *si, queue_info* qi,
  * @param[in]	qi		-	queue_info structure to use for count updation
  * @param[in]	rr		-	resource_resv structure to use for count updation
  * @param[in]  	mode	-	To state whether total_*_counts in server_info
- *                      	structure needs to be updated or in queue_info.
+ *                      structure needs to be updated or in queue_info.
  *
- * @return	void
+ * @return void
  *
  */
 void
@@ -3414,13 +3422,13 @@ update_total_counts_on_end(server_info *si, queue_info* qi,
 /**
  * @brief
  * 		refresh_total_counts - This function releases memory allocated
- *	    for total_*_counts structure in server_info and queue_info and
- *	    then reassigns again by duplicating it from running counts list.
+ *	        for total_*_counts structure in server_info and queue_info and
+ *	        then reassigns again by duplicating it from running counts list.
  *
  * @param[in,out]	sinfo	-	server_info structure used to get all the
- *                          	total_*_counts and free them.
+ *                          total_*_counts and free them.
  *
- * @return	void
+ * @return	   void
  */
 void
 refresh_total_counts(server_info *sinfo)
@@ -3455,8 +3463,8 @@ refresh_total_counts(server_info *sinfo)
  * @brief
  * 		get a unique rank to uniquely identify an object
  *
- * @return	int
- * @retval	unique number for this scheduling cycle
+ * @return int
+ * @retval unique number for this scheduling cycle
  */
 int
 get_sched_rank()
@@ -3474,7 +3482,7 @@ get_sched_rank()
  * @param[in,out]	qlhead	-	address of 3 dimensional queue list.
  * @param[in]		qinfo	-	queue which is getting added in queue_list.
  *
- * @return	int
+ * @return     int
  * @retval	1	: If successful in adding the qinfo to queue_list.
  * @retval	0	: If failed to add qinfo to queue_list.
  */
@@ -3544,12 +3552,12 @@ struct queue_info *** find_queue_list_by_priority(queue_info *** list_head, int 
  * 		append_to_queue_list - function that will reallocate and append
  *                               "add" to the list provided.
  * @param[in,out]	list	-	pointer to queue_info** which gets reallocated
- *                       		and "add" is appended to it.
+ *                       and "add" is appended to it.
  * @param[in] 		add 	-   queue_info  that needs to be appended.
  *
  * @return	queue_info** : newly appended list.
  * @retval	NULL	: when realloc fails.
- *           			pointer to appended list.
+ *           pointer to appended list.
  */
 struct queue_info** append_to_queue_list(queue_info ***list, queue_info *add)
 {
@@ -3611,19 +3619,19 @@ create_resource_assn_for_node(node_info *ninfo)
 	
 	if(ninfo == NULL)
 		return 0;
-		
+	
 	for (r = ninfo->res; r != NULL; r = r->next)
 		if(r->type.is_consumable)
 			r->assigned = 0;
 
 	if (ninfo->job_arr != NULL) {
-		for (i = 0; ninfo->job_arr[i] != NULL; i++) {
+	for (i = 0; ninfo->job_arr[i] != NULL; i++) {
 			/* ignore jobs in reservations.  The resources will be accounted for with the reservation itself.  */
 			if (ninfo->job_arr[i]->job != NULL && ninfo->job_arr[i]->job->resv == NULL) {
-				if (ninfo->job_arr[i]->nspec_arr != NULL) {
-					int j;
+		if (ninfo->job_arr[i]->nspec_arr != NULL) {
+			int j;
 					for (j = 0; ninfo->job_arr[i]->nspec_arr[j] != NULL; j++) {
-						nspec *n = ninfo->job_arr[i]->nspec_arr[j];
+				nspec *n = ninfo->job_arr[i]->nspec_arr[j];
 						if (n->ninfo->rank == ninfo->rank)
 							add_req_list_to_assn(ninfo->res, n->resreq);
 					}
@@ -3639,10 +3647,10 @@ create_resource_assn_for_node(node_info *ninfo)
 				for (j = 0; ninfo->run_resvs_arr[i]->nspec_arr[j] != NULL; j++) {
 					nspec *n = ninfo->run_resvs_arr[i]->nspec_arr[j];
 					if (n->ninfo->rank == ninfo->rank)
-						add_req_list_to_assn(ninfo->res, n->resreq);
-				}
+					add_req_list_to_assn(ninfo->res, n->resreq);
 			}
 		}
+	}
 	}
 	
 	return 1;

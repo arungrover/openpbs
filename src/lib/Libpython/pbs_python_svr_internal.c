@@ -214,7 +214,7 @@ static pbs_list_head pbs_vnode_set_list;      /* list of vnode set requests */
  * @param[in]	py_resource_str_value - a Python string object representing
  * 					the values in 'value_list'.
  * @param[in]	attr_def_p - the resource definition for the resource list
- * 			     represented by 'py_resource'.
+ * 			     represented by 'py_resource'.	
  * @param[in]	value_list - list of values cached for the 'py_resource' object
  * @param[in]	all_resc - links various pbs_resource_value structures.
  */
@@ -343,8 +343,8 @@ print_svrattrl_list(char *head_str, pbs_list_head *phead)
 
 /**
  * @brief
- * 	This is a stub function that should be implemented to add any additional
- * 	elements to the global namespace dict.
+ * This is a stub function that should be implemented to add any additional
+ * elements to the global namespace dict.
  *
  * @param[in] globals - python object indicating reference to globals of a module
  *
@@ -506,10 +506,9 @@ ERROR_EXIT:
 	  		         ((a)->at_decode == decode_entlim_res) ) )
 /*
  * TODO
- *  	- It is possible to combine pbs_python_setup_resc_get_value_type
- *    	and pbs_python_setup_attr_get_value_type into a macro.
+ *  - It is possible to combine pbs_python_setup_resc_get_value_type
+ *    and pbs_python_setup_attr_get_value_type into a macro.
  */
- 
 
 /*
  * NO exception raised
@@ -635,8 +634,8 @@ pbs_python_setup_attr_get_value_type(attribute_def *attr_def_p, char *py_type)
 
 /**
  * @brief
- * 	pbs_python_free_py_types_array
- *   	This frees up the global arrays
+ * pbs_python_free_py_types_array
+ *   This frees up the global arrays
  *
  * @param[in] py_types_array - address reference to globals
  *
@@ -776,9 +775,9 @@ ERROR_EXIT:
 }
 /**
  * @brief
- * 	pbs_python_setup_resv_class_attributes
- *   	routine that sets up *all* the attributes for a Python server Object
- *   	mapping directly to PBS Job object (struct job)
+ * pbs_python_setup_resv_class_attributes
+ *   routine that sets up *all* the attributes for a Python server Object
+ *   mapping directly to PBS Job object (struct job)
  *
  * @return	int
  * @retval	-1  	: 	failure
@@ -862,9 +861,9 @@ ERROR_EXIT:
 
 /**
  * @brief
- *	pbs_python_setup_svr_class_attributes
- *  	 routine that sets up *all* the attributes for a Python server Object
- *  	 mapping directly to PBS Job object (struct job)
+ * pbs_python_setup_svr_class_attributes
+ *   routine that sets up *all* the attributes for a Python server Object
+ *   mapping directly to PBS Job object (struct job)
  *
  * @return      int
  * @retval      -1      :       failure
@@ -948,9 +947,9 @@ ERROR_EXIT:
 
 /**
  * @brief
- * 	pbs_python_setup_job_class_attributes
- *   	routine that sets up *all* the attributes for a Python Job Object
- *   	mapping directly to PBS Job object (struct job)
+ * pbs_python_setup_job_class_attributes
+ *   routine that sets up *all* the attributes for a Python Job Object
+ *   mapping directly to PBS Job object (struct job)
  *
  * @return      int
  * @retval      -1      :       failure
@@ -1035,9 +1034,9 @@ ERROR_EXIT:
 
 /**
  * @brief
- * 	pbs_python_setup_queue_class_attributes
- *   	routine that sets up *all* the attributes for a Python Queue Object
- *   	mapping directly to PBS Queue object (pbs_queue)
+ * pbs_python_setup_queue_class_attributes
+ *   routine that sets up *all* the attributes for a Python Queue Object
+ *   mapping directly to PBS Queue object (pbs_queue)
  *
  * @return      int
  * @retval      -1      :       failure
@@ -1120,7 +1119,7 @@ ERROR_EXIT:
 
 /**
  * @brief
- * 	pbs_python_setup_python_resource_type
+ * pbs_python_setup_python_resource_type
  *	routine that sets up *all* the resources for a Python resource Object
  *
  * @return      int
@@ -1182,10 +1181,10 @@ ERROR_EXIT:
 
 /**
  * @brief
- * 	pbs_python_clear_types_table clear the python pointers
+ * pbs_python_clear_types_table clear the python pointers
  * 	
  * exceptions:
- *   	None
+ *   None
  */
 
 static void
@@ -1202,7 +1201,7 @@ pbs_python_clear_types_table(void)
 
 /**
  * @brief
- * 	pbs_python_types_table setup routine, called at initialization of interp.
+ * pbs_python_types_table setup routine, called at initialization of interp.
  *
  * @return      int
  * @retval      -1      :       failure
@@ -1272,11 +1271,11 @@ pbs_python_unload_python_types(struct python_interpreter_data *interp_data)
 
 /**
  * @brief
- * 	This routine is called at the embedded intialization time, to load all
- * 	the Python types into a dictionary. Mapping the name to a python type.
- * 	The dictionary items are:
- *     	Key  = <an attribute name>
- *    	Value = <the attribute type object from python module (pure)>
+ * This routine is called at the embedded intialization time, to load all
+ * the Python types into a dictionary. Mapping the name to a python type.
+ * The dictionary items are:
+ *     Key  = <an attribute name>
+ *    Value = <the attribute type object from python module (pure)>
  *
  * NOTES:
  *     The Dictionary overwrites if a key already exists!
@@ -1289,6 +1288,7 @@ pbs_python_unload_python_types(struct python_interpreter_data *interp_data)
  *      Any python exception raised is cleared via the call to
  *          pbs_python_write_error_to_log
  */
+
 
 int
 pbs_python_load_python_types(struct python_interpreter_data *interp_data)
@@ -1386,7 +1386,7 @@ ERROR_EXIT:
  * @param[in]	resc - name of resource to set
  * @param[in]	value - value of resource being set
  *
- * @return 	int
+ * @return int
  * @retval	!= -1	- success
  * @retval	-1	- failure
  *
@@ -1503,8 +1503,8 @@ set_entity_resource_or_return_value(pbs_list_head *resc_value_list,
 	while (plist) {
 		if (add_to_svrattrl_list_sorted(&entity_head,
 			plist->al_name, plist->al_resc,
-			plist->al_value, plist->al_op,
-			plist->al_resc) == -1) {
+			plist->al_value, plist->al_flags,
+			plist->al_resc, plist->al_op) == -1) {
 			free_attrlist(&entity_head);
 			log_err(-1, __func__,
 				"failed populating entity limits value");
@@ -1807,9 +1807,9 @@ set_entity_resource_or_return_value(pbs_list_head *resc_value_list,
  * @param[in]	py_resource - the Python pbs resource object being set.
  * @param[in]	p_strbuf - pointer to a string buffer to hold return string
  *			value if 'py_resource' is NULL.
- * @return 	int
- * @retval 	0    -	for success
- * @retval 	-1   - 	for failure
+ * @return int
+ * @retval 0	- for success
+ * @retval -1   - for failure
  *
  */
 static int
@@ -2287,7 +2287,7 @@ pbs_python_populate_python_class_from_svrattrl(PyObject *py_instance,
 /**
  * @brief
  * 	Returns the # of seconds equivalent to the given 'time_str' which is of
- * 	the form [hh:[mm:]]ss[.ms]
+ * the form [hh:[mm:]]ss[.ms]
  *
  * @return	long
  * @retval	-1 or -2				for error, each filling 
@@ -2424,7 +2424,7 @@ varlist_same(char *varl1, char *varl2) {
 			env_val = pc1+1;
 		}
 		(void)add_to_svrattrl_list_sorted(&list1, env_var, NULL,
-			env_val?env_val:"", 0, NULL);
+			env_val?env_val:"", 0, NULL, SET);
 
 		pc = strtok(NULL, ",");
 	}
@@ -2440,7 +2440,7 @@ varlist_same(char *varl1, char *varl2) {
 			env_val = pc1+1;
 		}
 		(void)add_to_svrattrl_list_sorted(&list2, env_var, NULL,
-			env_val?env_val:"", 0, NULL);
+			env_val?env_val:"", 0, NULL, SET);
 		pc = strtok(NULL, ",");
 	}
 
@@ -2521,14 +2521,14 @@ pbs_python_populate_svrattrl_from_python_class(PyObject *py_instance,
 	PyObject	*py_resc_hookset_dict0 = (PyObject *)NULL;
 	PyObject	*py_attr_keys = (PyObject *)NULL;
 	PyObject 	*py_val = (PyObject *)NULL;
-	char		*name_str_dup = NULL;
-	char		*val_str_dup = NULL;
+	char	*name_str_dup = NULL;
+	char	*val_str_dup = NULL;
 	int		num_attrs, i;
 	pbs_list_head	svrattrl_list2;
-	int		rc = -1;
+	int         rc = -1;
 	int		hook_set_flag = 0;
 	int		has_resv_duration;
-	char		the_resc[HOOK_BUF_SIZE];
+	char            the_resc[HOOK_BUF_SIZE];
 	static char     *the_val = NULL;
 	static int 	val_buf_size = HOOK_BUF_SIZE;
 	PyObject	*py_resc = (PyObject *)NULL;
@@ -2815,7 +2815,7 @@ pbs_python_populate_svrattrl_from_python_class(PyObject *py_instance,
 
 				if (add_to_svrattrl_list(svrattrl_list, name_str, the_resc, the_val,
 					get_svrattrl_flag(name_str, the_resc, the_val,
-					&svrattrl_list2, hook_set_flag), name_prefix) == -1) {
+					&svrattrl_list2, hook_set_flag), name_prefix, EQ) == -1) {
 					snprintf(log_buffer, LOG_BUF_SIZE-1, "failed to add_to_svrattrl_list(%s,%s,%s",
 						name_str, resc, (val?val:""));
 					log_buffer[LOG_BUF_SIZE-1] = '\0';
@@ -2879,7 +2879,7 @@ pbs_python_populate_svrattrl_from_python_class(PyObject *py_instance,
 
 			if (add_to_svrattrl_list(svrattrl_list, name_str, NULL, val_str2,
 				get_svrattrl_flag(name_str, NULL, val_str,
-				&svrattrl_list2, hook_set_flag), name_prefix) == -1) {
+				&svrattrl_list2, hook_set_flag), name_prefix, SET) == -1) {
 				snprintf(log_buffer, LOG_BUF_SIZE-1, "failed to add_to_svrattrl_list(%s,null,%s)",
 					name_str, val_str);
 				log_buffer[LOG_BUF_SIZE-1] = '\0';
@@ -2921,7 +2921,7 @@ svrattrl_exit:
 
 /**
  * @brief
- *  	Causes the 'py_instance' object's attributes to be unsettable.
+ *  Causes the 'py_instance' object's attributes to be unsettable.
  *
  * @param[in] py_instance - PyObject with attributes
  *
@@ -3334,10 +3334,10 @@ ERROR_EXIT:
 
 /**
  * @brief
- * 	Helper method returning a job Python Object from a job struct
- * 	This marks the job object "read-only" in Python mode.
- * 	If  'qname' is not NULL or "", then the job object is returned if
- * 	it is queued in 'qname'.
+ * Helper method returning a job Python Object from a job struct
+ * This marks the job object "read-only" in Python mode.
+ * If  'qname' is not NULL or "", then the job object is returned if
+ * it is queued in 'qname'.
  *
  * @param[in] pjob_o - job info
  * @param[in] jobid - job identifier
@@ -3475,15 +3475,15 @@ ERROR_EXIT:
 
 /**
  * @brief
- * 	Helper method returning a resv Python Object from a a resc_resv struct.
+ * Helper method returning a resv Python Object from a a resc_resv struct.
  * 	
  * @param[in] presv_o - reservation structure
  * @param[in] resvid - reservation name
  *
  * @return	PyObject *
  * @retval	This returns a Python object that maps
- * 		to a resc_resv struct taken directly from presv_o if non-NULL,
- * 		or to the struct returned by find_resv(<resvid>).
+ * to a resc_resv struct taken directly from presv_o if non-NULL,
+ * or to the struct returned by find_resv(<resvid>).
  */
 static PyObject *
 _pps_helper_get_resv(resc_resv *presv_o, const char *resvid)
@@ -3734,7 +3734,7 @@ GR_ERROR_EXIT:
 
 /**
  * @brief
- * 	Returns the event param's item corresponding to key 'name'.
+ * Returns the event param's item corresponding to key 'name'.
  * 
  * @param[in] name - key
  *
@@ -3778,8 +3778,8 @@ _pbs_python_event_get_param(char *name)
 }
 /**
  * @brief
- * 	Makes the Python PBS event object read-only, meaning none of its
- * 	could be modified in a hook script.
+ * Makes the Python PBS event object read-only, meaning none of its
+ * could be modified in a hook script.
  *
  * @return	int
  * @retval	0 	for sucess; 
@@ -3806,11 +3806,11 @@ _pbs_python_event_mark_readonly(void)
 
 /**
  * @brief
- * 	Sets the "operation" mode of Python: if 'mode' is PY_MODE, then we're
- * 	inside the hook script; if 'mode' is C_MODE, then we're inside some
- * 	internal C helper function.
- * 	Setting 'mode' to C_MODE usually means we don't have any restriction
- * 	as to which attributes we can or cannot set.
+ * Sets the "operation" mode of Python: if 'mode' is PY_MODE, then we're
+ * inside the hook script; if 'mode' is C_MODE, then we're inside some
+ * internal C helper function.
+ * Setting 'mode' to C_MODE usually means we don't have any restriction
+ * as to which attributes we can or cannot set.
  */
 void
 _pbs_python_set_mode(int mode)
@@ -3909,7 +3909,7 @@ create_py_vnodelist(pbs_list_head *vnlist)
 		 */
 
 		if (add_to_svrattrl_list(&rqs.rq_attr, attr_name,
-			plist->al_resc, plist->al_value, 0, NULL) != 0) {
+			plist->al_resc, plist->al_value, 0, NULL, SET) != 0) {
 			snprintf(log_buffer, LOG_BUF_SIZE-1,
 				"warning: failed to add_to_svrattrl_list(%s,%s,%s)",
 				plist->al_name,
@@ -4129,7 +4129,7 @@ create_py_joblist(pbs_list_head *joblist)
 		 */
 
 		if (add_to_svrattrl_list(&rqs.rq_attr, attr_name,
-			plist->al_resc, plist->al_value, 0, NULL) != 0) {
+			plist->al_resc, plist->al_value, 0, NULL, plist->al_op) != 0) {
 			snprintf(log_buffer, LOG_BUF_SIZE-1,
 				"warning: failed to add_to_svrattrl_list(%s,%s,%s)",
 				plist->al_name,
@@ -4437,7 +4437,7 @@ py_strlist_to_svrattrl(PyObject *py_strlist, pbs_list_head *to_head, char *name_
 	CLEAR_HEAD((*to_head));
 	for (i=0; (i < len) && ((str=pbs_python_list_get_item_string_value(py_strlist, i)) != NULL); i++) {
 		snprintf(index_str, sizeof(index_str), "%d", i);
-		if (add_to_svrattrl_list(to_head, name_str, index_str, str, ATR_VFLAG_HOOK, NULL) == -1) {
+		if (add_to_svrattrl_list(to_head, name_str, index_str, str, ATR_VFLAG_HOOK, NULL, SET) == -1) {
 			free_attrlist(to_head);
 			return (-1);
 		}
@@ -5759,7 +5759,7 @@ _pbs_python_event_to_request(unsigned int hook_event, hook_output_param_t *req_p
 						if (add_to_svrattrl_list(\
 								(pbs_list_head *)(req_params->jobs_list),
 								PY_DELETEJOB_FLAG, NULL, val_str,
-									ATR_VFLAG_HOOK, key_str) == -1) {
+									ATR_VFLAG_HOOK, key_str, SET) == -1) {
 							snprintf(log_buffer, LOG_BUF_SIZE-1, "failed to add_to_svrattrl_list(%s.%s,null,%s)",
 								key_str, PY_DELETEJOB_FLAG, val_str);
 							log_buffer[LOG_BUF_SIZE-1] = '\0';
@@ -5781,7 +5781,7 @@ _pbs_python_event_to_request(unsigned int hook_event, hook_output_param_t *req_p
 						if (add_to_svrattrl_list(\
 							(pbs_list_head *)(req_params->jobs_list),
 									PY_RERUNJOB_FLAG, NULL,
-								val_str, ATR_VFLAG_HOOK, key_str) == -1) {
+								val_str, ATR_VFLAG_HOOK, key_str, SET) == -1) {
 							snprintf(log_buffer, LOG_BUF_SIZE-1, "failed to add_to_svrattrl_list(%s.%s,null,%s)",
 								key_str, PY_RERUNJOB_FLAG, val_str);
 							log_buffer[LOG_BUF_SIZE-1] = '\0';
@@ -5877,7 +5877,7 @@ _pbs_python_event_to_request(unsigned int hook_event, hook_output_param_t *req_p
 
 /**
  * @brief
- *  	Allows the current PBS event request to proceed.
+ *  Allows the current PBS event request to proceed.
  */
 void
 _pbs_python_event_accept(void)
@@ -5888,7 +5888,7 @@ _pbs_python_event_accept(void)
 
 /**
  * @brief
- *  	Reject the current PBS event request.
+ *  Reject the current PBS event request.
  */
 void
 _pbs_python_event_reject(char *msg)
@@ -5903,8 +5903,8 @@ _pbs_python_event_reject(char *msg)
 
 /**
  * @brief
- * 	Returns the message string supplied in the hook script when it rejected
- * 	an event request.
+ * Returns the message string supplied in the hook script when it rejected
+ * an event request.
  */
 char *
 _pbs_python_event_get_reject_msg(void)
@@ -5916,7 +5916,7 @@ _pbs_python_event_get_reject_msg(void)
 
 /**
  * @brief
- * 	Returns the value of the event accept flag (1 for TRUE or 0 for FALSE).
+ * Returns the value of the event accept flag (1 for TRUE or 0 for FALSE).
  */
 int
 _pbs_python_event_get_accept_flag(void)
@@ -5926,8 +5926,8 @@ _pbs_python_event_get_accept_flag(void)
 
 /**
  * @brief
- * 	Sets a global flag that says modifications to the PBS Python
- * 	attributes are allowed.
+ * Sets a global flag that says modifications to the PBS Python
+ * attributes are allowed.
  */
 void
 _pbs_python_event_param_mod_allow(void)
@@ -5938,8 +5938,8 @@ _pbs_python_event_param_mod_allow(void)
 
 /**
  * @brief
- * 	Sets a global flag that says any more modifications to the PBS Python
- * 	attributes would be disallowed.
+ * Sets a global flag that says any more modifications to the PBS Python
+ * attributes would be disallowed.
  */
 void
 _pbs_python_event_param_mod_disallow(void)
@@ -5950,8 +5950,8 @@ _pbs_python_event_param_mod_disallow(void)
 
 /**
  * @brief
- * 	Returns the value (0 or 1) of the global flag that says whether or not
- * 	modifications to the PBS Python attributes is allowed.
+ * Returns the value (0 or 1) of the global flag that says whether or not
+ * modifications to the PBS Python attributes is allowed.
  */
 int
 _pbs_python_event_param_get_mod_flag(void)
@@ -5961,9 +5961,9 @@ _pbs_python_event_param_get_mod_flag(void)
 
 /**
  * @brief
- * 	Sets the value of the attribute 'name' of the current Python Object event
- * 	to a string 'value'. The descriptor for the attribute will take care of
- * 	converting to an actual type.
+ * Sets the value of the attribute 'name' of the current Python Object event
+ * to a string 'value'. The descriptor for the attribute will take care of
+ * converting to an actual type.
  *
  * @param[in] name - attribute name
  * @param[in] value - attr value
@@ -6008,7 +6008,7 @@ _pbs_python_event_set_attrval(char *name, char *value)
 }
 /**
  * @brief
- * 	Gets the value of the attribute 'name' of the current Python Object event
+ * Gets the value of the attribute 'name' of the current Python Object event
  * 	as a string. 
  * 
  * @param[in] name - attr name
@@ -6989,21 +6989,21 @@ pbsv1mod_meth_is_attrib_val_settable(PyObject *self, PyObject *args, PyObject *k
                 rc = 1;
                 goto IAVS_ERROR_EXIT;
                 } else if (exec_time < time(0)) {
-                        char    *str_time = NULL;
+			char    *str_time = NULL;
 
-                        str_time = ctime(&exec_time);
-                        if (str_time != NULL)
-                                str_time[strlen(str_time)-1] = '\0';
+			str_time = ctime(&exec_time);
+			if (str_time != NULL)
+				str_time[strlen(str_time)-1] = '\0';
 
-                        snprintf(log_buffer, LOG_BUF_SIZE-1,
-                                "exec_time '%s' not in the future", (str_time?str_time:""));
-                        log_buffer[LOG_BUF_SIZE-1] = '\0';
-                        PyErr_SetString(\
-                pbs_python_types_table[PP_BADATTR_VALUE_ERR_IDX].t_class,
-                                log_buffer);
-                        rc = 1;
-                        goto IAVS_ERROR_EXIT;
-                }
+			snprintf(log_buffer, LOG_BUF_SIZE-1,
+				"exec_time '%s' not in the future", (str_time?str_time:""));
+			log_buffer[LOG_BUF_SIZE-1] = '\0';
+			PyErr_SetString(\
+		pbs_python_types_table[PP_BADATTR_VALUE_ERR_IDX].t_class,
+				log_buffer);
+			rc = 1;
+			goto IAVS_ERROR_EXIT;
+		}
         }	
 	} else if (strcmp(name, ATTR_runcount) == 0) {
 		long	runcount;
@@ -7658,23 +7658,23 @@ pbsv1mod_meth_wordsize(void)
 
 /**
  * @brief
- * 	_pbs_python_event_job_getval_hookset:
- * 	This is a new, general purpose function that looks into the current hook
- * 	event object's job parameter (i.e. pbs.event().job), and see if the job
- * 	attribute attrib_name was set inside a hook script. If so, return the
- * 	attributes value as a string; NULL otherwise. On some attributes like
- * 	ATTR_h, optional value strings opval and delval are returned. opval tells
- * 	how the attribute value was obtained: via __init__, __add__, or __sub__
- * 	methods; delval tells which hold values (e.g. "us") were actually removed
- * 	by a __sub__ (i.e. unset) action. opval_len and delval_len are the actual
- * 	number of bytes pre-allocated for the string arrays 'opval' and 'delval'.
- * 	The caller is responsible for allocating enough space for these parameters.
+ * _pbs_python_event_job_getval_hookset:
+ * This is a new, general purpose function that looks into the current hook
+ * event object's job parameter (i.e. pbs.event().job), and see if the job
+ * attribute attrib_name was set inside a hook script. If so, return the
+ * attributes value as a string; NULL otherwise. On some attributes like
+ * ATTR_h, optional value strings opval and delval are returned. opval tells
+ * how the attribute value was obtained: via __init__, __add__, or __sub__
+ * methods; delval tells which hold values (e.g. "us") were actually removed
+ * by a __sub__ (i.e. unset) action. opval_len and delval_len are the actual
+ * number of bytes pre-allocated for the string arrays 'opval' and 'delval'.
+ * The caller is responsible for allocating enough space for these parameters.
  *
  * @par	NOTE: 
  *	This returns the string value returned by pbs_python_object_str(),
- * 	which returns a fixed memory area that gets overwritten by subsequent
- * 	calls to this function. So The return value of this function must be
- * 	immediately used.
+ * which returns a fixed memory area that gets overwritten by subsequent
+ * calls to this function. So The return value of this function must be
+ * immediately used.
  *
  */
 char *
@@ -8166,7 +8166,7 @@ pbsv1mod_meth_mark_vnode_set(PyObject *self, PyObject *args, PyObject *kwds)
 	if (add_to_svrattrl_list(&vn_set_req->rq_attr, attr_name, NULL,
 	((strcmp(attr_name, ATTR_NODE_state) == 0)?\
 			vnode_state_to_str(atoi(attr_value)):attr_value),
-		ATR_VFLAG_HOOK, NULL) == -1) {
+		ATR_VFLAG_HOOK, NULL, SET) == -1) {
 		snprintf(log_buffer, LOG_BUF_SIZE-1,
 			"failed to add_to_svrattrl_list(%s, 0, %s, ATR_VFLAG_HOOK)",
 			attr_name, attr_value);
@@ -8710,7 +8710,7 @@ pbs_python_get_reboot_host_cmd(void)
  * @brief
  *	Returns the value of the flag that tells pbs to reboot host or not.
  *
- * @return	int
+ * @return int
  * @retval	TRUE 	- 	means yes, reboot host
  * @retval	FALSE 	- 	means no.
  */
@@ -8789,7 +8789,7 @@ pbsv1mod_meth_reboot(PyObject *self, PyObject *args, PyObject *kwds)
 /**
  * @brief
  *	Returns the value of the flag that tells pbs to scheduler_restart_cycle host or not.
- * @return 	int
+ * @return int
  * @retval	TRUE	 - 	means yes, scheduler_restart_cycle host
  * @retval	FALSE 	- 	means no.
  */
@@ -9745,7 +9745,7 @@ py_get_queue_static(char *qname, char *svr_name)
 		}
 
 		if (add_to_svrattrl_list(&queuel, attr_name,
-			plist->al_resc, plist->al_value, 0, NULL) != 0) {
+			plist->al_resc, plist->al_value, 0, NULL, EQ) != 0) {
 			snprintf(log_buffer, LOG_BUF_SIZE-1,
 				"warning: failed to add_to_svrattrl_list(%s,%s,%s)",
 				plist->al_name,
@@ -9982,7 +9982,7 @@ py_get_vnode_static(char *vname, char *svr_name)
 		}
 
 		if (add_to_svrattrl_list(&vnodel, attr_name,
-			plist->al_resc, plist->al_value, 0, NULL) != 0) {
+			plist->al_resc, plist->al_value, 0, NULL, EQ) != 0) {
 			snprintf(log_buffer, LOG_BUF_SIZE-1,
 				"warning: failed to add_to_svrattrl_list(%s,%s,%s)",
 				plist->al_name,
@@ -10242,7 +10242,7 @@ py_get_job_static(char *jid, char *svr_name, char *queue_name)
 		}
 
 		if (add_to_svrattrl_list(&jobl, attr_name,
-			plist->al_resc, plist->al_value, 0, NULL) != 0) {
+			plist->al_resc, plist->al_value, 0, NULL, EQ) != 0) {
 			snprintf(log_buffer, LOG_BUF_SIZE-1,
 				"warning: failed to add_to_svrattrl_list(%s,%s,%s)",
 				plist->al_name,
@@ -10510,7 +10510,7 @@ py_get_resv_static(char *resvid, char *svr_name)
 		}
 
 		if (add_to_svrattrl_list(&resvl, attr_name,
-			plist->al_resc, plist->al_value, 0, NULL) != 0) {
+			plist->al_resc, plist->al_value, 0, NULL, EQ) != 0) {
 			snprintf(log_buffer, LOG_BUF_SIZE-1,
 				"warning: failed to add_to_svrattrl_list(%s,%s,%s)",
 				plist->al_name,
@@ -10748,7 +10748,7 @@ pbs_python_set_use_static_data_value(int value)
 
 /**
  * @brief
- * 	Set the environment variable 'env_var' to 'env_val'.
+ * Set the environment variable 'env_var' to 'env_val'.
  *
  * @return int
  * @retval 0 	for success
@@ -10850,7 +10850,7 @@ pbs_python_set_os_environ(char *env_var, char *env_val)
 
 /**
  * @brief
- * 	Set the pbs.hook_config_filename value to 'conf_file'.
+ * Set the pbs.hook_config_filename value to 'conf_file'.
  *
  * @param[in]	conf_file - path to the pbs hook config file.
  * 

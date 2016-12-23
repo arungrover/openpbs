@@ -1,11 +1,11 @@
 /*
  * Copyright (C) 1994-2016 Altair Engineering, Inc.
  * For more information, contact Altair at www.altair.com.
- *  
+ *
  * This file is part of the PBS Professional ("PBS Pro") software.
- * 
+ *
  * Open Source License Information:
- *  
+ *
  * PBS Pro is free software. You can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free 
  * Software Foundation, either version 3 of the License, or (at your option) any 
@@ -14,7 +14,7 @@
  * PBS Pro is distributed in the hope that it will be useful, but WITHOUT ANY 
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
  * PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details.
- *  
+ *
  * You should have received a copy of the GNU Affero General Public License along 
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  *  
@@ -37,16 +37,16 @@
 /**
  * @file	qsub.c
  * @brief
- *	qsub - (PBS) submit batch job
+ * qsub - (PBS) submit batch job
  *
  * @author	Terry Heidelberg
- * 			Livermore Computing
+ *      Livermore Computing
  *
  * @author	Bruce Kelly
- * 			National Energy Research Supercomputer Center
+ *      National Energy Research Supercomputer Center
  *
  * @author	Lawrence Livermore National Laboratory
- * 			University of California
+ *      University of California
  */
 
 /**
@@ -380,8 +380,8 @@ log_cmds_portfw_msg(char *msg)
 #ifndef WIN32
 /**
  * @brief
- * 	Log a simple message to syslog
- * 	To be used from the qsub background daemon
+ * Log a simple message to syslog
+ * To be used from the qsub background daemon
  *
  * @param[in]	msg - string to be logged
  *
@@ -397,7 +397,7 @@ log_syslog(char *msg)
 
 /**
  * @brief
- * 	Process comma separated tokens with consideration for quotes.
+ * Process comma separated tokens with consideration for quotes.
  *
  * @param[in]	str	source string to scan for tokens
  *
@@ -725,7 +725,7 @@ x11_get_authstring(void)
 /**
  * @brief
  *	exit_qsub - issues the exit system call with the "exit" argument after
- * 	doing and needed library shutdown.
+ * doing and needed library shutdown.
  *
  * @param[in] exitstatus integer value indiacting exit
  *
@@ -778,8 +778,8 @@ static char *buf = NULL;
 static int buflen = 0;
 /**
  * @brief
- *  	This static internal function is used to easily resize a buffer
- * 	uses static variables buf, and buflen defined above
+ *  This static internal function is used to easily resize a buffer
+ * uses static variables buf, and buflen defined above
  *
  * @param bufused - Amount of the buffer used
  * @param lenreq - Amount of length required by new data
@@ -843,7 +843,7 @@ printLastError()
 /**
  * @brief
  *	Receive data of bufsize length from the peer. Used for communications
- * 	between the foreground and background qsub processes.
+ *  between the foreground and background qsub processes.
  *
  * @param[in]	s - pointer to the windows PIPE or Unix domain socket
  * @param[in]	buf - The buf to receive data into
@@ -902,7 +902,7 @@ dorecv(void *s, char *buf, int bufsize)
 /**
  * @brief
  *	Send data of bufsize length to the peer. Used for communications
- * 	between the foreground and background qsub processes.
+ *  between the foreground and background qsub processes.
  *
  * @param[in]	s - pointer to the windows PIPE or Unix domain socket
  * @param[in]	buf - The buf to send data from
@@ -1050,8 +1050,8 @@ recv_opts(void *s)
 /**
  * @brief
  *	Send the attrl list to the background qsub process. This is the
- * 	attribute  list that was created by the foreground process based on
- *	the options that the user has provided to qsub.
+ * attribute  list that was created by the foreground process based on
+ * the options that the user has provided to qsub.
  *
  * @param[in]	s - pointer to the windows PIPE or Unix domain socket
  * @parma[in]	attrib - List of attributes created by foreground qsub process
@@ -1078,6 +1078,8 @@ send_attrl(void *s, struct attrl *attrib)
 		lenV = strlen(attrib->value) + 1;
 
 		lenreq = lenN + lenR + lenV + 3 * sizeof(int);
+		if (attrib->resource)
+	    		lenreq += sizeof(int);
 		if (resize_buffer(bufused, lenreq) != 0)
 			return -1;
 
@@ -1099,6 +1101,11 @@ send_attrl(void *s, struct attrl *attrib)
 		}
 		memmove(p, attrib->value, lenV);
 		p += lenV;
+		/* if the attribute we are sending is a resource then send the operator also */
+		if (attrib->resource) {
+			memmove(p, &attrib->op, sizeof(int));
+			p += sizeof(int);
+		}
 
 		bufused += lenreq;
 
@@ -1113,8 +1120,8 @@ send_attrl(void *s, struct attrl *attrib)
 
 /**
  * @brief
- *  	Send a null terminated string to the peer process. Used by backrgound and
- * 	foreground qsub processes to communicate error-strings, job-ids etc.
+ *  Send a null terminated string to the peer process. Used by backrgound and
+ * foreground qsub processes to communicate error-strings, job-ids etc.
  *
  * @param[in]	s - pointer to the windows PIPE or Unix domain socket
  * @parma[in]	str - null terminated string to send
@@ -1139,8 +1146,8 @@ send_string(void *s, char *str)
 /**
  * @brief
  *	Recv the attrl list from the foreground qsub process. This is the
- * 	attribute  list that was created by the foreground process based on
- * 	the options that the user has provided to qsub.
+ * attribute  list that was created by the foreground process based on
+ * the options that the user has provided to qsub.
  *
  * @param[in]	s - pointer to the windows PIPE or Unix domain socket
  * @parma[in]	attrib - List of attributes created by foreground qsub process
@@ -1178,9 +1185,12 @@ recv_attrl(void *s, struct attrl **attrib)
 
 		if (lenR > 0) {
 			/* strings have null character also in buf */
+			/* if what we have received is a resource then there will also be an
+			 * integer "operator" appended after the value of the resource.
+			 */
 			set_attr_resc(&attr, p,
 				p + lenN,
-				p + lenN + lenR);
+				p + lenN + lenR, *(int*)(p + lenN + lenR + lenV));
 		} else {
 			/*
 			 * if value is ATTR_v, we need to add PBS_O_HOSTNAME to it
@@ -1201,6 +1211,8 @@ recv_attrl(void *s, struct attrl **attrib)
 			}
 		}
 		p += lenN + lenR + lenV;
+		if (lenR > 0)
+			p += sizeof(int);
 	}
 	*attrib = attr;
 	return 0;
@@ -1208,8 +1220,8 @@ recv_attrl(void *s, struct attrl **attrib)
 
 /**
  * @brief
- *  	Recv a null terminated string from the peer process. Used by backrgound and
- * 	foreground qsub processes to communicate error-strings, job-ids etc.
+ *  Recv a null terminated string from the peer process. Used by backrgound and
+ * foreground qsub processes to communicate error-strings, job-ids etc.
  *
  * @param[in]	s - pointer to the windows PIPE or Unix domain socket
  * @parma[in]	str - null terminated string to send
@@ -1234,10 +1246,10 @@ recv_string(void *s, char *str)
 
 /**
  * @brief
- *  	Recv a null terminated string from the peer process. Used by background and
- * 	foreground qsub processes to communicate error-strings, job-ids etc.
- * 	This is like recv_string() except the 'strp' parameter will hold a pointer
- * 	to a newly-malloced string holding the resultant string.
+ *  Recv a null terminated string from the peer process. Used by background and
+ * foreground qsub processes to communicate error-strings, job-ids etc.
+ * This is like recv_string() except the 'strp' parameter will hold a pointer
+ * to a newly-malloced string holding the resultant string.
  *
  * @param[in]	s - pointer to the windows PIPE or Unix domain socket
  * @parma[out]	strp - holds a pointer to the newly-malloced string.
@@ -1266,7 +1278,7 @@ recv_dyn_string(void *s, char **strp)
 
 /**
  * @brief
- *	strdup_esc_commas - duplicate a string escaping commas
+ * strdup_esc_commas - duplicate a string escaping commas
  *	The string is duplicated with all commas in the original string
  *	escaped by preceeding black slash 
  *
@@ -1337,7 +1349,7 @@ set_dir_prefix(char *prefix, int diropt)
 
 /**
  * @brief
- * 	interactive_port - get a socket to listen to for "interactive" job
+ * interactive_port - get a socket to listen to for "interactive" job
  *	When the "interactive" job is run, its standard in, out, and error
  *	will be connected to this socket.
  *
@@ -1393,7 +1405,7 @@ interactive_port()
 /**
  * @brief       
  *	This function creates a socket to listen for "X11" data
- *	and returns a port number where its listening for X data.
+ *              and returns a port number where its listening for X data.
  *
  * @return	char*
  * @retval	portstring	success
@@ -1442,7 +1454,7 @@ port_X11(void)
 
 /**
  * @brief
- * 	settermraw - set terminal into "raw" mode
+ * settermraw - set terminal into "raw" mode
  *
  * @param[in] ptio - pointer to termios structure
  *
@@ -1478,7 +1490,7 @@ struct termios *ptio;
 
 /**
  * @brief
- * 	stopme - suspend process on ~^Z or ~^Y
+ * stopme - suspend process on ~^Z or ~^Y
  *	on suspend, reset terminal to normal "cooked" mode;
  *	when resumed, again set terminal to raw.
  *
@@ -1498,8 +1510,8 @@ stopme(pid_t p)
 
 /**
  * @brief
- *	Interactive Reader process: reads from the remote socket,
- *	and writes that out to the stdout
+ * Interactive Reader process: reads from the remote socket,
+ *      and writes that out to the stdout
  *
  * @param[in] s - socket (file descriptor)
  *
@@ -1603,8 +1615,8 @@ reader_Xjob(int s)
 
 /**
  * @brief
- * 	Writer process: reads from stdin, and writes
- * 	data out to the rem socket
+ * Writer process: reads from stdin, and writes
+ * data out to the rem socket
  *
  * @param[in] s - file descriptor
  *
@@ -1692,7 +1704,7 @@ writer(int s)
 
 /**
  * @brief
- *	getwinsize - get the current window size
+ * getwinsize - get the current window size
  *
  * @param[in] pwsz - pointer to winsize structure
  *
@@ -1713,7 +1725,7 @@ getwinsize(struct winsize *pwsz)
 
 /**
  * @brief
- *	send_winsize = send the current tty's window size
+ * send_winsize = send the current tty's window size
  *
  * @param[in] sock - file descriptor 
  *
@@ -1733,7 +1745,7 @@ send_winsize(int sock)
 
 /**
  * @brief
- * 	send_term - send the current TERM type and certain control characters
+ * send_term - send the current TERM type and certain control characters
  *
  * @param[in] sock - file descriptor
  *
@@ -1770,7 +1782,7 @@ send_term(int sock)
 
 /**
  * @brief
- *	catchchild = signal handler for Death of Child
+ * catchchild = signal handler for Death of Child
  *
  * @param[in] sig - signal number
  *
@@ -1841,7 +1853,7 @@ close_sock(int sock)
 
 /**
  * @brief
- * 	send delete job request, disconnect with server and exit qsub
+ * send delete job request, disconnect with server and exit qsub
  *
  * @param[in]	ret	qsub exit code
  *
@@ -1923,7 +1935,7 @@ catchint(int sig)
 /**
  * @brief	
  *	This function initializes pfwdsock structure and eventually
- *	calls port_forwarder.
+ *		calls port_forwarder.
  *
  * @param[in]	X_data_socket - socket descriptor used to read X data from mom
  *				port forwarders.
@@ -2419,7 +2431,7 @@ block_port()
 		exit_qsub(1);
 	}
 	myaddr.sin_family = AF_INET;
-	myaddr.sin_addr.s_addr = INADDR_ANY;
+		myaddr.sin_addr.s_addr = INADDR_ANY;
 	myaddr.sin_port = 0;
 	if (bind(comm_sock, (struct sockaddr *)&myaddr, sizeof(myaddr)) < 0) {
 		perror("qsub: unable to bind to socket");
@@ -3153,8 +3165,8 @@ get_passwd()
 
 /**
  * @brief
- *  	This function processes all the options specified while submitting a job. It
- *  	validates all these options and sets their corresponding flags.
+ *  This function processes all the options specified while submitting a job. It
+ *  validates all these options and sets their corresponding flags.
  *
  * @param[in] argc  Number of options present in argv.
  * @param[in] argv  An array containing all the options and their values.
@@ -4094,8 +4106,8 @@ copy_env_value(char *dest, /* destination  */
 
 /**
  * @brief
- *	Constructs the basic comma-separated environment variables
- *	list string for a PBS job.
+ *		Constructs the basic comma-separated environment variables
+ *		list string for a PBS job.
  *
  * @return	char *
  * @retval	NULL for failure.
@@ -4299,12 +4311,12 @@ job_env_basic(void)
 
 /**
  * @brief
- *	Converts an array of environment variable=value strings,
- *	into a comma-separated variables list string that can be
- *	exported to a job.
+ *		Converts an array of environment variable=value strings,
+ *		into a comma-separated variables list string that can be
+ *		exported to a job.
  *
- * @par	 NOTE: Variables in the list beginning with "PBS_O" are ignored
- *	 as these will be preconstructed somewhere else.
+ * @par		NOTE: Variables in the list beginning with "PBS_O" are ignored
+ *		as these will be preconstructed somewhere else.
  *
  * @param[in]	envp - aray of strings making up the current environment.
  *
@@ -4368,11 +4380,11 @@ env_array_to_varlist(char **envp)
 
 /**
  * @brief
- *	Adds to the global 'attrib' structure an entry:
+ *		Adds to the global 'attrib' structure an entry:
  *
- *	"-v <basic_vlist>,<v_value>,<current_vlist>
- *	and this 'attrib' is something that will be passed onto a
- *	PBS job before submission.
+ *		  "-v <basic_vlist>,<v_value>,<current_vlist>
+ *		and this 'attrib' is something that will be passed onto a
+ *		PBS job before submission.
  *
  * @param[in]	basic_vlist - the basic variables list string of job.
  * @param[in]	curent_envlist - the variables list
@@ -4507,7 +4519,7 @@ final:
 
 /*
  * @brief
- *	set_opt_defaults - if not already set, set certain job attributes to
+ * set_opt_defaults - if not already set, set certain job attributes to
  *	their default value
  *
  */
@@ -5169,7 +5181,7 @@ regular_submit:
 /**
  * @brief
  *	Get the filename to be used for communications. This is created by
- *	appending the target server name and the user login name to a filename.
+ * appending the target server name and the user login name to a filename.
  *
  * @param[out]	fl - The filename used for the communication pipe/socket for
  *			the communication between background and forground
@@ -5789,16 +5801,16 @@ do_connect(char *server_out, char *retmsg)
 		sprintf(retmsg, "qsub: out of memory\n");
 		return (2);
 	}
-	if ((rc = gethostname(host, (sizeof(host) - 1))) == 0) {
-		if ((rc = get_fullhostname(host, host, (sizeof(host) - 1))) == 0) {
-			strcpy(pbs_hostvar, ",PBS_O_HOST=");
-			strcat(pbs_hostvar, host);
+		if ((rc = gethostname(host, (sizeof(host) - 1))) == 0) {
+			if ((rc = get_fullhostname(host, host, (sizeof(host) - 1))) == 0) {
+				strcpy(pbs_hostvar, ",PBS_O_HOST=");
+				strcat(pbs_hostvar, host);
+			}
 		}
-	}
-	if (rc != 0) {
-		sprintf(retmsg, "qsub: cannot get full local host name\n");
-		return (3);
-	}
+		if (rc != 0) {
+			sprintf(retmsg, "qsub: cannot get full local host name\n");
+			return (3);
+		}
 	return 0;
 }
 
@@ -6158,7 +6170,7 @@ dup_attrl(struct attrl *attrib)
 			/* strings have null character also in buf */
 			set_attr_resc(&attr_new, attr->name,
 				attr->resource,
-				attr->value);
+				attr->value, attr->op);
 		} else {
 			set_attr(&attr_new, attr->name, attr->value);
 		}

@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 1994-2016 Altair Engineering, Inc.
  * For more information, contact Altair at www.altair.com.
- *  
+ *
  * This file is part of the PBS Professional ("PBS Pro") software.
- * 
+ *
  * Open Source License Information:
  *  
  * PBS Pro is free software. You can redistribute it and/or modify it under the
@@ -138,7 +138,7 @@ extern	int		internal_state_update; /* flag for sending mom information update to
 
 /**
  * @brief
- * 	Print job data into stream pointed by 'fp'.
+ * Print job data into stream pointed by 'fp'.
  *
  * @param[in]	fp - stream pointer where data is flushed
  * @param[in]	pjob - pointer to job whose data is being printed out
@@ -1076,7 +1076,7 @@ run_hook(hook *phook, unsigned int event_type, mom_hook_input_t *hook_input,
 						EVENT_OBJECT, PY_EVENT_PARAM_PROGNAME,
 						progname);
 				}
-
+	
 				if (argv != NULL) {
 					k=0;
 					while (argv[k]) {
@@ -1087,7 +1087,7 @@ run_hook(hook *phook, unsigned int event_type, mom_hook_input_t *hook_input,
 						k++;
 					}
 				}
-
+	
 				env_str = env_array_to_str(env, ",");
 				if (env_str != NULL) {
 					if (env_str[0] != '\0') {
@@ -2115,7 +2115,7 @@ get_hook_results(char *input_file, int *accept_flag, int *reject_flag,
 						free_attrlist(ar_list);
 					}
 					add_to_svrattrl_list(ar_list, name_str, resc_str,
-									data_value, 0, NULL);
+									data_value, 0, NULL, EQ);
 				}
 			} else if (strcmp(name_str, PY_EVENT_PARAM_ENV) == 0) {
 				if (hook_output != NULL) {
@@ -3012,16 +3012,16 @@ mom_process_hooks(unsigned int hook_event, char *req_user, char *req_host,
 
 			if (hook_output != NULL) {
 
-				if (hook_output->progname != NULL) {
+				if (hook_output->progname != NULL) {	
 					hook_input->progname = *hook_output->progname;
 				}
 
 				if (hook_output->env != NULL) {
 					hook_input->env = hook_output->env;
 				}
+
 				hook_input->argv = svrattrl_to_str_array(hook_output->argv);
 			}
-
 		}
 
 		rc = run_hook(phook, hook_event, hook_input,

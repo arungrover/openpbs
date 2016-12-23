@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 1994-2016 Altair Engineering, Inc.
  * For more information, contact Altair at www.altair.com.
- *  
+ *
  * This file is part of the PBS Professional ("PBS Pro") software.
- * 
+ *
  * Open Source License Information:
  *  
  * PBS Pro is free software. You can redistribute it and/or modify it under the
@@ -38,7 +38,7 @@
  * @file    svr_func.c
  *
  * @brief
- * 		svr_func.c - miscellaneous server functions
+ * svr_func.c - miscellaneous server functions
  *
  * Functions included are:
  * 	encode_svrstate()
@@ -275,8 +275,8 @@ static char *svr_state_names[] = {
 
 /**
  * @brief
- * 		encode_svrstate - encode the current server state from the internal
- *		integer to a state name string.
+ * encode_svrstate - encode the current server state from the internal
+ *	integer to a state name string.
  *
  * @param[in]	pattr	-	ptr to attribute
  * @param[in,out]	phead	-	head of attrlist list
@@ -327,9 +327,9 @@ encode_svrstate(attribute *pattr, pbs_list_head *phead, char *atname, char *rsna
 
 /**
  * @brief
- * 		set_resc_assigned - updates server and/or queue resources_assigned
- *		attribute depending on to what kind of object the first argument
- *		points and possibly on what value of "state" the object has
+ * set_resc_assigned - updates server and/or queue resources_assigned
+ *	attribute depending on to what kind of object the first argument
+ *	points and possibly on what value of "state" the object has
  *
  * @param[in,out]	pobj	-	pointer to reservation or object based on the type
  * @param[in]	objtype	-	0=job, 1=reservation
@@ -539,8 +539,8 @@ ck_chkpnt(attribute *pattr, void *pobject, int mode)
 
 /**
  * @brief
- * 		decode_null - Null attribute decode routine for Read Only (server
- *		and queue ) attributes.  It just returns 0.
+ * decode_null - Null attribute decode routine for Read Only (server
+ *	and queue ) attributes.  It just returns 0.
  *
  * @param[in]	patr	-	not used
  * @param[in]	name	-	not used
@@ -558,7 +558,7 @@ decode_null(attribute *patr, char *name, char *rn, char *val)
 
 /**
  * @brief
- * 		set_null - Null set routine for Read Only attributes.
+ * set_null - Null set routine for Read Only attributes.
  *
  * @param[in]	pattr	-	not used
  * @param[in]	new	-	not used
@@ -575,8 +575,8 @@ set_null(attribute *pattr, attribute *new, enum batch_op op)
 
 /**
  * @brief
- * 		cred_name_okay - action routine for the "required_cred" attribute.
- *		Check to make sure the cred name is okay.
+ * cred_name_okay - action routine for the "required_cred" attribute.
+ *	Check to make sure the cred name is okay.
  *
  * @param[in]	pattr	-	pointer to attribute structure
  * @param[in]	pobj	-	not used
@@ -613,8 +613,8 @@ cred_name_okay(attribute *pattr, void *pobj, int actmode)
 
 /**
  * @brief
- * 		poke_scheduler - action routine for the server's "scheduling" attribute.
- *		Call the scheduler whenever the attribute is set (or reset) to true.
+ * poke_scheduler - action routine for the server's "scheduling" attribute.
+ *	Call the scheduler whenever the attribute is set (or reset) to true.
  *
  * @param[in]	pattr	-	pointer to attribute structure
  * @param[in]	pobj	-	not used
@@ -637,8 +637,8 @@ poke_scheduler(attribute *pattr, void *pobj, int actmode)
 
 /**
  * @brief
- * 		set_reserve_retry_init - action routine for the server's
- * 		"reserve_retry_init" attribute.
+ * set_reserve_retry_init - action routine for the server's
+ * "reserve_retry_init" attribute.
  *
  * @param[in]	pattr	-	pointer to attribute structure
  * @param[in]	pobj	-	not used
@@ -671,8 +671,8 @@ set_reserve_retry_init(attribute *pattr, void *pobj, int actmode)
 
 /**
  * @brief
- * 		set_reserve_retry_cutoff - action routine for the server's
- * 		"reserve_retry_cutoff" attribute.
+ * set_reserve_retry_cutoff - action routine for the server's
+ * "reserve_retry_cutoff" attribute.
  *
  * @param[in]	pattr	-	pointer to attribute structure
  * @param[in]	pobj	-	not used
@@ -705,7 +705,7 @@ set_reserve_retry_cutoff(attribute *pattr, void *pobj, int actmode)
 
 /**
  * @brief
- * 		set_rpp_retry - action routine for the server's "rpp_retry" attribute.
+ * set_rpp_retry - action routine for the server's "rpp_retry" attribute.
  *
  * @param[in]	pattr	-	pointer to attribute structure
  * @param[in]	pobj	-	not used
@@ -740,8 +740,8 @@ set_rpp_retry(attribute *pattr, void *pobj, int actmode)
 
 /**
  * @brief
- * 		set_rpp_highwater - action routine for the server's "rpp_highwater"
- * 		attribute.
+ * set_rpp_highwater - action routine for the server's "rpp_highwater"
+ * attribute.
  *
  * @param[in]	pattr	-	pointer to attribute structure
  * @param[in]	pobj	-	not used
@@ -771,9 +771,9 @@ set_rpp_highwater(attribute *pattr, void *pobj, int actmode)
 
 /**
  * @brief
- * 		set_sched_sock - set the internal socket used to communicate with the
- *		scheduler.   Done here because also need to invalidate the server
- *		state attribute cache.
+ * set_sched_sock - set the internal socket used to communicate with the
+ *	scheduler.   Done here because also need to invalidate the server
+ *	state attribute cache.
  *
  * @param[in]	s	-	internal socket used to communicate with the scheduler
  */
@@ -787,7 +787,7 @@ set_sched_sock(int s)
 
 /**
  * @brief
- *		is_valid_resource - action function to make sure attribute value is
+ *	is_valid_resource - action function to make sure attribute value is
  *			        a valid resource of type string
  *
  * @param[in]	pattr	-	pointer to attribute structure
@@ -829,22 +829,22 @@ is_valid_resource(attribute *pattr, void *pobject, int actmode)
 
 /**
  * @brief
- *		The action function for the "single_signon_password_enable" server
- *		attribute, which validates transitions between "true" and "false"
- *		values.
+ *	The action function for the "single_signon_password_enable" server
+ *	attribute, which validates transitions between "true" and "false"
+ *	values.
  *
- * @param[in]	pattr	-	target "single_signon_password_enable" attribute value
- * @param[in]	pobject -	pointer to some parent object.(required but unused here)
- * @param[in]	actmode	-	the action to take (e.g. ATR_ACTION_ALTER)
+ * @param[in] pattr - target "single_signon_password_enable" attribute value
+ * @param[in] pobject - pointer to some parent object.(required but unused here)
+ * @param[in] actmode - the action to take (e.g. ATR_ACTION_ALTER)
  *
- * @return	Whether or not okay to set to new value.
+ * @return Whether or not okay to set to new value.
  * @retval	0	: Action is okay.
  * @retval	PBSE_SSIGNON_BAD_TRANSITION1	:
- * 				single_signon_password_enable from true to false: jobs exist!
+ *	single_signon_password_enable from true to false: jobs exist!
  *
  * @retval	PBSE_SSIGNON_BAD_TRANSITION2	:
- * 				single_signon_password_enable from false to true: not all jobs have a
- *      		bad password hold!
+ * 	single_signon_password_enable from false to true: not all jobs have a
+ *      bad password hold!
  */
 int
 ssignon_transition_okay(attribute *pattr, void *pobject, int actmode)
@@ -906,10 +906,10 @@ ssignon_transition_okay(attribute *pattr, void *pobject, int actmode)
 
 /**
  * @brief
- * 		deflt_chunk_action - the "action" routine for the queue and server
- *		default_chunk attribute
+ * deflt_chunk_action - the "action" routine for the queue and server
+ *	default_chunk attribute
  * @par
- *		Builds an array of key_value_pair structures for the defaults
+ *	Builds an array of key_value_pair structures for the defaults
  *
  * @param[in]	pattr	-	pointer to attribute structure
  * @param[in]	pobject -	pointer to some parent object.
@@ -1030,10 +1030,10 @@ deflt_chunk_action(attribute *pattr, void *pobj, int mode)
 
 /**
  * @brief
- *		set_license_location - action function for the pbs_licensing_license_location
+ *	set_license_location - action function for the pbs_licensing_license_location
  * 				server attribute.
  *
- *  	NOTE: The SRV_ATR_license_location atribute is opaque to us - it's a
+ *  NOTE: The SRV_ATR_license_location atribute is opaque to us - it's a
  *        place where the admin can specify the value for
  *        "pbs_licensing_license_location", which is what is consulted by the
  *        license server functions.
@@ -1103,7 +1103,7 @@ set_license_location(attribute *pattr, void *pobject, int actmode)
 
 /**
  * @brief
- *		unset_license_location - set the floating licensing
+ *	unset_license_location - set the floating licensing
  * 				server attribute to default value.
  *
  */
@@ -1213,7 +1213,7 @@ unset_node_fail_requeue(void)
 
 /**
  * @brief
- *		set_license_min - action function for the pbs_license_min server
+ *	set_license_min - action function for the pbs_license_min server
  *			  attribute.
  *
  * @param[in]	pattr	-	pointer to attribute structure
@@ -1245,7 +1245,7 @@ set_license_min(attribute *pattr, void *pobject, int actmode)
 
 /**
  * @brief
- *		unset_license_min - set the the pbs_license_min server
+ *	unset_license_min - set the the pbs_license_min server
  *			  attribute to default value.
  */
 void
@@ -1262,7 +1262,7 @@ unset_license_min(void)
 
 /**
  * @brief
- *		set_license_max - action function for the pbs_license_max server
+ *	set_license_max - action function for the pbs_license_max server
  *			  attribute.
  *
  * @param[in]	pattr	-	pointer to attribute structure
@@ -1295,7 +1295,7 @@ set_license_max(attribute *pattr, void *pobject, int actmode)
 
 /**
  * @brief
- *		unset_license_max - set pbs_license_max server
+ *	unset_license_max - set pbs_license_max server
  *			  attribute to default value.
  */
 void
@@ -1312,7 +1312,7 @@ unset_license_max(void)
 
 /**
  * @brief
- *		set_license_linger - action function for the pbs_license_linger server
+ *	set_license_linger - action function for the pbs_license_linger server
  *			  attribute.
  *
  * @param[in]	pattr	-	pointer to attribute structure
@@ -1346,7 +1346,7 @@ set_license_linger(attribute *pattr, void *pobject, int actmode)
 
 /**
  * @brief
- *		unset_license_linger - set pbs_license_linger server
+ *	unset_license_linger - set pbs_license_linger server
  *			  attribute to default value.
  */
 void
@@ -1363,18 +1363,18 @@ unset_license_linger(void)
 
 /**
  * @brief
- *		Function name: unset_job_history_enable
+ *	Function name: unset_job_history_enable
  * @par
- *		Description: It is called when the job_history_enable attr will be
+ *	Description: It is called when the job_history_enable attr will be
  *		     unset through "qmgr".
  * @par
- *		Purpose: If the job_history_enable server attribute is unset, then
+ *	Purpose: If the job_history_enable server attribute is unset, then
  *		 set the global svr_history_enable to '0' and purge all the
  *		 the history jobs available in the server immediately. Also
  *		 will be called if job_history_enable set to 0.
  * @par
- *		Input : None
- *		Output: None
+ *	Input : None
+ *	Output: None
  */
 void
 unset_job_history_enable(void)
@@ -1415,7 +1415,7 @@ unset_job_history_enable(void)
 
 /**
  * @brief
- *		set_job_history_enable - action function for the job_history_enable server
+ *	set_job_history_enable - action function for the job_history_enable server
  *			  attribute.
  *
  * @param[in]	pattr	-	pointer to attribute structure
@@ -1445,7 +1445,7 @@ set_job_history_enable(attribute *pattr, void *pobject, int actmode)
 
 /**
  * @brief
- *		set_log_events - action function for the log_events
+ *	set_log_events - action function for the log_events
  *			  server attribute, also sets the tpp logmask
  *
  * @param[in]	pattr	-	pointer to attribute structure
@@ -1459,7 +1459,7 @@ int
 set_log_events(attribute *pattr, void *pobject, int actmode)
 {
 	if ((actmode == ATR_ACTION_ALTER) ||
-		(actmode == ATR_ACTION_RECOV)) {
+			(actmode == ATR_ACTION_RECOV)) {
 		tpp_set_logmask(pattr->at_val.at_long);
 	}
 	return (PBSE_NONE);
@@ -1467,7 +1467,7 @@ set_log_events(attribute *pattr, void *pobject, int actmode)
 
 /**
  * @brief
- *		set_job_history_duration - action function for the job_history_duration
+ *	set_job_history_duration - action function for the job_history_duration
  *			  server attribute.
  *
  * @param[in]	pattr	-	pointer to attribute structure
@@ -1499,7 +1499,7 @@ set_job_history_duration(attribute *pattr, void *pobject, int actmode)
 
 /**
  * @brief
- *		unset_job_history_duration - set job_history_duration server
+ *	unset_job_history_duration - set job_history_duration server
  *			  attribute to default value.
  */
 void
@@ -1516,7 +1516,7 @@ unset_job_history_duration(void)
 
 /**
  * @brief
- *		eligibletime_action - set/unset ATR_VFLAG_SET flag for
+ *	eligibletime_action - set/unset ATR_VFLAG_SET flag for
  *			      all jobs in server.
  *
  * @param[in]	pattr	-	pointer to attribute structure
@@ -1576,9 +1576,9 @@ eligibletime_action(attribute *pattr, void *pobject, int actmode)
 
 /**
  * @brief
- *		decode_formula - decode the job sort formula from a secure file
+ *	decode_formula - decode the job sort formula from a secure file
  * @par
- *		returns value from decode_str
+ *	returns value from decode_str
  *
  * @param[in]	patr	-	pointer to attribute structure
  * @param[in]	name	-	attribute name
@@ -1641,7 +1641,7 @@ decode_formula(attribute *patr, char *name, char *rescn, char *val)
 }
 
 /*
- *  Following datum and functions are used to enforce the rule that the
+ * Following datum and functions are used to enforce the rule that the
  * entity-limits (entlims) attributes cannot be used if the old style
  * user/group/run limeits are in use and vice versa.
  *
@@ -1712,7 +1712,7 @@ extern pbs_list_head svr_queues;
 /**
  * @brief
  * 		is_attrs_in_list_set - for a list of certain attributes, is any of them
- * 		set in the parent objects array of attributes
+ * 	set in the parent objects array of attributes
  *
  * @param[in]	wlist	-	style of queue/server
  * @param[in]	attrs	-	pointer to attribute structure
@@ -1734,8 +1734,8 @@ is_attrs_in_list_set(int *wlist, attribute *attrs)
 
 /**
  * @brief
- * 		log_mixed_limit_controls - log a message when the administrator attempts
- *		to mix the type of queue/run limits.
+ * log_mixed_limit_controls - log a message when the administrator attempts
+ *	to mix the type of queue/run limits.
  *
  * @param[in]	pq	-	pointer to the queue
  * @param[in]	index	-	index of queue/server attribute definition structure
@@ -1764,8 +1764,8 @@ log_mixed_limit_controls(pbs_queue *pq, int index, char *type)
 
 /**
  * @brief
- * 		action_entlim_chk - the at_action for the entity attribute
- *		Prevents old and new type controls from being used at same time
+ * action_entlim_chk - the at_action for the entity attribute
+ *	Prevents old and new type controls from being used at same time
  *
  * @param[in]	pattr	-	pointer to attribute structure(not used here)
  * @param[in]	pobject -	pointer to some parent object.(not used here)
@@ -1810,8 +1810,8 @@ action_entlim_chk(attribute *pattr, void *pobject, int actmode)
 
 /**
  * @brief
- * 		entlim_resum - Re-totals the entity usage, either count or resources
- *		for a specific entity limit attribute
+ * entlim_resum - Re-totals the entity usage, either count or resources
+ *	for a specific entity limit attribute
  *
  * @param[in]	pwt	-	pointer to work task structure
  */
@@ -1911,9 +1911,9 @@ entlim_resum(struct work_task *pwt)
 
 /**
  * @brief
- * 		action_entlim_ct - the at_action for the entity job count attributes
- *		calls the common "action_entlim" function with an zero flag to indicate
- *		that the entity limit is a count limit.
+ * action_entlim_ct - the at_action for the entity job count attributes
+ *	calls the common "action_entlim" function with an zero flag to indicate
+ *	that the entity limit is a count limit.
  *
  * @param[in]	pattr	-	pointer to attribute structure
  * @param[in]	pobject -	pointer to some parent object.
@@ -1950,9 +1950,9 @@ action_entlim_ct(attribute *pattr, void *pobject, int actmode)
 
 /**
  * @brief
- * 		action_entlim_res - the at_action for the entity resource limit attributes
- *		calls the common "action_entlim" function with the flag indicating
- *		that the entity limit is a resource limit.
+ * action_entlim_res - the at_action for the entity resource limit attributes
+ *	calls the common "action_entlim" function with the flag indicating
+ *	that the entity limit is a resource limit.
  *
  * @param[in]	pattr	-	pointer to attribute structure
  * @param[in]	pobject -	pointer to some parent object.
@@ -1990,9 +1990,9 @@ action_entlim_res(attribute *pattr, void *pobject, int actmode)
 
 /**
  * @brief
- * 		check_no_entlim - checks for conflicting attributes which restrict what can
- *		run or be enqueued.  If an old style is being set, the newer "entlim"
- *		types cannot be set.
+ * check_no_entlim - checks for conflicting attributes which restrict what can
+ *	run or be enqueued.  If an old style is being set, the newer "entlim"
+ *	types cannot be set.
  *
  * @param[in]	pattr	-	pointer to attribute structure
  * @param[in]	pobject -	pointer to some parent object.
@@ -2151,15 +2151,16 @@ check_single_entity_res(enum lim_keytypes kt, char *ename,
 			plf->slf_rescd->rs_set(&tmpval, &oldr->rs_value, DECR);
 		/* add in requested amount */
 		plf->slf_rescd->rs_set(&tmpval, &newr->rs_value, INCR);
+		tmpval.op = newr->rs_value.op;
 	} else if (kt == LIM_OVERALL)
-	return No_Limit;
+		return No_Limit;
 	else
 		tmpval = newr->rs_value;	/* set to requested amount */
 
 	if (plf && (plf->slf_limit.at_flags & ATR_VFLAG_SET)) {
 		/* check the specific user's limit */
 		rc = plf->slf_rescd->rs_comp(&tmpval, &plf->slf_limit);
-		if (rc > 0)
+		if ((rc > 0) || ((tmpval.op == GT) || (tmpval.op == GE)))
 			return Exceeds_Limit;
 		else
 			return Within_Limit;
@@ -2172,7 +2173,7 @@ check_single_entity_res(enum lim_keytypes kt, char *ename,
 		free(kstr);
 		if (plf && (plf->slf_limit.at_flags & ATR_VFLAG_SET)) {
 			rc=plf->slf_rescd->rs_comp(&tmpval, &plf->slf_limit);
-			if (rc > 0)
+			if ((rc > 0) || ((tmpval.op == GT) || (tmpval.op == GE)))
 				return Exceeds_Generic;
 			else
 				return Within_Limit;
@@ -2183,12 +2184,12 @@ check_single_entity_res(enum lim_keytypes kt, char *ename,
 
 /**
  * @brief
- * 		check_entity_ct_limit_queued() - called to see if a job can be enqueued
- *		1. Called when new job is arriving against server attributes:
- *	   		- pque will be null
- *		2. Called to check against queue attributes on any enqueue
- *	   	(submit, move or route):
- *	   	- pque will point to queue struct, i.e. not null
+ * check_entity_ct_limit_queued() - called to see if a job can be enqueued
+ *	1. Called when new job is arriving against server attributes:
+ *	   - pque will be null
+ *	2. Called to check against queue attributes on any enqueue
+ *	   (submit, move or route):
+ *	   - pque will point to queue struct, i.e. not null
  *
  * @param[in]	pjob	-	new job
  * @param[in]	pque	-	any enqueue
@@ -2197,7 +2198,7 @@ check_single_entity_res(enum lim_keytypes kt, char *ename,
  * @retval	zero	: within defined limit
  * @retval	PBS_Enumber	: if limit exceeded
  * @note
- *		On an error, a formatted message is attached to the job in ji_
+ *	On an error, a formatted message is attached to the job in ji_
  */
 int
 check_entity_ct_limit_queued(job *pjob, pbs_queue *pque)
@@ -2343,12 +2344,12 @@ check_entity_ct_limit_queued(job *pjob, pbs_queue *pque)
 
 /**
  * @brief
- * 		check_entity_ct_limit_max() - called to see if a job can be enqueued
- *		1. Called when new job is arriving against server attributes:
- *	   	- pque will be null
- *		2. Called to check against queue attributes on any enqueue
- *	   	(submit, move or route):
- *	   	- pque will point to queue struct, i.e. not null
+ * check_entity_ct_limit_max() - called to see if a job can be enqueued
+ *	1. Called when new job is arriving against server attributes:
+ *	   - pque will be null
+ *	2. Called to check against queue attributes on any enqueue
+ *	   (submit, move or route):
+ *	   - pque will point to queue struct, i.e. not null
  *
  * @param[in]	pjob	-	new job
  * @param[in]	pque	-	any enqueue
@@ -2357,7 +2358,7 @@ check_entity_ct_limit_queued(job *pjob, pbs_queue *pque)
  * @retval	zero	: within defined limit
  * @retval	PBS_Enumber	: if limit exceeded
  * @note
- *		On an error, a formatted message is attached to the job in ji_
+ *	On an error, a formatted message is attached to the job in ji_
  */
 int
 check_entity_ct_limit_max(job *pjob, pbs_queue *pque)
@@ -2502,13 +2503,13 @@ check_entity_ct_limit_max(job *pjob, pbs_queue *pque)
 
 /**
  * @brief
- * 		check_entity_res_limit_queued() - called to see if a job can be enqueued
- *		based on requested (or altered) job wide resources
- *		1. Called when new job is arriving against server attributes:
- *	   	- pque will be null
- *		2. Called to check against queue attributes on any enqueue
- *	   	(submit, move or route):
- *	   	- pque will point to queue struct, i.e. not null
+ * check_entity_res_limit_queued() - called to see if a job can be enqueued
+ *	based on requested (or altered) job wide resources
+ *	1. Called when new job is arriving against server attributes:
+ *	   - pque will be null
+ *	2. Called to check against queue attributes on any enqueue
+ *	   (submit, move or route):
+ *	   - pque will point to queue struct, i.e. not null
  *
  * @param[in]	pjob	-	new job
  * @param[in]	pque	-	any enqueue
@@ -2518,7 +2519,7 @@ check_entity_ct_limit_max(job *pjob, pbs_queue *pque)
  * @retval	zero	: within defined limit
  * @retval	PBS_Enumber	: if limit exceeded
  * @note
- *		Error message text returned in ebuffer if limit exceeded
+ *	Error message text returned in ebuffer if limit exceeded
  */
 int
 check_entity_resc_limit_queued(job *pjob, pbs_queue *pque, attribute *altered_resc)
@@ -2729,13 +2730,13 @@ check_entity_resc_limit_queued(job *pjob, pbs_queue *pque, attribute *altered_re
 
 /**
  * @buffer
- * 		check_entity_res_limit_max() - called to see if a job can be enqueued
- *		based on requested (or altered) job wide resources
- *		1. Called when new job is arriving against server attributes:
- *	   	- pque will be null
- *		2. Called to check against queue attributes on any enqueue
- *	   	(submit, move or route):
- *	   	- pque will point to queue struct, i.e. not null
+ * check_entity_res_limit_max() - called to see if a job can be enqueued
+ *	based on requested (or altered) job wide resources
+ *	1. Called when new job is arriving against server attributes:
+ *	   - pque will be null
+ *	2. Called to check against queue attributes on any enqueue
+ *	   (submit, move or route):
+ *	   - pque will point to queue struct, i.e. not null
  *
  * @param[in]	pjob	-	new job
  * @param[in]	pque	-	any enqueue
@@ -2745,7 +2746,7 @@ check_entity_resc_limit_queued(job *pjob, pbs_queue *pque, attribute *altered_re
  * @retval	zero	: within defined limit
  * @retval	PBS_Enumber	: if limit exceeded
  * @note
- * 		Error message text returned in ebuffer if limit exceeded
+ *	Error message text returned in ebuffer if limit exceeded
  */
 int
 check_entity_resc_limit_max(job *pjob, pbs_queue *pque, attribute *altered_resc)
@@ -2803,9 +2804,15 @@ check_entity_resc_limit_max(job *pjob, pbs_queue *pque, attribute *altered_resc)
 
 	if (altered_resc) {
 		pattr_new = altered_resc;
-		pattr_old = &pjob->ji_wattr[(int)JOB_ATR_resource];
+		if ( pjob->ji_wattr[(int)JOB_ATR_max_resc_req].at_flags & ATR_VFLAG_SET)
+			pattr_old = &pjob->ji_wattr[(int)JOB_ATR_max_resc_req];
+		else
+			pattr_old = &pjob->ji_wattr[(int)JOB_ATR_resource];
 	} else {
-		pattr_new = &pjob->ji_wattr[(int)JOB_ATR_resource];
+		if ( pjob->ji_wattr[(int)JOB_ATR_max_resc_req].at_flags & ATR_VFLAG_SET)
+			pattr_new = &pjob->ji_wattr[(int)JOB_ATR_max_resc_req];
+		else
+			pattr_new = &pjob->ji_wattr[(int)JOB_ATR_resource];
 		pattr_old = (attribute *)0;	/* null */
 	}
 
@@ -2956,7 +2963,7 @@ check_entity_resc_limit_max(job *pjob, pbs_queue *pque, attribute *altered_resc)
 
 /**
  * @brief
- * 		set_single_entity_ct - incr/decr a count for a single entity (user/group/all)
+ * set_single_entity_ct - incr/decr a count for a single entity (user/group/all)
  *		for an attribute owned by queue or server
  * @see
  *		set_entity_ct_sum()
@@ -3121,19 +3128,19 @@ set_single_entity_res(enum lim_keytypes kt, char *ename,
 		snprintf(log_buffer, LOG_BUF_SIZE-1, "...adjusting Entity resc for reskey %s ", kstr);
 		log_event(PBSEVENT_DEBUG4, PBS_EVENTCLASS_SERVER, LOG_ERR, msg_daemonname, log_buffer);
 	}
-	free(kstr);
+				free(kstr);
 	return PBSE_NONE;
 }
 
 /**
  * @brief
- * 		set_entity_ct_sum_queued() - set (increment/decrement) entity usage sum
- *		1.Againt Server attribute (pque will be null):
- *	   		a. Called when new job is arriving (INCR)
- *	   		b. Called when job is purged (DECR)
- *		2. against queue attributes
- *	   		a. on any enqueue (INCR) or
- *	   		b. any dequeue (DECR)
+ * set_entity_ct_sum_queued() - set (increment/decrement) entity usage sum
+ *	1.Againt Server attribute (pque will be null):
+ *	   a. Called when new job is arriving (INCR)
+ *	   b. Called when job is purged (DECR)
+ *	2. against queue attributes
+ *	   a. on any enqueue (INCR) or
+ *	   b. any dequeue (DECR)
  *
  * @param[in]	pjob	-	pointer to job structure
  * @param[in]	pque	-	pque will point to queue structure, i.e. not be null
@@ -3376,14 +3383,14 @@ int revert_entity_resources(attribute *pmaxqresc, attribute *pattr_old,
 
 /**
  * @brief
- * 		set_entity_resc_sum_queued() - set entity resource usage
- *		based on requested (or altered) job wide resources
- *		1. Called against server attributes (pque will be null):
- *	   		a. When new job arrives (INCR)
- *	   		b. when job is purged (DECR)
- *		2. Called against queue attributes (pque will point to queue struct):
- *	   		a. on any enqueue (INCR), or
- *	   		b. on any dequeue (DECR)
+ * set_entity_resc_sum_queued() - set entity resource usage
+ *	based on requested (or altered) job wide resources
+ *	1. Called against server attributes (pque will be null):
+ *	   a. When new job arrives (INCR)
+ *	   b. when job is purged (DECR)
+ *	2. Called against queue attributes (pque will point to queue struct):
+ *	   a. on any enqueue (INCR), or
+ *	   b. on any dequeue (DECR)
  *
  * @param[in,out]	pjob	-	pointer to job structure
  * @param[in]	pque	-	pque will point to queue structure, i.e. not be null
@@ -3509,7 +3516,7 @@ set_entity_resc_sum_queued(job *pjob, pbs_queue *pque, attribute *altered_resc,
 				if (presc_new != presc_first)
 					if(revert_entity_resources(pmaxqresc, pattr_old, presc_new, presc_old, presc_first, egroup, euser, project, rev_op) != 0)	
 						log_err(PBSE_INTERNAL, __func__, "Error in revert_entity_resources");
-				return rc;
+			return rc;
 			} else { 
 				if (!rc_final) 
 					rc_final = rc;
@@ -3532,7 +3539,7 @@ set_entity_resc_sum_queued(job *pjob, pbs_queue *pque, attribute *altered_resc,
 				if (presc_new != presc_first)
 					if(revert_entity_resources(pmaxqresc, pattr_old, presc_new, presc_old, presc_first, egroup, euser, project, rev_op) != 0)
 						log_err(PBSE_INTERNAL, __func__, "Error in revert_entity_resources");
-				return rc;
+			return rc;
 			} else {
 				if (!rc_final) 
 					rc_final = rc;
@@ -3561,7 +3568,7 @@ set_entity_resc_sum_queued(job *pjob, pbs_queue *pque, attribute *altered_resc,
 				if (presc_new != presc_first)
                                         if(revert_entity_resources(pmaxqresc, pattr_old, presc_new, presc_old, presc_first, egroup, euser, project, rev_op) != 0)
                                                 log_err(PBSE_INTERNAL, __func__, "Error in revert_entity_resources");
-				return rc;
+			return rc;
 			} else {
 				if (!rc_final) 
 					rc_final = rc;
@@ -3593,7 +3600,7 @@ set_entity_resc_sum_queued(job *pjob, pbs_queue *pque, attribute *altered_resc,
 				if (presc_new != presc_first)
 					if(revert_entity_resources(pmaxqresc, pattr_old, presc_new, presc_old, presc_first, egroup, euser, project, rev_op) != 0)
 						log_err(PBSE_INTERNAL, __func__, "Error in revert_entity_resources");
-				return rc;
+			return rc;
 			} else {
 				if (!rc_final) 
 					rc_final = rc;
@@ -3616,14 +3623,14 @@ set_entity_resc_sum_queued(job *pjob, pbs_queue *pque, attribute *altered_resc,
 
 /**
  * @brief
- * 		set_entity_res_sum_max() - set entity resource usage
- *		based on requested (or altered) job wide resources
- *		1. Called against server attributes (pque will be null):
- *	   		a. When new job arrives (INCR)
- *	   		b. when job is purged (DECR)
- *		2. Called against queue attributes (pque will point to queue struct):
- *	   		a. on any enqueue (INCR), or
- *	   		b. on any dequeue (DECR)
+ * set_entity_res_sum_max() - set entity resource usage
+ *	based on requested (or altered) job wide resources
+ *	1. Called against server attributes (pque will be null):
+ *	   a. When new job arrives (INCR)
+ *	   b. when job is purged (DECR)
+ *	2. Called against queue attributes (pque will point to queue struct):
+ *	   a. on any enqueue (INCR), or
+ *	   b. on any dequeue (DECR)
  *
  * @param[in]	pjob	-	pointer to job structure
  * @param[in]	pque	-	pque will point to queue structure, i.e. not be null
@@ -3674,9 +3681,15 @@ set_entity_resc_sum_max(job *pjob, pbs_queue *pque, attribute *altered_resc,
 
 	if (altered_resc) {
 		pattr_new = altered_resc;
-		pattr_old = &pjob->ji_wattr[(int)JOB_ATR_resource];
+		if ( pjob->ji_wattr[(int)JOB_ATR_max_resc_req].at_flags & ATR_VFLAG_SET)
+			pattr_old = &pjob->ji_wattr[(int)JOB_ATR_max_resc_req];
+		else
+			pattr_old = &pjob->ji_wattr[(int)JOB_ATR_resource];
 	} else {
-		pattr_new = &pjob->ji_wattr[(int)JOB_ATR_resource];
+		if ( pjob->ji_wattr[(int)JOB_ATR_max_resc_req].at_flags & ATR_VFLAG_SET)
+			pattr_new= &pjob->ji_wattr[(int)JOB_ATR_max_resc_req];
+		else
+			pattr_new = &pjob->ji_wattr[(int)JOB_ATR_resource];
 		pattr_old = (attribute *)0;	/* null */
 	}
 
@@ -3714,7 +3727,6 @@ set_entity_resc_sum_max(job *pjob, pbs_queue *pque, attribute *altered_resc,
 			|| ((presc_new->rs_defin->rs_entlimflg & PBS_ENTLIM_LIMITSET)==0))
 			continue;
 
-
 		/* If this is from qalter where presc_old is set, see if    */
 		/* corresponding resource is in presc_old, had a pior value */
 
@@ -3744,7 +3756,7 @@ set_entity_resc_sum_max(job *pjob, pbs_queue *pque, attribute *altered_resc,
 				if (presc_new != presc_first)
                                         if(revert_entity_resources(pmaxqresc, pattr_old, presc_new, presc_old, presc_first, egroup, euser, project, rev_op) != 0)
                                                 log_err(PBSE_INTERNAL, __func__, "Error in revert_entity_resources");
-				return rc;
+			return rc;
 			} else {
 				if (!rc_final)
 					rc_final = rc;
@@ -3768,7 +3780,7 @@ set_entity_resc_sum_max(job *pjob, pbs_queue *pque, attribute *altered_resc,
 				if (presc_new != presc_first)
 					if(revert_entity_resources(pmaxqresc, pattr_old, presc_new, presc_old, presc_first, egroup, euser, project, rev_op) != 0)
 						log_err(PBSE_INTERNAL, __func__, "Error in revert_entity_resources");
-				return rc;
+			return rc;
 			} else {
 				if (!rc_final)
 					rc_final = rc;
@@ -3795,7 +3807,7 @@ set_entity_resc_sum_max(job *pjob, pbs_queue *pque, attribute *altered_resc,
 				if (presc_new != presc_first)
 					if((revert_entity_resources(pmaxqresc, pattr_old, presc_new, presc_old, presc_first, egroup, euser, project, rev_op)) != 0)
 						log_err(PBSE_INTERNAL, __func__, "Error in revert_entity_resources");
-				return rc;
+			return rc;
 			} else {
 				if (!rc_final)
 					rc_final = rc;
@@ -3826,7 +3838,7 @@ set_entity_resc_sum_max(job *pjob, pbs_queue *pque, attribute *altered_resc,
 				if (presc_new != presc_first)
 					if(revert_entity_resources(pmaxqresc, pattr_old, presc_new, presc_old, presc_first, egroup, euser, project, rev_op) != 0)
 						log_err(PBSE_INTERNAL, __func__, "Error in revert_entity_resources");
-				return rc;
+			return rc;
 			} else {
 				if (!rc_final)
 					rc_final = rc;
@@ -3842,11 +3854,11 @@ set_entity_resc_sum_max(job *pjob, pbs_queue *pque, attribute *altered_resc,
 
 /**
  * @brief
- *		Adds a record for a provisioning vnode.
+ *	Adds a record for a provisioning vnode.
  *
  * @par Functionality:
  *      This function loops through 'sv_prov_track' table
- *		and stores input arguments, if it finds an empty record.
+ *	and stores input arguments, if it finds an empty record.
  *
  * @see
  *		start_vnode_provisioning
@@ -3854,9 +3866,9 @@ set_entity_resc_sum_max(job *pjob, pbs_queue *pque, attribute *altered_resc,
  * @param[in]   pid		-	provision process id
  * @param[in]   prov_vnode_info	-	prov_vnode_info structure
  *
- * @return	int
- * @retval	0	: On successful addtion of record
- * @retval	-1	: could not add provision record
+ * @return      int
+ * @retval       0 :	On successful addtion of record
+ * @retval      -1 :	could not add provision record
  *
  * @par Side Effects:
  *      Unknown
@@ -3904,15 +3916,15 @@ add_prov_record(prov_pid pid,
 
 /**
  * @brief
- *		remove_prov_record
+ *	remove_prov_record
  *
  * @par Functionality:
  *      This function loops through 'sv_prov_track' table and resets the record
- *		for a vnode. It is called when vnode finishes provisioning or fails one.
+ *	for a vnode. It is called when vnode finishes provisioning or fails one.
  *
  * @see
  *
- * @param[in]   vnode	-	vnode name
+ * @param[in]   vnode		-	vnode name
  *
  * @return      void
  *
@@ -3951,16 +3963,16 @@ remove_prov_record(char * vnode)
  *
  * @par Functionality:
  *      This function is invoked periodically by a timed work task. It saves
- *		vnode name, aoe name and time stamp to prov_tracking file.
+ *	vnode name, aoe name and time stamp to prov_tracking file.
  *
  * @see
  *
- * @return	void
+ * @return      void
  *
  * @par Side Effects:
  *      Unknown
  *
- * @par MT-safe:	No
+ * @par MT-safe: No
  *
  */
 
@@ -4010,20 +4022,20 @@ prov_track_save()
 
 /**
  * @brief
- *		Looks up a provisioning vnode record by a vnode name.
+ *	Looks up a provisioning vnode record by a vnode name.
  *
  * @par Functionality:
  *      This function gets the index of the provisioning table given the
- *		vnode name. It returns NULL if match not found.
+ *	vnode name. It returns NULL if match not found.
  *
  * @see
- *		#prov_tracking in provision.h
+ *	#prov_tracking in provision.h
  *
- * @param[in]	vnode	-	vnode name
+ * @param[in]   vnode		-	vnode name
  *
- * @return	pointer to prov_tracking
- * @retval	pointer to prov_tracking	: if prov_tracking record is found
- * @retval	NULL	: if prov_tracking record is not found
+ * @return      pointer to prov_tracking
+ * @retval       pointer to prov_tracking : if prov_tracking record is found
+ * @retval       NULL : if prov_tracking record is not found
  *
  * @par Side Effects:
  *      Unknown
@@ -4048,22 +4060,22 @@ struct prov_tracking * get_prov_record_by_vnode(char * vnode)
 
 /**
  * @brief
- *		Looks up a provisioning vnode record by a given pid.
+ *	Looks up a provisioning vnode record by a given pid.
  *
  *
  * @par Functionality:
  *      This function takes 'pid' as an input and returns address
- * 		of the provision record. If it doesn't find any entry then
- *		it returns -1.
+ * 	of the provision record. If it doesn't find any entry then
+ *	it returns -1.
  *
  * @see
- *		#prov_tracking in provision.h
+ *	#prov_tracking in provision.h
  *
- * @param[in]	pid	-	provision process id
+ * @param[in]   pid		-	provision process id
  *
- * @return	pointer to prov_tracking
- * @retval	pointer to prov_tracking	: if prov_tracking record is found
- * @retval	NULL	: if prov_tracking record is not found
+ * @return      pointer to prov_tracking
+ * @retval       pointer to prov_tracking : if prov_tracking record is found
+ * @retval       NULL : if prov_tracking record is not found
  *
  * @par Side Effects:
  *      Unknown
@@ -4086,7 +4098,7 @@ static struct prov_tracking * get_prov_record_by_pid(prov_pid pid)
 
 /**
  * @brief
- *		Deletes a single prov_vnode_info record.
+ *	Deletes a single prov_vnode_info record.
  *
  *
  * @par Functionality:
@@ -4094,7 +4106,7 @@ static struct prov_tracking * get_prov_record_by_pid(prov_pid pid)
  *
  * @see
  *
- * @param[in]	pvinfo	-	provision vnode info structure.
+ * @param[in]   pvinfo		-	provision vnode info structure.
  *
  * @return      void
  *
@@ -4120,21 +4132,21 @@ free_pvnfo(struct prov_vnode_info *pvnfo)
 
 /**
  * @brief
- *		Checks if aoe is available on a vnode.
+ *	Checks if aoe is available on a vnode.
  *
  *
  * @par Functionality:
  *      This function checks if aoe is available in node's
- *		resources_available.aoe
+ *	resources_available.aoe
  *
  * @see
  *
- * @param[in]	pnode	-	pointer to pbsnode struct
- * @param[in]   aoe_req	-	aoe requested
+ * @param[in]   pnode		-	pointer to pbsnode struct
+ * @param[in]   aoe_req		-	aoe requested
  *
- * @return	int
- * @retval	0	: aoe is available on the vnode
- * @retval	-1	: aoe is unavailable on the vnode
+ * @return      int
+ * @retval       0 :	aoe is available on the vnode
+ * @retval      -1 :	aoe is unavailable on the vnode
  *
  * @par Side Effects:
  *      Unknown
@@ -4177,17 +4189,17 @@ check_req_aoe_available(struct pbsnode * pnode, char * aoe_req)
 
 /**
  * @brief
- *		This function disables provisioning functionality.
+ *	This function disables provisioning functionality.
  *
  * @par Functionality:
- *		This function disables provision_enable (internal)attribute on server.
+ *	This function disables provision_enable (internal)attribute on server.
  *
  * @see
- *		mgr_hook_delete
- *		mgr_hook_set
- *		mgr_hook_unset
+ *	mgr_hook_delete
+ *	mgr_hook_set
+ *	mgr_hook_unset
  *
- * @return	void
+ * @return      void
  *
  * @par Side Effects:
  *      Unknown
@@ -4209,17 +4221,17 @@ disable_svr_prov()
 
 /**
  * @brief
- *		Parses prov_vnode attribute of job
+ *	Parses prov_vnode attribute of job
  *
  * @par Functionality:
  *      This function parses 'prov_vnode' attribute of job and returns
- *		number of nodes required to run the job or -1 for failure.
+ *	number of nodes required to run the job or -1 for failure.
  *
  * @see
- *		is_runnable
- *		fail_vnode_job
+ *	is_runnable
+ *	fail_vnode_job
  *
- * @param[in]	prov_vnode	-	vnode name
+ * @param[in]   prov_vnode	-	vnode name
  * @param[in]   prov_vnodes	-	ptr to prov_vnode string
  *
  * @return      int
@@ -4287,22 +4299,22 @@ parse_prov_vnode(char *prov_vnode, exec_vnode_listtype *prov_vnodes)
 
 /**
  * @brief
- *		Checks if node needs provisioning.
+ *	Checks if node needs provisioning.
  *
  * @par Functionality:
- *		Checks if node needs provisioning by matching the requested aoe and
- *		current aoe on the node. It also checks if requested aoe is available
- *		on the node. Node need not provision if requested aoe is current aoe
- *		on the node. If reqeusted aoe is not available on node or available
- *		list on node is empty then job cannot run.
+ *	Checks if node needs provisioning by matching the requested aoe and
+ *	current aoe on the node. It also checks if requested aoe is available
+ *	on the node. Node need not provision if requested aoe is current aoe
+ *	on the node. If reqeusted aoe is not available on node or available
+ *	list on node is empty then job cannot run.
  *
  * @see
- *		find_prov_vnode_list
+ *	find_prov_vnode_list
  *
- * @param[in]	pnode	-	vnode
- * @param[in]	aoe_name	-	aoe requested
+ * @param[in]  pnode	-	vnode
+ * @param[in]  aoe_name	-	aoe requested
  *
- * @return	int
+ * @return      int
  * @retval	-1	: node cannot be provisioned
  * @retval	0	: node need not provision
  * @retval	1	: node can be provisioned
@@ -4357,23 +4369,23 @@ node_need_prov(struct pbsnode *pnode, char *aoe_name)
 
 /**
  * @brief
- *		Parses exec_vnode string sent by scheduler and sets prov_vnode of job
+ *	Parses exec_vnode string sent by scheduler and sets prov_vnode of job
  *
  * @par Functionality:
  *      This function takes 'exec_vnode' attribute sent by scheduler
- *		and on sucessful parsing returns number of nodes with aoe in
- *		their chunk. Multiple nodes in exec_vnode are reported once.
- *		aoe_name contains the name of aoe to be provisioned with.
- *		prov_vnode attribute of job is also set.
+ *	and on sucessful parsing returns number of nodes with aoe in
+ *	their chunk. Multiple nodes in exec_vnode are reported once.
+ *	aoe_name contains the name of aoe to be provisioned with.
+ *	prov_vnode attribute of job is also set.
  *
  * @see
- *		check_and_enqueue_provisioning
+ *	check_and_enqueue_provisioning
  *
- * @param[in]	pjob		-	pointer to job
+ * @param[in]   pjob		-	pointer to job
  * @param[out]  prov_vnodes	-	list of nodes
  * @param[out]  aoe_name	-	aoe requested
  *
- * @return	int
+ * @return      int
  * @retval	>=0	: number of nodes to be provisioned
  * @retval	-1	: parsing failure.
  *
@@ -4522,21 +4534,21 @@ find_prov_vnode_list(job *pjob, exec_vnode_listtype *prov_vnodes, char **aoe_nam
 
 /**
  * @brief
- *		Finds a vnode's entry in prov_vnode_info.
+ *	Finds a vnode's entry in prov_vnode_info.
  *
  * @par Functionality:
  *      This function loops through list of provision vnodes
- *		and returns prov_vnode_info. Returns NULL, if not able to find.
+ *	and returns prov_vnode_info. Returns NULL, if not able to find.
  *
  * @see
- *		free_prov_vnode
- *		#prov_vnode_info in provision.h
+ *	free_prov_vnode
+ *	#prov_vnode_info in provision.h
  *
- * @param[in]	pnode	-	pointer to pbsnode
+ * @param[in]   pnode		-	pointer to pbsnode
  *
- * @return	pointer to prov_vnode_info
- * @retval	pointer to prov_vnode_info	: if entry in prov_vnode_info is found
- * @retval	NULL	: if entry is not found
+ * @return      pointer to prov_vnode_info
+ * @retval       pointer to prov_vnode_info : if entry in prov_vnode_info is found
+ * @retval       NULL : if entry is not found
  *
  * @par Side Effects:
  *      Unknown
@@ -4561,23 +4573,23 @@ static struct prov_vnode_info * find_prov_vnode(struct pbsnode * pnode)
 
 /**
  * @brief
- *		Removes vnode's entry from prov_vnode_info.
+ *	Removes vnode's entry from prov_vnode_info.
  *
  * @par Functionality:
  *      This function removes the vnode from prov_vnode_info and
- *		unsets vnode's INUSE_WAIT_PROV state.
+ *	unsets vnode's INUSE_WAIT_PROV state.
  *
  * @see
- *		free_nodes
+ *	free_nodes
  *
- * @param[in]	pnode	-	pointer to pbsnode
+ * @param[in]   pnode     -	pointer to pbsnode
  *
- * @return	void
+ * @return      void
  *
  * @par Side Effects:
  *      Unknown
  *
- * @par MT-safe:	No
+ * @par MT-safe: No
  *
  */
 
@@ -4596,31 +4608,31 @@ free_prov_vnode(struct pbsnode * pnode)
 
 /**
  * @brief
- *		Determines if job can be run on account of a vnode finishing
- *		provisioning.
+ *	Determines if job can be run on account of a vnode finishing
+ *	provisioning.
  *
  * @par Functionality:
  *      This function checks for a job, if all its vnodes have finished
- *		provisioning. If at least one vnode is offline or in wait-provisioning
- *		state or has finished provisioning but has another aoe set then job
- *		cannot be run.
- *		It also checks the case where a multi-vnode job has one
- *		vnode failing provisioning while others are still provisioning.
+ *	provisioning. If at least one vnode is offline or in wait-provisioning
+ *	state or has finished provisioning but has another aoe set then job
+ *	cannot be run.
+ *	It also checks the case where a multi-vnode job has one
+ *	vnode failing provisioning while others are still provisioning.
  *
  * @see
- *		check_and_run_jobs
+ *	check_and_run_jobs
  *
- * @param[in]   ptr	-	pointer to job struct
- * @param[in]   pvinfo	-	pointer to prov_vnode_info struct
+ * @param[in]   ptr		-	pointer to job struct
+ * @param[in]   pvinfo		-	pointer to prov_vnode_info struct
  *
- * @return	int
- * @retval	0	: job is eligible to run
- * @retval	-1	: job is not eligible to run since other vnodes
- *					still provisioning or error
- * @retval	-2	:	nodes are done provisioning, but some are down
- * @retval	-3	:	nodes are all done prov, but curr_aoe, does not
- *					match req_aoe
- * @retval	-4	:	left over provisioning just returned
+ * @return      int
+ * @retval       0 :	job is eligible to run
+ * @retval      -1 :	job is not eligible to run since other vnodes
+ *			still provisioning or error
+ * @retval	-2 :	nodes are done provisioning, but some are down
+ * @retval	-3 :	nodes are all done prov, but curr_aoe, does not
+ *			match req_aoe
+ * @retval	-4 :	left over provisioning just returned
  *
  * @par Side Effects:
  *      Unknown
@@ -4729,27 +4741,27 @@ label1:
 
 /**
  * @brief
- *		Requeue/Hold job on provisioning failure.
+ *	Requeue/Hold job on provisioning failure.
  *
  * @par Functionality:
- * 		This function requeues/holds the job for which provisioning failed.
- *	 	- writes accounting log message for failure
- *	 	- frees prov_vnode of job
- *	 	- removes all pending provisioning requests
- *	 	- releases resources held by job
- *	 	- applies server hold or requeues the job
+ *      This function requeues/holds the job for which provisioning failed.
+ *	 - writes accounting log message for failure
+ *	 - frees prov_vnode of job
+ *	 - removes all pending provisioning requests
+ *	 - releases resources held by job
+ *	 - applies server hold or requeues the job
  *
  * @see
- *		fail_vnode
- *		check_and_run_jobs
- *		do_provisioning
+ *	fail_vnode
+ *	check_and_run_jobs
+ *	do_provisioning
  *
  * @param[in]   prov_vnod_info	-	pointer to prov_vnode_info struct
  * @param[in]   hold_or_que	-	indicates if job is to be held or queued
- *								hold_or_que = 0 if job is to be held
- *								hold_or_que > 0 if job is to be queued
+ *					hold_or_que = 0 if job is to be held
+ *					hold_or_que > 0 if job is to be queued
  *
- * @return	void
+ * @return      void
  *
  * @par Side Effects:
  *      Unknown
@@ -4863,15 +4875,15 @@ fail_vnode_job(struct prov_vnode_info * prov_vnode_info, int hold_or_que)
 
 /**
  * @brief
- *		Marks the vnode offline.
+ *	Marks the vnode offline.
  *
  * @par Functionality:
  *      This function marks a given vnode as offline and may log a message
  *      with it why vnode marked offline.
  *
  * @see
- *		fail_vnode
- *		offline_all_provisioning_vnodes
+ *	fail_vnode
+ *	offline_all_provisioning_vnodes
  *
  * @param[in]   pnode		-	pointer to pbsnode
  * @param[in]   comment		-	comment to be set on vnode and logged
@@ -4910,7 +4922,7 @@ mark_prov_vnode_offline(pbsnode *pnode, char * comment)
 
 	/* write the node state and current_aoe */
 	pnode->nd_modified |= (NODE_UPDATE_CURRENT_AOE | NODE_UPDATE_STATE);
-	write_single_node_state(pnode);
+	write_single_node_state(pnode); 
 	pnode->nd_modified &= ~(NODE_UPDATE_CURRENT_AOE | NODE_UPDATE_STATE);
 
 	if (comment != NULL) {
@@ -4929,26 +4941,26 @@ mark_prov_vnode_offline(pbsnode *pnode, char * comment)
 
 /**
  * @brief
- *		On provisioning failure, marks vnode offline and fails the job.
+ *	On provisioning failure, marks vnode offline and fails the job.
  *
  * @par Functionality:
  *      This function marks a vnode offline and requeue/holds all jobs on it.
  *
  * @see
- *		prov_request_deferred
- *		prov_request_timed
+ *	prov_request_deferred
+ *	prov_request_timed
  *
  * @param[in]   prov_vnode_info	-	pointer to struct prov_vnode_info
  * @param[in]   hold_or_que	-	indicates if job is to be held or queued
- *								hold_or_que = 0 if job is to be held
- *								hold_or_que > 0 if job is to be queued
+ *					hold_or_que = 0 if job is to be held
+ *					hold_or_que > 0 if job is to be queued
  *
- * @return	void
+ * @return      void
  *
  * @par Side Effects:
  *      Unknown
  *
- * @par MT-safe:	No
+ * @par MT-safe: No
  *
  */
 
@@ -4979,23 +4991,23 @@ fail_vnode(struct prov_vnode_info *prov_vnode_info, int hold_or_que)
 
 /**
  * @brief
- *		Marks vnodes in prov_tracking table offline during startup.
+ *	Marks vnodes in prov_tracking table offline during startup.
  *
  * @par Functionality:
  *      This function marks all vnodes present in prov_tracking table as offline
- *		Called from pbsd_init, when server recovers from a crash or server is
- *		started. Since, status of vnodes undergoing provisioning is not known,
- *		it marks them offline.
+ *	Called from pbsd_init, when server recovers from a crash or server is
+ *	started. Since, status of vnodes undergoing provisioning is not known,
+ *	it marks them offline.
  *
  * @see
- *		#prov_tracking in provision.h
+ *	#prov_tracking in provision.h
  *
- * @return	void
+ * @return      void
  *
  * @par Side Effects:
  *      Unknown
  *
- * @par MT-safe:	No
+ * @par MT-safe: No
  *
  */
 
@@ -5048,28 +5060,28 @@ offline_all_provisioning_vnodes()
 
 /**
  * @brief
- *		Runs a job if it can when a vnode finished provisioning.
+ *	Runs a job if it can when a vnode finished provisioning.
  *
  * @par Functionality:
  *      This function checks if job is runnable by calling is_runnable().
- *		A vnode finished provisioning, so check if job can be run. If it can be
- *		run, writes accounting log and server log and sends job to mom.
- *		If job cannot run because of provisioning failure, it calls fail_vnode_job
- *		to requeue job and mark vnode offline.
+ *	A vnode finished provisioning, so check if job can be run. If it can be
+ *	run, writes accounting log and server log and sends job to mom.
+ *	If job cannot run because of provisioning failure, it calls fail_vnode_job
+ *	to requeue job and mark vnode offline.
  *
  * @see
- *		is_runnable
- *		is_vnode_prov_done
- *		fail_vnode_job
+ *	is_runnable
+ *	is_vnode_prov_done
+ *	fail_vnode_job
  *
- * @param[in]	prov_vnode_info	-	pointer to struct prov_vnode_info
+ * @param[in]   prov_vnode_info	     -      pointer to struct prov_vnode_info
  *
- * @return	void
+ * @return      void
  *
  * @par Side Effects:
  *      Unknown
  *
- * @par MT-safe:	No
+ * @par MT-safe: No
  *
  */
 
@@ -5165,31 +5177,31 @@ check_and_run_jobs(struct prov_vnode_info * prov_vnode_info)
 
 /**
  * @brief
- *		Checks if vnode is up after provisioning.
+ *	Checks if vnode is up after provisioning.
  *
  * @par Functionality:
  *      This function checks whether the concerned vnode is up after
- *		provisioning. If vnode is up:
- *			- cancels the timeout work task
- *			- updates the nodes file to reflect the new state
- *			- calls check_and_run_job to run jobs
- *			- frees the prov_vnode_info structure allocated
- *		  		by do_provisioning
- *		If vnode is not yet up:
- *			- it returns. It will get called again by set_vnode_state.
+ *	provisioning. If vnode is up:
+ *		- cancels the timeout work task
+ *		- updates the nodes file to reflect the new state
+ *		- calls check_and_run_job to run jobs
+ *		- frees the prov_vnode_info structure allocated
+ *		  by do_provisioning
+ *	If vnode is not yet up:
+ *		- it returns. It will get called again by set_vnode_state.
  *
  * @see
- *		set_vnode_state
- *		prov_request_deferred
+ *	set_vnode_state
+ *	prov_request_deferred
  *
- * @param[in]	vnode	-	pointer to string containing vnode name
+ * @param[in]   vnode      -       pointer to string containing vnode name
  *
- * @return	void
+ * @return      void
  *
  * @par Side Effects:
  *     starts a new work task to do more provisioning
  *
- * @par MT-safe:	No
+ * @par MT-safe: No
  *
  */
 
@@ -5227,7 +5239,7 @@ is_vnode_prov_done(char * vnode)
 
 	/* check if this node is up or not */
 	if ((pnode->nd_state & VNODE_UNAVAILABLE) ||
-		(pnode->nd_state & INUSE_INIT)) {
+			(pnode->nd_state & INUSE_INIT)) {
 		/* node is is still not up
 		 return, since this will be called again
 		 when the vnode gets up (from set_vnode_state)
@@ -5280,40 +5292,40 @@ is_vnode_prov_done(char * vnode)
 
 /**
  * @brief
- *		Performs provisioning cleanup when provisioning script returns.
+ *	Performs provisioning cleanup when provisioning script returns.
  *
  * @par Functionality:
  *      This function is called when deferred child task, set by
- *		start_vnode_provisioning, returns (i.e. provisioning script finishes,
- *		either success or failure). This can get triggered before/after
- *		provision_timeout occurs.
- *			1) Gets the childs exit status:
- *		if provisioning script exited with success (0),
- *			- updates vnodes current_aoe attribute to
+ *	start_vnode_provisioning, returns (i.e. provisioning script finishes,
+ *	either success or failure). This can get triggered before/after
+ *	provision_timeout occurs.
+ *	1) Gets the childs exit status:
+ *	if provisioning script exited with success (0),
+ *		- updates vnodes current_aoe attribute to
  *			 the aoe for provisioning
- *			- removes the provisioning record from the provisioing table
- *			- saves the provisioing table to disk
- *		if provisioning script exited with error (non-zero)
- *			- cancels the timeout work task
- *			- removes the provisioning record from the
+ *		- removes the provisioning record from the provisioing table
+ *		- saves the provisioing table to disk
+ *	if provisioning script exited with error (non-zero)
+ *		- cancels the timeout work task
+ *		- removes the provisioning record from the
  * 			 prov table and saves to disk
- *			- calls fail_vnode to mark node offline
+ *		- calls fail_vnode to mark node offline
  *			 and requeue all jobs on vnode
  *
  * @see
- *		start_vnode_provisioning
+ *	start_vnode_provisioning
  *
- * @param[in]	wtask	-	pointer to work_task
- *							wtask->wt_parm1	: should have pointer to
- *						  			prov_vnode_info structure
+ * @param[in]   wtask      -      pointer to work_task
+ *				wtask->wt_parm1 : should have pointer to
+ *						  prov_vnode_info structure
  *							wtask->wt_parm2	: should have pointer to timeout task
  *
- * @return	void
+ * @return      void
  *
  * @par Side Effects:
  *      Unknown
  *
- * @par MT-safe:	No
+ * @par MT-safe: No
  *
  */
 
@@ -5380,7 +5392,7 @@ prov_request_deferred(struct work_task *wtask)
 
 		/* write the node current_aoe */
 		pnode->nd_modified |= NODE_UPDATE_CURRENT_AOE;
-		write_single_node_state(pnode);
+		write_single_node_state(pnode); 
 		pnode->nd_modified &= ~NODE_UPDATE_CURRENT_AOE;
 
 		/* if exit_status says app_prov returned success, reset down
@@ -5427,34 +5439,34 @@ prov_request_deferred(struct work_task *wtask)
 
 /**
  * @brief
- *		Performs provisioning cleanup if provisioning timed out.
+ *	Performs provisioning cleanup if provisioning timed out.
  *
  * @par Functionality:
  *      This function performs provisioning cleanup if timed out.
  *      It is triggered after "provision_timeout" seconds have elapsed.
  *      This can get triggered before/after the deferred task finishes.
- *		1) Kills the program group of the provisioning script, if deferred
- *	   		child task not yet called.
+ *      1) Kills the program group of the provisioning script, if deferred
+ *	   child task not yet called.
  *      2) Cancels the deferred child work task if its not yet complete.
  *      3) Calls fail_vnode (for the concerned vnode) to mark vnode offline and
- *	   		requeue all jobs on this vnode.
+ *	   requeue all jobs on this vnode.
  *      4) Frees the prov_vnode_info structure, allocated by do_provisioning.
  *
  * @see
- *		start_vnode_provisioning
+ *	start_vnode_provisioning
  *
- * @param[in]	wtask	-	pointer to work_task
- *							wtask->wt_parm1	: should have pointer to
- *					  		prov_vnode_info structure
- *							wtask->wt_parm2 : should have pointer to
+ * @param[in]	wtask - pointer to work_task
+ *			wtask->wt_parm1 : should have pointer to
+ *					  prov_vnode_info structure
+ *			wtask->wt_parm2 : should have pointer to
  *					  		sdeferred child task
  *
- * @return	void
+ * @return      void
  *
  * @par Side Effects:
  *      Unknown
  *
- * @par MT-safe:	No
+ * @par MT-safe: No
  *
  */
 
@@ -5532,25 +5544,25 @@ prov_request_timed(struct work_task *wtask)
 
 /**
  * @brief
- *		Sets provision_enable and provision_timeout on server every time
- *		provision hook is modified.
+ *	Sets provision_enable and provision_timeout on server every time
+ *	provision hook is modified.
  *
  * @par Functionality:
  *      This function sets server level attributes, SRV_ATR_ProvisionEnable and
- *		SVR_ATR_provision_timeout from the provisioning hook. It checks whether
- *		server attributes should be set or not.
+ *	SVR_ATR_provision_timeout from the provisioning hook. It checks whether
+ *	server attributes should be set or not.
  *
  * @see
- *		mgr_hook_import
- *		mgr_hook_set
- *		mgr_hook_unset
+ *	mgr_hook_import
+ *	mgr_hook_set
+ *	mgr_hook_unset
  *
- * @return	void
+ * @return      void
  *
  * @par Side Effects:
  *      Unknown
  *
- * @par MT-safe:	No
+ * @par MT-safe: No
  *
  */
 
@@ -5588,24 +5600,24 @@ set_srv_prov_attributes(void)
 
 /**
  * @brief
- *		Executes provisioning hook script for a vnode.
+ *	Executes provisioning hook script for a vnode.
  *
  * @par Functionality:
  *      This function initializes python environment and runs python top level
- *		script. If compiled without python support, it can run a shell script
- *		(for testing).
+ *	script. If compiled without python support, it can run a shell script
+ *	(for testing).
  *
  * @see
- *		start_vnode_provisioning
+ *	start_vnode_provisioning
  *
- * @param[in]	phook	-	pointer to provisioning hook
- * @param[in]   prov_vnode_info	-	pointer to prov_vnode_info
+ * @param[in]   phook               -   pointer to provisioning hook
+ * @param[in]   prov_vnode_info     -   pointer to prov_vnode_info
  *
- * @return	int
- * @retval	>1	: error code as returned by provisioning hook script
- * @retval	1	: success if doing application provisioning
- * @retval	0	: success if doing os provisioning
- * @retval	-1	: failure
+ * @return      int
+ * @retval      >1 : error code as returned by provisioning hook script
+ * @retval       1 : success if doing application provisioning
+ * @retval       0 : success if doing os provisioning
+ * @retval      -1 : failure
  *
  * @par Side Effects:
  *      Unknown
@@ -5743,29 +5755,29 @@ execute_python_prov_script(hook  *phook,
 
 /**
  * @brief
- *		Performs basic checks and then kicks off provisioning of a vnode.
+ *	Performs basic checks and then kicks off provisioning of a vnode.
  *
  * @par Functionality:
  *      This function starts provisioning of a vnode with aoe specified by
- *		starting provisioning hook in another process. do_provisioning() is
- *		called in the end to drain the provisioning list. Deferred and Timed
- *		work tasks are set and a provisioning record is added in server. vnode
- *		state is marked down and provisioning. wait-provisioning state flag is
- *		cleared.
+ *	starting provisioning hook in another process. do_provisioning() is
+ *	called in the end to drain the provisioning list. Deferred and Timed
+ *	work tasks are set and a provisioning record is added in server. vnode
+ *	state is marked down and provisioning. wait-provisioning state flag is
+ *	cleared.
  *
  * @see
- *		check_and_enqueue_provisioning
+ *	check_and_enqueue_provisioning
  *
- * @param[in]	prov_vnode_info	-	pointer to prov_vnode_info entry in server
+ * @param[in]   prov_vnode_info -  pointer to prov_vnode_info entry in server
  *
- * @return	int
- * @retval	PBSE_NONE	: success if provisioning started for a vnode
- * @retval	PBS Error code	: if failed to start provisioning
+ * @return      int
+ * @retval       PBSE_NONE : success if provisioning started for a vnode
+ * @retval       PBS Error code : if failed to start provisioning
  *
  * @par Side Effects:
  *      Unknown
  *
- * @par MT-safe:	No
+ * @par MT-safe: No
  *
  */
 
@@ -6036,7 +6048,7 @@ start_vnode_provisioning(struct prov_vnode_info * prov_vnode_info)
 
 	/* write the node current_aoe */
 	pnode->nd_modified |= NODE_UPDATE_CURRENT_AOE;
-	write_single_node_state(pnode);
+	write_single_node_state(pnode); 
 	pnode->nd_modified &= ~NODE_UPDATE_CURRENT_AOE;
 
 	/*
@@ -6107,26 +6119,26 @@ start_vnode_provisioning(struct prov_vnode_info * prov_vnode_info)
 
 /**
  * @brief
- *		Checks if provisioning is required or not.
+ *	Checks if provisioning is required or not.
  *
  * @par Functionality:
  *      This function parses job's exec_vnode attribute, if set, it checks if
- *		job needs one or more vnodes to be provisioned. If exec_vnode is null,
- *		need_prov contains 0. If one or more vnodes need provisioning, need_prov is 1.
+ *	job needs one or more vnodes to be provisioned. If exec_vnode is null,
+ *	need_prov contains 0. If one or more vnodes need provisioning, need_prov is 1.
  *
  * @see
  *		check_and_provision_job
- * @param[in]   pjob	-	pointer to job
- * @param[out]  need_prov	-	boolean value, whether job will provision
+ * @param[in]   pjob           -       pointer to job
+ * @param[out]  need_prov      -       boolean value, whether job will provision
  *
- * @return	int
- * @retval	PBSE_NONE	: success if no provisioning needed
- * @retval	PBS Error code	: if some error occurs
+ * @return      int
+ * @retval       PBSE_NONE : success if no provisioning needed
+ * @retval       PBS Error code : if some error occurs
  *
  * @par Side Effects:
- *  	Unknown
+ *      Unknown
  *
- * @par MT-safe:	No
+ * @par MT-safe: No
  *
  */
 
@@ -6257,26 +6269,26 @@ check_and_enqueue_provisioning(job *pjob, int *need_prov)
 /**
  * @brief
  *		Starts as many provisioning as possible from the list available
- *		with server.
+ *	with server.
  *
  * @par Functionality:
  *      This function is called by a work task. It runs as many provisioning
- *		from the linked list as allowed. It calls start_vnode_provisioning()
+ *	from the linked list as allowed. It calls start_vnode_provisioning()
  *		to start the provisioning for a vnode. If starting a provisioning fails
- *		it does not fail the vnode but the job that was waiting on that vnode is
- *		held.
+ *	it does not fail the vnode but the job that was waiting on that vnode is
+ *	held.
  *
  * @see
- *		start_vnode_provisioning
+ *	start_vnode_provisioning
  *
- * @param[in]	wtask	-	pointer to work_task
+ * @param[in]   wtask           -       pointer to work_task
  *
- * @return	void
+ * @return      void
  *
  * @par Side Effects:
  *      Unknown
  *
- * @par MT-safe:	No
+ * @par MT-safe: No
  *
  */
 
@@ -6343,22 +6355,22 @@ do_provisioning(struct work_task * wtask)
 
 /**
  * @brief
- *		Deletes prov_vnode_info entry.
+ *	Deletes prov_vnode_info entry.
  *
  * @par Functionality:
  *      This function deletes all prov_vnode_info entries for a job in server.
  *
  * @see
- *		fail_vnode_job
+ *	fail_vnode_job
  *
- * @param[in]	pjob	-	pointer to job
+ * @param[in]   pjob - pointer to job
  *
  * @return	void
  *
  * @par Side Effects:
  *      Unknown
  *
- * @par MT-safe:	No
+ * @par MT-safe: No
  *
  */
 static void
@@ -6390,7 +6402,7 @@ del_prov_vnode_entry(job *pjob)
 
 /**
  * @brief
- *		action_backfill_depth - action function for backfill_depth
+ *	action_backfill_depth - action function for backfill_depth
  *				valid input range is >=1
  *
  * @param[in]	pattr	-	The estimated start time frequency
@@ -6476,15 +6488,15 @@ unset_jobscript_max_size(void)
 
 /**
  * @brief
- *		Create a copy of the job script from database to a temporary file
- *		This filename is then passed onto the sendjob process to send the
- *		jobfile to the target mom/server
+ *	Create a copy of the job script from database to a temporary file
+ *	This filename is then passed onto the sendjob process to send the
+ *	jobfile to the target mom/server
  *
- * @param[in]	pj	-	Job pointer
- * @param[out]	script_name	-	Name of the temporary filename to which
- *								the job script was copied to
+ * @param[in]	pj - Job pointer
+ * @param[out]	script_name - Name of the temporary filename to which
+ *				the job script was copied to
  *
- * @return	Error code
+ * @return      Error code
  * @retval	0	: Success
  * @retval	-1	: Failure
  *
@@ -6497,9 +6509,9 @@ extern char *path_spool;
  * @brief
  *  	Loads the jobscript associated to the job from the database
  *
- * @param[in]	pj	-	Job pointer
+ * @param[in] pj - Job pointer
  *
- * @return	Text buffer containing the job script
+ * @return Text buffer containing the job script
  * @retval	NULL	: Failed to load job script
  * @retval	!NULL	: Job script
  */
@@ -6537,10 +6549,10 @@ svr_load_jobscript(job *pj)
  *  	Read the job script from the database and write it to a temporary
  *  	file
  *
- * @param[in]	pj	-	Job pointer
- * @param[in]	script_name	-	The name of the script file to be created in tmpdir
+ * @param[in] pj - Job pointer
+ * @param[in] script_name - The name of the script file to be created in tmpdir
  *
- * @return	Error code
+ * @return Error code
  * @retval	-1	: Failure
  * @retval	0	: Success
  */
@@ -6632,7 +6644,7 @@ svr_create_tmp_jobscript(job *pj, char *script_name)
  * @param[in]	place_str	: The string representation of the place directive
  * @param[in]	by	: The type of exclusivity to check for.
  *
- * @return	The place sharing type
+ * @return The place sharing type
  *
  * @par MT-Safe: No
  */
@@ -6696,8 +6708,8 @@ default_queue_chk(attribute *pattr, void *pobj, int actmode)
 /**
  *
  * @brief
- *		Marks a connection flag that tells a qsub daemon that something has
- *		changed in the server, and its req_queuejob request needs to be redone.
+ *	Marks a connection flag that tells a qsub daemon that something has
+ *	changed in the server, and its req_queuejob request needs to be redone.
  *
  */
 void
@@ -6712,15 +6724,15 @@ force_qsub_daemons_update(void)
 
 /**
  * @brief
- *		The action function for the "default_qsub_arguments" server
- *		attribute, which tells qsub daemons to redo some req_queuejob
- *		operation as this attribute has changed.
+ *	The action function for the "default_qsub_arguments" server
+ *	attribute, which tells qsub daemons to redo some req_queuejob
+ *	operation as this attribute has changed.
 
- * @param[in]	pattr	-	target "default_qsub_arguments" attribute value
- * @param[in]	pobject	-	pointer to some parent object.(required but unused here)
- * @param[in]	actmode	-	the action to take (e.g. ATR_ACTION_ALTER)
+ * @param[in] pattr - target "default_qsub_arguments" attribute value
+ * @param[in] pobject - pointer to some parent object.(required but unused here)
+ * @param[in] actmode - the action to take (e.g. ATR_ACTION_ALTER)
  *
- * @return	Whether or not okay to set to new value.
+ * @return Whether or not okay to set to new value.
  * @retval	PBSE_NONE	: Action is okay.
  * @retval	PBSE_INTERNAL	: for any error.
  */
@@ -6737,13 +6749,13 @@ force_qsub_daemons_update_action(attribute *pattr, void *pobj, int actmode)
 
 /**
  * @brief
- * 		Helper function to read the dbhost file PBS_HOME/svr_priv/db_svrhost contents
+ * Helper function to read the dbhost file PBS_HOME/svr_priv/db_svrhost contents
  *
- * @param[in]	flname	-	Name of the file to read
- * @param[out]	buf	-	Pointer to the buffer to read the contents to
- * @param[in]	len	-	Size of the buffer pointed to by buf
+ * @param[in]  flname - Name of the file to read
+ * @param[out] buf - Pointer to the buffer to read the contents to
+ * @param[in]  len - Size of the buffer pointed to by buf
  *
- * @return	Error code
+ * @return Error code
  * @retval	-1	: Failure
  * @retval	0	: Success
  *
@@ -6788,15 +6800,15 @@ read_db_svrhost_file(char *flname, char *buf, int len)
 
 /**
  * @brief
- * 		Helper function to rename/move a file
+ * Helper function to rename/move a file
  *
- * 		If the rename fails, the original file is retained and the new file, if
- * 		any created, is removed.
+ * If the rename fails, the original file is retained and the new file, if
+ * any created, is removed.
  *
- * @param[in]	db_svrhost_file_new	-	Name of the target file
- * @param[in]	db_svrhost_file	-	Name of the source file
+ * @param[in]  db_svrhost_file_new - Name of the target file
+ * @param[in]  db_svrhost_file	- Name of the source file
  *
- * @return	Error code
+ * @return Error code
  * @retval	-1	: Failure
  * @retval	0	: Success
  *
@@ -6830,57 +6842,57 @@ replace_db_svrhost_file(char *db_svrhost_file_new, char *db_svrhost_file)
 
 /**
  * @brief
- * 		Retrieves the current svr's db key from the database, given the hostname
- * 		and updates the current hostname as the servername in the db, if it has
- * 		changed.
+ * Retrieves the current svr's db key from the database, given the hostname
+ * and updates the current hostname as the servername in the db, if it has
+ * changed.
  *
- * 		1. Firstly attempt to read the server name from the files db_svrhost.new
- *    		and retrieve the server_id corresponding to that server_name from the database.
+ * 1. Firstly attempt to read the server name from the files db_svrhost.new
+ *    and retrieve the server_id corresponding to that server_name from the database.
  *
- * 		2. That read could fail, or read succeeds, but there is no matching
- *    		server_name in the database (This happens if pbs_server/machine crashed
- *    		after writing the new server_name to the file, but before updating the database.
- *    		In that case, attempt to read the old server_name from file db_svrhost, and
- *    		try to find a corresponding server_name from the database.
+ * 2. That read could fail, or read succeeds, but there is no matching
+ *    server_name in the database (This happens if pbs_server/machine crashed
+ *    after writing the new server_name to the file, but before updating the database.
+ *    In that case, attempt to read the old server_name from file db_svrhost, and
+ *    try to find a corresponding server_name from the database.
  *
- * 		3. If the current machines hostname has changed (or is a first time start), then
- *    		the machine hostname (pbs_server_name) will not match with what was read from
- *    		the files in steps 1 or 2. In that case, update the new server name to the file
- *    		db_svrhost.new (This will be renamed later to the db_svrhost file). If a
- *    		server_id was found from the database, then call svr_save to update the
- *    		new server_name to get associated with the existing server_id.
+ * 3. If the current machines hostname has changed (or is a first time start), then
+ *    the machine hostname (pbs_server_name) will not match with what was read from
+ *    the files in steps 1 or 2. In that case, update the new server name to the file
+ *    db_svrhost.new (This will be renamed later to the db_svrhost file). If a
+ *    server_id was found from the database, then call svr_save to update the
+ *    new server_name to get associated with the existing server_id.
  *
- * 		4. Once the db update succeeds, rename the file db_svrhost.new to db_svrhost. This
- *    		step combined with steps 1 & 2 will ensure that there are no problems even if
- *    		pbs_server/machine crashed before step 3 or 4.
+ * 4. Once the db update succeeds, rename the file db_svrhost.new to db_svrhost. This
+ *    step combined with steps 1 & 2 will ensure that there are no problems even if
+ *    pbs_server/machine crashed before step 3 or 4.
  *
- * 		5. Finally if this was a first time start, and no server_id was found from the
- *    		database, then get a unique id from the database (pbs.svr_id_seq) into variable
- *    		pbs_server_id, so that it gets saved when pbsd_init does the svr_save upon
- *    		creation of the new server database. (All saves would need a server_id, but the
- *    		newly server database being created does not have any, so the need to get
- *    		one unique number from the database sequence generator "pbs.svr_id_seq")
+ * 5. Finally if this was a first time start, and no server_id was found from the
+ *    database, then get a unique id from the database (pbs.svr_id_seq) into variable
+ *    pbs_server_id, so that it gets saved when pbsd_init does the svr_save upon
+ *    creation of the new server database. (All saves would need a server_id, but the
+ *    newly server database being created does not have any, so the need to get
+ *    one unique number from the database sequence generator "pbs.svr_id_seq")
  *
- * 		Example of sequence:
- *  	New instance creation:
- *		- No database rows exist in pbs.server and no files svr_priv/db_svrhost*.
- *		- Attempt reading files svr_priv/db_svrhost*, but fails, pbs_server_id = NULL
- *		- Current server hostname does not match anything stored in svr_priv/db_svrhost, so:
+ * Example of sequence:
+ *  New instance creation:
+ *	- No database rows exist in pbs.server and no files svr_priv/db_svrhost*.
+ *	- Attempt reading files svr_priv/db_svrhost*, but fails, pbs_server_id = NULL
+ *	- Current server hostname does not match anything stored in svr_priv/db_svrhost, so:
  *		- Update new name in db_svrhost.new
  *		- Get new server_id from database
  *		- Rename db_svrhost.new to db_svrhost
  *		- Continue onto pbsd_init which does a svr_save to create new server database
  *		  with the new server id.
  *
- * 		Old instance hostname change:
- *		- Read last stored server name from svr_priv/db_svrhost*.
- *		- Retrieve the server id associated with this name from the database.
- *		- If current server hostname matches with name read from files, fine, else:
+ * Old instance hostname change:
+ *	- Read last stored server name from svr_priv/db_svrhost*.
+ *	- Retrieve the server id associated with this name from the database.
+ *	- If current server hostname matches with name read from files, fine, else:
  *		- Update new name in db_svrhost.new
  *		- Save svr row, this associating the server id with the new svr hostname
  *		- Rename db_svrhost.new to db_svrhost
  *
- * @return	Error code
+ * @return Error code
  * @retval	-1	: Failure
  * @retval	0	: Success
  *
@@ -7028,7 +7040,7 @@ chk_and_update_db_svrhost(void)
  *
  * @par MT-Safe:	no
  * @par Side Effects:
- *		None
+ *	None
  */
 int
 have_socket_licensed_nodes(void)
@@ -7053,7 +7065,7 @@ have_socket_licensed_nodes(void)
  *
  * @par MT-Safe:	no
  * @par Side Effects:
- *		None
+ *	None
  */
 void
 unlicense_socket_licensed_nodes(void)
@@ -7088,13 +7100,13 @@ unlicense_socket_licensed_nodes(void)
  * @brief
  * 		action routine for the sched's "throughput" attribute
  *
- * @param[in]	pattr	-	attribute being set
- * @param[in]	pobj	-	Object on which attribute is being set
- * @param[in]	actmode	-	the mode of setting, recovery or just alter
+ * @param[in] pattr - attribute being set
+ * @param[in] pobj  - Object on which attribute is being set
+ * @param[in] actmode - the mode of setting, recovery or just alter
  *
- * @return	error code
- * @retval	PBSE_NONE	-	Success
- * @retval	!PBSE_NONE	-	Failure
+ * @return error code
+ * @retval PBSE_NONE  - Success
+ * @retval !PBSE_NONE - Failure
  *
  */
 int

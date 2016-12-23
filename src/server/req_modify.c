@@ -1,23 +1,23 @@
 /*
  * Copyright (C) 1994-2016 Altair Engineering, Inc.
  * For more information, contact Altair at www.altair.com.
- *  
+ *
  * This file is part of the PBS Professional ("PBS Pro") software.
- * 
+ *
  * Open Source License Information:
- *  
+ *
  * PBS Pro is free software. You can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free 
  * Software Foundation, either version 3 of the License, or (at your option) any 
  * later version.
- *  
+ *
  * PBS Pro is distributed in the hope that it will be useful, but WITHOUT ANY 
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
  * PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details.
- *  
+ *
  * You should have received a copy of the GNU Affero General Public License along 
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
- *  
+ *
  * Commercial License Information: 
  * 
  * The PBS Pro software is licensed under the terms of the GNU Affero General 
@@ -90,7 +90,7 @@ extern int scheduler_jobs_stat;
 
 /**
  * @brief
- * 		post_modify_req - clean up after sending modify request to MOM
+ * post_modify_req - clean up after sending modify request to MOM
  *
  * @param[in]	pwt	-	work task structure
  */
@@ -122,13 +122,13 @@ post_modify_req(struct work_task *pwt)
  *
  * @par	Functionality:
  *		This request automatically modifies one or more of a job's attributes.
- *		An error is returned to the client if the user does not have permission
- *		to perform the modification, the attribute is read-only, the job is
- *		running and the attribute is only modifiable when the job is not
- *		running, the user attempts to modify a subjob of an array.
+ *	An error is returned to the client if the user does not have permission
+ *	to perform the modification, the attribute is read-only, the job is
+ *	running and the attribute is only modifiable when the job is not
+ *	running, the user attempts to modify a subjob of an array.
  *
- *		If any "move job" hooks are in place, they modify the request before
- *		the Server does anything with the request.
+ *	If any "move job" hooks are in place, they modify the request before
+ *	the Server does anything with the request.
  *
  * @param[in] preq - pointer to batch request from client
  */
@@ -183,8 +183,12 @@ req_modifyjob(struct batch_request *preq)
 	pjob = chk_job_request(preq->rq_ind.rq_modify.rq_objname, preq, &jt);
 	if (pjob == (job *)0)
 		return;
-
-	if ((jt == IS_ARRAY_Single) || (jt == IS_ARRAY_Range)) {
+	/* Accept modify job requests from scheduler for subjobs.
+	 * This is needed because scheduler may try to update 
+	 * ATTR_RequestedSpec & ATTR_SchedSelect job attribute.
+	 */
+	if (((jt == IS_ARRAY_Single) || (jt == IS_ARRAY_Range)) &&
+		(preq->rq_conn != scheduler_sock)) {
 		req_reject(PBSE_IVALREQ, 0, preq);
 		return;
 	}
@@ -401,12 +405,12 @@ req_modifyjob(struct batch_request *preq)
 				return;
 			}
 		}
-	}
-
-	/* Reset any defaults resource limit which might have been unset */
-	if ((rc = set_resc_deflt((void *)pjob, JOB_OBJECT, NULL)) != 0) {
-		req_reject(rc, 0, preq);
-		return;
+		/* Since resource attribute of the job have changed, reset any defaults 
+		* resource limit which might have been unset */
+		if ((rc = set_resc_deflt((void *)pjob, JOB_OBJECT, NULL)) != 0) {
+			req_reject(rc, 0, preq);
+			return;
+		}
 	}
 
 	/* if job is not running, may need to change its state */
@@ -436,7 +440,7 @@ req_modifyjob(struct batch_request *preq)
 
 /**
  * @brief
- * 		Returns the svrattrl entry matching attribute 'name', or NULL if not found.
+ * Returns the svrattrl entry matching attribute 'name', or NULL if not found.
  *
  * @param[in]	plist	-	head of svrattrl list
  * @param[in]	name	-	matching attribute 'name'
@@ -465,8 +469,8 @@ find_name_in_svrattrl(svrattrl *plist, char *name)
 /**
  * @brief
  * 		modify_job_attr - modify the attributes of a job automatically
- *		Used by req_modifyjob() to alter the job attributes and by
- *		stat_update() [see req_stat.c] to update with latest from MOM
+ *	Used by req_modifyjob() to alter the job attributes and by
+ *	stat_update() [see req_stat.c] to update with latest from MOM
  *
  * @param[in,out]	pjob	-	job structure
  * @param[in,out]	plist	-	Pointer to list of attributes
@@ -487,6 +491,10 @@ modify_job_attr(job *pjob, svrattrl *plist, int perm, int *bad)
 	int        newstate = -1;
 	int        newsubstate = -1;
 	long  	   newaccruetype = -1;
+	char	  *cumulative_spec = NULL;
+	char	  *temp = NULL;
+	int       multi_select = 0;
+	int       select_modified= 0;
 
 	if (pjob->ji_qhdr->qu_qs.qu_type == QTYPE_Execution)
 		allow_unkn = -1;
@@ -516,11 +524,62 @@ modify_job_attr(job *pjob, svrattrl *plist, int perm, int *bad)
 			if ((prc->rs_value.at_flags & (ATR_VFLAG_MODIFY|ATR_VFLAG_SET)) == (ATR_VFLAG_MODIFY|ATR_VFLAG_SET)) {
 				/* if being changed at all, see if "select" */
 				if (prc->rs_defin == pseldef) {
-					/* select is modified, recalc chunk sums */
-					rc = set_chunk_sum(&prc->rs_value,
-						&newattr[(int)JOB_ATR_resource]);
-					if (rc)
+					select_modified = 1;
+					if((rc = validate_perm_res_in_select(prc->rs_value.at_val.at_str)) != 0)
 						break;
+					if (strstr(prc->rs_value.at_val.at_str,"||") != NULL)
+					{
+						multi_select = 1;
+						job_attr_def[(int)JOB_ATR_multiselect].at_decode(&newattr[(int)JOB_ATR_multiselect], NULL, NULL, "true");
+						rc = get_most_restrictive_spec(prc->rs_value.at_val.at_str, &cumulative_spec,MAX_RESC_SPEC);
+						if (rc)
+							break;
+						else {
+							if (cumulative_spec[0] != '\0') {
+								temp = prc->rs_value.at_val.at_str;
+								/* cumulative_spec is calculated by get_most_restrictive_spec().  
+								 * We temporarily set this into the select so set_chunk_sum() can 
+								 * check against the most restrictive limits
+								 */
+								prc->rs_value.at_val.at_str = cumulative_spec;
+								rc = set_chunk_sum(&prc->rs_value, &newattr[(int)JOB_ATR_max_resc_req]);
+								prc->rs_value.at_val.at_str = temp;
+								if (rc) {
+									free(cumulative_spec);
+									break;
+								}
+							}
+							free(cumulative_spec);
+						}
+						rc = get_most_restrictive_spec(prc->rs_value.at_val.at_str, &cumulative_spec,MIN_RESC_SPEC);
+						if (rc)
+							break;
+						else {
+							if (cumulative_spec[0] != '\0') {
+								temp = prc->rs_value.at_val.at_str;
+								/* cumulative_spec is calculated by get_most_restrictive_spec().  
+								 * We temporarily set this into the select so set_chunk_sum() can 
+								 * check against the most restrictive limits
+								 */
+								prc->rs_value.at_val.at_str = cumulative_spec;
+								rc = set_chunk_sum(&prc->rs_value, &newattr[(int)JOB_ATR_min_resc_req]);
+								prc->rs_value.at_val.at_str = temp;
+								if (rc) {
+									free(cumulative_spec);
+									break;
+								}
+							}
+							free(cumulative_spec);
+						}
+					}
+					else {
+						/* select is modified, recalc chunk sums */
+						rc = set_chunk_sum(&prc->rs_value,
+							&newattr[(int)JOB_ATR_resource]);
+						if (rc)
+							break;
+					}
+
 				}
 			}
 			prc = (resource *)GET_NEXT(prc->rs_link);
@@ -545,8 +604,25 @@ modify_job_attr(job *pjob, svrattrl *plist, int perm, int *bad)
 
 
 			if (rc == 0) {
-				rc =  chk_resc_limits(&newattr[(int)JOB_ATR_resource],
-					pjob->ji_qhdr);
+				comp_resc_gt = comp_resc_lt = 0;
+				if ((pjob->ji_qhdr != NULL) && (pjob->ji_wattr[(int)JOB_ATR_multiselect].at_flags & ATR_VFLAG_SET))
+				{
+					if ((comp_resc(&pjob->ji_qhdr->qu_attr[QA_ATR_ResourceMin], &newattr[(int)JOB_ATR_min_resc_req]) == -1) ||
+						comp_resc_gt)
+						rc = PBSE_EXCQRESC;
+					if (rc == 0) {
+						/* now check individual resources against queue or server maximum */
+						chk_svr_resc_limit(&newattr[(int)JOB_ATR_max_resc_req], &pjob->ji_qhdr->qu_attr[QA_ATR_ResourceMax],
+								    &server.sv_attr[SRV_ATR_ResourceMax], pjob->ji_qhdr->qu_qs.qu_type); 
+
+						if (comp_resc_lt > 0)
+							rc = PBSE_EXCQRESC;
+					}
+
+				}
+				if (rc == 0)
+					rc =  chk_resc_limits(&newattr[(int)JOB_ATR_resource],
+						pjob->ji_qhdr);
 			}
 			if (rc == 0) {
 				rc = check_entity_resc_limit_max(pjob, pjob->ji_qhdr,
@@ -554,13 +630,23 @@ modify_job_attr(job *pjob, svrattrl *plist, int perm, int *bad)
 				if (rc == 0) {
 					rc = check_entity_resc_limit_queued(pjob, pjob->ji_qhdr,
 						&newattr[(int)JOB_ATR_resource]);
-					if (rc == 0)
-					{
-						rc = check_entity_resc_limit_max(pjob, (pbs_queue *)0,
-							&newattr[(int)JOB_ATR_resource]);
-						if (rc == 0)
-							rc = check_entity_resc_limit_queued(pjob, (pbs_queue *)0,
+					if (rc == 0) {
+						if (multi_select == 1) {
+							rc = check_entity_resc_limit_max(pjob, pjob->ji_qhdr,
+								&newattr[(int)JOB_ATR_max_resc_req]);
+							if (rc == 0)
+								rc = check_entity_resc_limit_max(pjob,
+									(pbs_queue *)0,
+									&newattr[(int)JOB_ATR_max_resc_req]);
+						}
+						else
+						{
+							rc = check_entity_resc_limit_max(pjob, (pbs_queue *)0,
 								&newattr[(int)JOB_ATR_resource]);
+							if (rc == 0)
+								rc = check_entity_resc_limit_queued(pjob, (pbs_queue *)0,
+									&newattr[(int)JOB_ATR_resource]);
+						}
 					}
 				}
 			}
@@ -625,6 +711,18 @@ modify_job_attr(job *pjob, svrattrl *plist, int perm, int *bad)
 		(void)set_entity_resc_sum_queued(pjob, pjob->ji_qhdr,
 			&newattr[(int)JOB_ATR_resource],
 			INCR);
+	}
+	/* When all limits check passed successfully and resource modified was select
+	 * we would want to free our previously calculated min/max_resc_req value provided
+	 * those were already set
+	 */
+	if ((rc == 0) && (select_modified == 1)) {
+		if (pjob->ji_wattr[(int)JOB_ATR_multiselect].at_flags & ATR_VFLAG_SET)
+			job_attr_def[(int)JOB_ATR_multiselect].at_decode(&pjob->ji_wattr[(int)JOB_ATR_multiselect], NULL, NULL, "false");
+		if (pjob->ji_wattr[(int)JOB_ATR_max_resc_req].at_flags & ATR_VFLAG_SET)
+			job_attr_def[(int)JOB_ATR_max_resc_req].at_free(&pjob->ji_wattr[(int)JOB_ATR_max_resc_req]);
+		if (pjob->ji_wattr[(int)JOB_ATR_min_resc_req].at_flags & ATR_VFLAG_SET)
+			job_attr_def[(int)JOB_ATR_min_resc_req].at_free(&pjob->ji_wattr[(int)JOB_ATR_min_resc_req]);
 	}
 
 	/* Now copy the new values into the job attribute array */

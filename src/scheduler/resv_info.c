@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 1994-2016 Altair Engineering, Inc.
  * For more information, contact Altair at www.altair.com.
- *  
+ *
  * This file is part of the PBS Professional ("PBS Pro") software.
- * 
+ *
  * Open Source License Information:
  *  
  * PBS Pro is free software. You can redistribute it and/or modify it under the
@@ -89,9 +89,9 @@
  * @brief
  * 		Statuses reservations from the server in batch status form.
  *
- * @param[in]	pbs_sd	-	The socket descriptor to the server's connection
+ * @param[in] pbs_sd - The socket descriptor to the server's connection
  *
- * @return	batch status form of the reservations
+ * @return batch status form of the reservations
  */
 struct batch_status *
 stat_resvs(int pbs_sd)
@@ -100,18 +100,18 @@ stat_resvs(int pbs_sd)
 	/* used for pbs_geterrmsg() */
 	char *errmsg;
 
-	/* get the reservation info from the PBS server */
-	if ((resvs = pbs_statresv(pbs_sd, NULL, NULL, NULL)) == NULL) {
-		if (pbs_errno) {
-			errmsg = pbs_geterrmsg(pbs_sd);
-			if (errmsg == NULL)
-				errmsg = "";
-			sprintf(log_buffer, "pbs_statresv failed: %s (%d)", errmsg, pbs_errno);
-			schdlog(PBSEVENT_SCHED, PBS_EVENTCLASS_RESV, LOG_NOTICE, "resv_info",
-				log_buffer);
+		/* get the reservation info from the PBS server */
+		if ((resvs = pbs_statresv(pbs_sd, NULL, NULL, NULL)) == NULL) {
+			if (pbs_errno) {
+				errmsg = pbs_geterrmsg(pbs_sd);
+				if (errmsg == NULL)
+					errmsg = "";
+				sprintf(log_buffer, "pbs_statresv failed: %s (%d)", errmsg, pbs_errno);
+				schdlog(PBSEVENT_SCHED, PBS_EVENTCLASS_RESV, LOG_NOTICE, "resv_info",
+					log_buffer);
+			}
+			return NULL;
 		}
-		return NULL;
-	}
 	return resvs;
 }
 
@@ -226,7 +226,7 @@ query_reservations(server_info *sinfo, struct batch_status *resvs)
 			cur_resv = cur_resv->next;
 			continue;
 		}
-		
+
 		resresv->duration = resresv->resv->req_duration;
 		if (resresv->resv->resv_state !=RESV_UNCONFIRMED) {
 			resresv->start = resresv->resv->req_start;
@@ -234,9 +234,9 @@ query_reservations(server_info *sinfo, struct batch_status *resvs)
 			   resresv->start + resresv->duration <= sinfo->server_time) {
 				resresv->end = sinfo->server_time + EXITING_TIME;
 			} else
-				resresv->end = resresv->resv->req_end;
+			resresv->end = resresv->resv->req_end;
 		}
-	
+
 		/* Skip all but general reservations. */
 		if (resresv->resv->resv_type ==2) {
 			if (resresv->node_set_str != NULL) {
@@ -547,7 +547,7 @@ query_reservations(server_info *sinfo, struct batch_status *resvs)
 
 /**
  * @brief
- *		query_resv - convert the servers batch_status structure into a
+ *	query_resv - convert the servers batch_status structure into a
  *			 resource_resv/resv_info structs for easier access
  *
  * @param[in]	resv	-	a single reservation in batch_status form
@@ -586,7 +586,7 @@ query_resv(struct batch_status *resv, server_info *sinfo)
 		else if (!strcmp(attrp->name, ATTR_queue))
 			advresv->resv->queuename = string_dup(attrp->value);
 		else if (!strcmp(attrp->name, ATTR_SchedSelect)) {
-			advresv->select = parse_selspec(attrp->value);
+			advresv->select = parse_single_selspec(attrp->value);
 			if (advresv->select != NULL && advresv->select->chunks != NULL) {
 				/* Ignore resv if any of the chunks has no resource req. */
 				int i;
@@ -640,7 +640,7 @@ query_resv(struct batch_status *resv, server_info *sinfo)
 		else if (!strcmp(attrp->name, ATTR_l)) { /* resources requested*/
 			resreq = find_alloc_resource_req_by_str(advresv->resreq, attrp->resource);
 			if (resreq != NULL)
-				set_resource_req(resreq, attrp->value);
+				set_resource_req(resreq, attrp->value, EQ);
 
 			if (!strcmp(resreq->name, "place"))
 				advresv->place_spec = parse_placespec(attrp->value);
@@ -705,7 +705,7 @@ query_resv(struct batch_status *resv, server_info *sinfo)
 
 /**
  * @brief
- *		new_resv_info - allocate and initialize new resv_info structure
+ *	new_resv_info - allocate and initialize new resv_info structure
  *
  * @return	the new structure
  *
@@ -743,7 +743,7 @@ new_resv_info()
 
 /**
  * @brief
- *		free_resv_info - free all the memory used by a rev_info structure
+ *	free_resv_info - free all the memory used by a rev_info structure
  *
  * @param[in]	rinfo	-	the resv_info to free
  *
@@ -777,7 +777,7 @@ free_resv_info(resv_info *rinfo)
 
 /**
  * @brief
- *		dup_resv_info - duplicate a reservation
+ *	dup_resv_info - duplicate a reservation
  *
  * @param[in]	rinfo	-	the reservation to duplicate
  * @param[in]	sinfo 	-	the server the NEW reservation belongs to
@@ -835,23 +835,23 @@ dup_resv_info(resv_info *rinfo, server_info *sinfo)
  *		if we can serve the reservation, we reserve it
  *		and if we can't, we delete the reservation
  * @par
- *  	For a standing reservation, each occurrence is unrolled and attempted
- * 		to be confirmed. If a single occurrence fails to be confirmed, then the
- * 		standing reservation is rejected.
+ *  For a standing reservation, each occurrence is unrolled and attempted
+ * to be confirmed. If a single occurrence fails to be confirmed, then the
+ * standing reservation is rejected.
  * @par
- *  	For a degraded reservation, the resources allocated to the reservation
- * 		are free'd in the simulated universe, and we attempt to reconfirm resources
- * 		for it. If it fails then we inform the server that the reconfirmation has
- * 		failed. If it succeeds, then the previously allocated resources are freed
- * 		from the real universe and replaced by the newly allocated resources.
+ *  For a degraded reservation, the resources allocated to the reservation
+ * are free'd in the simulated universe, and we attempt to reconfirm resources
+ * for it. If it fails then we inform the server that the reconfirmation has
+ * failed. If it succeeds, then the previously allocated resources are freed
+ * from the real universe and replaced by the newly allocated resources.
  *
- * @param[in]	policy	-	policy info
- * @param[in]	pbs_sd	-	communication descriptor to PBS server
- * @param[in]	resvs	-	list of reservations
- * @param[in]	sinfo	-	the server who owns the reservations
+ *        @param[in] policy - policy info
+ *	  @param[in] pbs_sd - communication descriptor to PBS server
+ *	  @param[in] resvs - list of reservations
+ *	  @param[in] sinfo - the server who owns the reservations
  *
- * @return	int
- * @retval	number of reservations confirmed
+ *	@return int
+ *      @retval number of reservations confirmed
  * @retval	-1	: on error
  *
  */
@@ -1127,8 +1127,8 @@ check_new_reservations(status *policy, int pbs_sd, resource_resv **resvs, server
 
 /**
  * @brief
- * 		mark the timed event associated to a resource reservation at a given time as
- * 		disabled.
+ * mark the timed event associated to a resource reservation at a given time as
+ * disabled.
  *
  * @param[in]	events	-	the event which to be disabled in the calendar.
  * @param[in]	resv	-	the resource reservation being disabled
@@ -1162,19 +1162,19 @@ disable_reservation_occurrence(timed_event *events,
  * @brief
  * 		determines if a resource reservation can be satisfied
  *
- * @param[in]	policy	-	policy info
- * @param[in]	pbs_sd	-	connection to server
- * @param[in]	unconf_resv	-	the reservation to confirm
- * @param[in]	nsinfo	-	the simulated server info universe
+ * @param[in] policy - policy info
+ * @param[in] pbs_sd - connection to server
+ * @param[in] unconf_resv - the reservation to confirm
+ * @param[in] nsinfo - the simulated server info universe
  *
- * @return	int
- * @retval	RESV_CONFIRM_SUCCESS
- * @retval	RESV_CONFIRM_FAIL
+ * @return int
+ * @retval RESV_CONFIRM_SUCCESS
+ * @retval RESV_CONFIRM_FAIL
  *
  * @note
- * 		This function modifies the resource reservation by adding the number of
- * 		occurrences and the sequence of occurrence times, which are then used when
- * 		checking for new and degraded reservations.
+ * This function modifies the resource reservation by adding the number of
+ * occurrences and the sequence of occurrence times, which are then used when
+ * checking for new and degraded reservations.
  */
 int
 confirm_reservation(status *policy, int pbs_sd, resource_resv *unconf_resv, server_info *nsinfo)
@@ -1424,6 +1424,7 @@ confirm_reservation(status *policy, int pbs_sd, resource_resv *unconf_resv, serv
 		if (!(simrc & TIMED_ERROR) && resv_start_time >= 0) {
 			clear_schd_error(err);
 			if ((ns = is_ok_to_run(nsinfo->policy, -1, nsinfo, NULL, nresv, NO_FLAGS, err)) != NULL) {
+				update_resc_assn(ns, nresv);
 				combine_nspec_array(ns);
 				tmp = create_execvnode(ns);
 				free_nspecs(ns);
@@ -1587,13 +1588,13 @@ confirm_reservation(status *policy, int pbs_sd, resource_resv *unconf_resv, serv
 
 /**
  * @brief
- * 		Checks the state of all vnodes associated to a reservation and counts the
- * 		number that are unavailable.
+ * Checks the state of all vnodes associated to a reservation and counts the
+ * number that are unavailable.
  *
  * @param[in]	ninfo_arr	-	the nodes to check
  * @param[out]	tot_vnodes	-	the total number of vnodes associated to the reservation
  * @param[in,out]	names_of_down_vnodes	-	the string of vnodes that are down that are then
- * 												printed into the log. This has to be of maximum length MAXVNODELIST
+ * printed into the log. This has to be of maximum length MAXVNODELIST
  *
  * @return	the number of vnodes down. The total number of vnodes is passed back
  * 			by reference.
@@ -1650,7 +1651,7 @@ check_vnodes_down(node_info **ninfo_arr, int *tot_vnodes, char *names_of_down_vn
  *
  * @param[in]	resresv	-	the reservation
  *
- * @return	void
+ * @return void
  */
 void
 release_nodes(resource_resv *resresv)
@@ -1669,7 +1670,7 @@ release_nodes(resource_resv *resresv)
 
 /**
  * @brief
- *		create_resv_nodes - create a node info array by copying the
+ *	create_resv_nodes - create a node info array by copying the
  *			    nodes and setting available resources to
  *			    only the ones assigned to the reservation
  *

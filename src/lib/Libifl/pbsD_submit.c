@@ -1,16 +1,16 @@
 /*
  * Copyright (C) 1994-2016 Altair Engineering, Inc.
  * For more information, contact Altair at www.altair.com.
- *  
+ *
  * This file is part of the PBS Professional ("PBS Pro") software.
- * 
+ *
  * Open Source License Information:
- *  
+ *
  * PBS Pro is free software. You can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free 
  * Software Foundation, either version 3 of the License, or (at your option) any 
  * later version.
- *  
+ *
  * PBS Pro is distributed in the hope that it will be useful, but WITHOUT ANY 
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
  * PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details.
@@ -196,7 +196,15 @@ __pbs_submit(int c, struct attropl  *attrib, char *script, char *destination, ch
 	/* initiate the queueing of the job */
 
 	for (pal = attrib; pal; pal = pal->next)
-		pal->op = SET;		/* force operator to SET */
+	{
+		/* attribute is a Resource_List, we would have already set operator
+		 * for these resources as requested by users.
+		 * so skip setting operators for this attribute.
+		 * operator value of this is set in client function send_attrl.
+		 */
+		if (strcmp(pal->name, ATTR_l) != 0)
+			pal->op = SET;		/* force operator to SET */
+	}
 
 	/* Queue job with null string for job id */
 	return_jobid = PBSD_queuejob(c, "", destination, attrib, extend, 0, NULL);

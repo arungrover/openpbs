@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 1994-2016 Altair Engineering, Inc.
  * For more information, contact Altair at www.altair.com.
- *  
+ *
  * This file is part of the PBS Professional ("PBS Pro") software.
- * 
+ *
  * Open Source License Information:
  *  
  * PBS Pro is free software. You can redistribute it and/or modify it under the
@@ -269,6 +269,10 @@ enum job_atr {
 	JOB_ATR_run_version,
 	JOB_ATR_GUI,
 	JOB_ATR_topjob_ineligible,
+	JOB_ATR_RequestedSpec,
+	JOB_ATR_max_resc_req,
+	JOB_ATR_min_resc_req,
+	JOB_ATR_multiselect,
 #include "site_job_attr_enum.h"
 
 	JOB_ATR_UNKN,		/* the special "unknown" type		  */
@@ -283,6 +287,11 @@ enum PBS_Chkpt_By {
 	PBS_CHECKPOINT_WALLT	/* checkpoint by walltime interval */
 };
 
+/* Mode passed to get_most_restrictive_spec to get max/min value of resources
+ * across all select specifications
+ */
+#define MAX_RESC_SPEC 0
+#define MIN_RESC_SPEC 1
 
 /*
  * The "definations" for the job attributes are in the following array,
@@ -1069,6 +1078,7 @@ extern int   state_char2int(char);
 extern int   uniq_nameANDfile(char*, char*, char*);
 extern long  determine_accruetype(job *);
 extern int   update_eligible_time(long, job *);
+extern int   get_most_restrictive_spec(char *, char **, int);
 
 /*
  *	The filesystem related recovery/save routines are renamed

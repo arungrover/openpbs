@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 1994-2016 Altair Engineering, Inc.
  * For more information, contact Altair at www.altair.com.
- *  
+ *
  * This file is part of the PBS Professional ("PBS Pro") software.
- * 
+ *
  * Open Source License Information:
  *  
  * PBS Pro is free software. You can redistribute it and/or modify it under the
@@ -68,7 +68,7 @@
 
 /**
  * @brief
- * 	decode_nodes - decode a node requirement specification,
+ * decode_nodes - decode a node requirement specification,
  *	Check if node requirement specification is syntactically ok,
  *	then call decode_str()
  *
@@ -123,7 +123,7 @@ decode_nodes(struct attribute *patr, char *name, char *rescn, char *val)
 
 /**
  * @brief
- * 	decode_select - decode a selection specification,
+ * decode_select - decode a selection specification,
  *	Check if the specification is syntactically ok, then call decode_str()
  *
  *	Spec is of the form:
@@ -187,10 +187,16 @@ decode_select(struct attribute *patr, char *name, char *rescn, char *val)
 
 		while (isalnum((int)*pc) || *pc == '-' || *pc == '_')
 			++pc;
-		if (*pc != '=')
+		if (*pc != '=' && *pc != '<' && *pc != '>' && *pc != '!')
 			return (PBSE_BADATVAL);
 
-		++pc;	/* what following the '=' */
+		++pc;
+		if (*pc == '=') {
+			if (*(pc-1) == '=') /* == is not allowed */
+				return (PBSE_BADATVAL);
+			else
+				++pc; /* skip = which would occur for >= or <= */
+		}
 		if (*pc == '\0')
 			return (PBSE_BADATVAL);
 
@@ -234,7 +240,22 @@ decode_select(struct attribute *patr, char *name, char *rescn, char *val)
 				else
 					return (PBSE_BADATVAL);
 
-			} if  (isprint((int)*pc)) {
+			}
+			else if (*pc == '|') {
+				if (*(pc+1) == '|') {
+					/* should have another select specification */
+					pc += 2;
+					/* This is a new chunk but from a different select specification */
+					new_chunk = 1;
+					if (*pc)
+						break;
+					else
+						return (PBSE_BADATVAL);
+				}
+				else /* single pipe is not allowed */
+					return (PBSE_BADATVAL);
+			}
+			if  (isprint((int)*pc)) {
 				++pc;	/* legal character */
 
 			} else

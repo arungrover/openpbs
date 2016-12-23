@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 1994-2016 Altair Engineering, Inc.
  * For more information, contact Altair at www.altair.com.
- *  
+ *
  * This file is part of the PBS Professional ("PBS Pro") software.
- * 
+ *
  * Open Source License Information:
  *  
  * PBS Pro is free software. You can redistribute it and/or modify it under the
@@ -38,7 +38,7 @@
  * @file	req_runjob.c
  *
  * @brief
- * 		req_runjob.c - functions dealing with a Run Job Request
+ * req_runjob.c - functions dealing with a Run Job Request
  *
  * Included functions are:
  *	check_and_provision_job()
@@ -223,12 +223,12 @@ check_and_provision_job(struct batch_request *preq, job *pjob, int *need_prov)
 
 /**
  * @brief
- *		Search for a deferred reply element in the list whose client
- *		request came in on the socket which was just closed.  If found,
- *		clear the pointer to the original request which has been freed
- *		when the connection was closed.
+ *	Search for a deferred reply element in the list whose client
+ *	request came in on the socket which was just closed.  If found,
+ *	clear the pointer to the original request which has been freed
+ *	when the connection was closed.
  *
- * @param[in]	sd	-	socket which was just closed
+ * @param[in]	sd - socket which was just closed
  *
  * @return	none
  *
@@ -265,9 +265,9 @@ clear_from_defr(int sd)
 
 /**
  * @brief
- * 		req_runjob - service the Run Job and Asyc Run Job Requests
+ * req_runjob - service the Run Job and Asyc Run Job Requests
  * @par
- *		This request forces a job into execution.  Client must be privileged.
+ *	This request forces a job into execution.  Client must be privileged.
  *
  * @param[in]	preq	-	Run Job Requests
  */
@@ -289,6 +289,8 @@ req_runjob(struct batch_request *preq)
 	int		  x, y, z;
 	struct deferred_request *pdefr;
 	char		  hook_msg[HOOK_MSG_SIZE];
+	struct attribute  temp;
+	int schedselect_present = 0;
 
 	if (license_expired) {
 		req_reject(PBSE_LICENSEINV, 0, preq);
@@ -299,6 +301,8 @@ req_runjob(struct batch_request *preq)
 		req_reject(PBSE_PERM, 0, preq);
 		return;
 	}
+
+	memset(&temp, 0, sizeof(struct attribute));
 
 	jid = preq->rq_ind.rq_run.rq_jid;
 	parent = chk_job_request(jid, preq, &jt);
@@ -311,7 +315,7 @@ req_runjob(struct batch_request *preq)
 		req_reject(PBSE_IVALREQ, 0, preq);
 		return;
 	}
-	
+
 #ifndef NAS /* localmod 133 */
 	if ((scheduler_sock != -1) && was_job_alteredmoved(parent)) {
 		int index = find_attr(sched_attr_def, ATTR_throughput_mode, SCHED_ATR_LAST);
@@ -466,6 +470,16 @@ req_runjob(struct batch_request *preq)
 				LOG_INFO, "", "runjob event: accept req by default");
 	}
 
+	/* set SchedSelect attribute if extend is present */
+	if (preq->rq_extend != NULL)
+	{
+		int temp_len = strlen("schedselect=");
+		if (strncmp(preq->rq_extend, "schedselect=", temp_len) == 0) {
+			char *schedselect = preq->rq_extend + temp_len;
+			job_attr_def[(int)JOB_ATR_SchedSelect].at_decode(&temp, ATTR_SchedSelect, NULL, schedselect);
+			schedselect_present = 1;
+		}
+	}
 	/* OK - go back over the run job request, assign the vhosts */
 	/* and finally run the job by calling req_runjob2()	    */
 
@@ -478,6 +492,9 @@ req_runjob(struct batch_request *preq)
 			/* free prov_vnode before use */
 			job_attr_def[(int)JOB_ATR_prov_vnode].at_free(
 				&pjob->ji_wattr[(int)JOB_ATR_prov_vnode]);
+			if (schedselect_present)
+				job_attr_def[(int)JOB_ATR_SchedSelect].at_set(&pjob->ji_wattr[(int)JOB_ATR_SchedSelect],
+								     &temp, SET);
 			req_runjob2(preq, parent);
 		}
 		return;
@@ -516,6 +533,9 @@ req_runjob(struct batch_request *preq)
 		job_attr_def[(int)JOB_ATR_prov_vnode].at_free(
 			&pjob->ji_wattr[(int)JOB_ATR_prov_vnode]);
 
+		if (schedselect_present)
+			job_attr_def[(int)JOB_ATR_SchedSelect].at_set(&pjob->ji_wattr[(int)JOB_ATR_SchedSelect],
+							     &temp, SET);
 		req_runjob2(preq, pjob);
 		return;
 
@@ -650,16 +670,16 @@ req_runjob2(struct batch_request *preq, job *pjob)
 
 /**
  * @brief
- *		clear_exec_on_run_fail - On failure of running a job,
- *		clear exec strings so job can be resecheduled anywhere.
+ *	clear_exec_on_run_fail - On failure of running a job,
+ *	clear exec strings so job can be resecheduled anywhere.
  *
  * @par Functionality:
- *		If the job has been checkpointed or has files staged in, then
- *		the job must run where it ran before or where the files where staged.
- *		Otherwise it is free to run anywhere when re-scheduled.  In this case,
- *		clear the exec_hosts, exec_vnodes, etc.
+ *	If the job has been checkpointed or has files staged in, then
+ *	the job must run where it ran before or where the files where staged.
+ *	Otherwise it is free to run anywhere when re-scheduled.  In this case,
+ *	clear the exec_hosts, exec_vnodes, etc.
  *
- * @param[in]	jobp	-	pointer to to job whose run failed
+ * @param[in]	jobp - pointer to to job whose run failed
  *
  * @return	none
  *
@@ -685,10 +705,10 @@ clear_exec_on_run_fail(job *jobp)
 
 /*
  * @brief
- * 		req_stagein	-	service the Stage In Files for a Job Request
+ * req_stagein - service the Stage In Files for a Job Request
  *
- *		This request causes MOM to start stagin in files.
- *		Client must be privileged.
+ *	This request causes MOM to start stagin in files.
+ *	Client must be privileged.
  *
  * @param[in]	preq	-	Job Request
  */
@@ -701,7 +721,7 @@ req_stagein(struct batch_request *preq)
 
 /**
  * @brief
- * 		post_stagein - process reply from MOM to stage-in request
+ * post_stagein - process reply from MOM to stage-in request
  *
  * @param[in]	pwt	-	pointer to work task structure which contains the request
  */
@@ -781,7 +801,7 @@ post_stagein(struct work_task *pwt)
 
 /**
  * @brief
- * 		svr_stagein - direct MOM to stage in the requested files for a job
+ * svr_stagein - direct MOM to stage in the requested files for a job
  *
  * @param[in,out]	pjob	-	job structure
  * @param[in,out]	preq	-	request structure
@@ -872,7 +892,7 @@ form_attr_comment(const char *template, const char *execvnode)
 
 /**
  * @brief
- * 		svr_startjob - place a job into running state by shipping it to MOM
+ * svr_startjob - place a job into running state by shipping it to MOM
  *
  * @param[in,out]	pjob	-	job to run
  * @param[in,out]	preq	-	 NULL or Run Job batch request
@@ -983,15 +1003,15 @@ svr_startjob(job *pjob, struct batch_request *preq)
 
 /**
  * @brief
- * 		Continue the process of running a job by sending it to Mother Superior,
- *		and making sure it is in JOB_SUBSTATE_PRERUN.
+ * 	Continue the process of running a job by sending it to Mother Superior,
+ *	and making sure it is in JOB_SUBSTATE_PRERUN.
  *
  * @param[in]	pjob - pointer to job to run
  * @param[in]	preq - the run job request from the scheduler or client
  *
  * @return	int
- * @retval	0	:  success, job is being sent to Mom
- * @retval	!0	:  error in trying to send to Mom
+ * @retval	 0 :  success, job is being sent to Mom
+ * @retval	!0 :  error in trying to send to Mom
  */
 static int
 svr_strtjob2(job *pjob, struct batch_request *preq)
@@ -1026,9 +1046,9 @@ svr_strtjob2(job *pjob, struct batch_request *preq)
 						pjob->ji_wattr[(int) JOB_ATR_exec_vnode].at_val.at_str));
 	}
 
-	if (old_subst != JOB_SUBSTATE_PROVISION)
-		(void)svr_setjobstate(pjob, JOB_STATE_RUNNING,
-			JOB_SUBSTATE_PRERUN);
+		if (old_subst != JOB_SUBSTATE_PROVISION)
+			(void)svr_setjobstate(pjob, JOB_STATE_RUNNING,
+				JOB_SUBSTATE_PRERUN);
 
 
 	if (send_job(pjob, pjob->ji_qs.ji_un.ji_exect.ji_momaddr,
@@ -1068,17 +1088,17 @@ svr_strtjob2(job *pjob, struct batch_request *preq)
 
 /**
  * @brief
- *		Complete the process of placing a job into execution state
+ *	Complete the process of placing a job into execution state
  * @par
- *		Records a bunch of information for accouting and resource management,
- *		and sets substate to PRERUN if it isn't already.
- *		The sub moves to SUBSTATE_RUNNING when the session id is received
- *		from Mom, meaning it is in fact running; see stat_update().
+ *	Records a bunch of information for accouting and resource management,
+ *	and sets substate to PRERUN if it isn't already.
+ *	The sub moves to SUBSTATE_RUNNING when the session id is received
+ *	from Mom, meaning it is in fact running; see stat_update().
  * @par
- *		Note, if a job is in substate PROVISION,  the resources have already
- *		been allocated.
+ *	Note, if a job is in substate PROVISION,  the resources have already
+ *	been allocated.
  *
- * @param[in]	jobp	-	pointer to job which is just starting to run.
+ * @param[in] jobp - pointer to job which is just starting to run.
  */
 
 void
@@ -1175,11 +1195,11 @@ complete_running(job *jobp)
 
 /**
  * @brief
- * 		Helper function to parse the hookname and hook_msg out of a hook rejection message
+ * 	Helper function to parse the hookname and hook_msg out of a hook rejection message
  *
- * @param[in]	reject_msg	-	The hooks rejection message
- * @param[out]	hook_name	-	pointer to buffer to fill parsed hook_name
- * @param[in]	hook_name_size	- The length of the hook name output buffer
+ * @param[in] reject_msg - The hooks rejection message
+ * @param[out] hook_name - pointer to buffer to fill parsed hook_name
+ * @param[in] hook_name_size - The length of the hook name output buffer
  *
  * @return	The hook message
  * @retval	NULL	: Failed to parse out hook_name and hook_msg
@@ -1203,24 +1223,24 @@ parse_hook_rejectmsg(char *reject_msg, char *hook_name, int hook_name_size)
 
 /**
  * @brief
- * 		post_sendmom - clean up action for child started in send_job
- *		which was sending a job "home" to MOM
+ * post_sendmom - clean up action for child started in send_job
+ *	which was sending a job "home" to MOM
  * @par
- * 		If send was successfull, mark job as executing.
- * 		See comments in complete_running() above about the possible substate changes.
+ * If send was successfull, mark job as executing.
+ * See comments in complete_running() above about the possible substate changes.
  *
- * 		The job's session id will be updated with Mom first responds with
- * 		the resources_used.
+ * The job's session id will be updated with Mom first responds with
+ * the resources_used.
  *
- * 		If send didn't work, requeue the job.
+ * If send didn't work, requeue the job.
  *
- * 		If the work_task has a non-null wt_parm2, it is the address of a batch
- * 		request to which a reply must be sent.
+ * If the work_task has a non-null wt_parm2, it is the address of a batch
+ * request to which a reply must be sent.
  * @par
- * 		If the ji_prunreq (pointer to the run request) is null,  the run request
- * 		has already been replied to.  This might happen if the job's Obit is
- * 		received prior to reaping the send_job child.  In that case, we skip all
- * 		this because the job has already "run" and is now in Exiting state.
+ * If the ji_prunreq (pointer to the run request) is null,  the run request
+ * has already been replied to.  This might happen if the job's Obit is
+ * received prior to reaping the send_job child.  In that case, we skip all
+ * this because the job has already "run" and is now in Exiting state.
  *
  * @param[in,out]	pwt	-	work_task structure
  *
@@ -1404,8 +1424,8 @@ post_sendmom(struct work_task *pwt)
 
 			if (preq)
 				reply_ack(preq);
-			if ((jobp->ji_qs.ji_substate == JOB_SUBSTATE_PRERUN)	||
-					(jobp->ji_qs.ji_substate == JOB_SUBSTATE_PROVISION))
+			if ((jobp->ji_qs.ji_substate == JOB_SUBSTATE_PRERUN)   ||
+				(jobp->ji_qs.ji_substate == JOB_SUBSTATE_PROVISION))
 				complete_running(jobp);
 			break;
 
@@ -1569,11 +1589,11 @@ post_sendmom(struct work_task *pwt)
 
 /**
  * @brief
- * 		chk_job_torun - check state and past execution host of a job for which
- *		files are about to be staged in or the job is about to be run.
- * 		Returns pointer to job if all is ok, else returns null.
+ * chk_job_torun - check state and past execution host of a job for which
+ *	files are about to be staged in or the job is about to be run.
+ * 	Returns pointer to job if all is ok, else returns null.
  *
- *		pjob must be to a existing job structure
+ *	pjob must be to a existing job structure
  *
  * @param[in,out]	preq	-	Pointer to batch request
  * @param[in]	pjob	-	existing job structure
@@ -1695,10 +1715,10 @@ where_to_runjob(struct batch_request *preq, job *pjob)
 
 /**
  * @brief
- * 		assign_hosts - assign hosts (vnodes) to job which are specified (given) by:
- *		1. the scheduler when it runs a job,
- *		2. the operator as the -H option to qrun
- *		3. from exec_vnode when required by checkpoint-restart or file stage-in
+ * assign_hosts - assign hosts (vnodes) to job which are specified (given) by:
+ *	1. the scheduler when it runs a job,
+ *	2. the operator as the -H option to qrun
+ *	3. from exec_vnode when required by checkpoint-restart or file stage-in
  *
  * @param[in,out]	pjob	-	pointer to a job object
  * @param[in]	given	-	original vnode list from scheduler/operator
@@ -1798,7 +1818,7 @@ assign_hosts(job  *pjob, char *given, int set_exec_vnode)
 
 /**
  * @brief
- * 		req_defschedreply - handle the deferred scheduler reply call
+ * req_defschedreply - handle the deferred scheduler reply call
  *
  * @param[in,out]	preq	-	Pointer to batch request
  */

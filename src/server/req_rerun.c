@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 1994-2016 Altair Engineering, Inc.
  * For more information, contact Altair at www.altair.com.
- *  
+ *
  * This file is part of the PBS Professional ("PBS Pro") software.
- * 
+ *
  * Open Source License Information:
  *  
  * PBS Pro is free software. You can redistribute it and/or modify it under the
@@ -38,7 +38,7 @@
  * @file    req_rerun.c
  *
  * @brief
- * 		req_rerun.c - functions dealing with a Rerun Job Request
+ * req_rerun.c - functions dealing with a Rerun Job Request
  *
  * Included functions are:
  * 	post_rerun()
@@ -84,11 +84,11 @@ extern struct connection *svr_conn;
 
 /**
  * @brief
- * 		post_rerun - handler for reply from mom on signal_job sent in req_rerunjob
- *		If mom acknowledged the signal, then all is ok.
- *		If mom rejected the signal for unknown jobid, and force is set by the
- *		original client for a non manager as indicated by the preq->rq_extra being zero,
- *		then do local requeue.
+ * post_rerun - handler for reply from mom on signal_job sent in req_rerunjob
+ *	If mom acknowledged the signal, then all is ok.
+ *	If mom rejected the signal for unknown jobid, and force is set by the
+ *	original client for a non manager as indicated by the preq->rq_extra being zero,
+ *	then do local requeue.
  *
  * @param[in]	pwt	-	work task structure which contains the reply from mom
  */
@@ -122,7 +122,7 @@ post_rerun(struct work_task *pwt)
 
 /**
  * @brief
- * 		force_reque - requeue (rerun) a job
+ * force_reque - requeue (rerun) a job
  *
  * @param[in,out]	pwt	-	job which needs to be rerun
  */
@@ -170,15 +170,23 @@ force_reque(job *pjob)
 	/* job dir has no meaning for re-queued jobs, so unset it */
 	job_attr_def[(int)JOB_ATR_jobdir].at_free(&pjob->
 		ji_wattr[(int)JOB_ATR_jobdir]);
+	if (pjob->ji_wattr[(int)JOB_ATR_multiselect].at_flags & ATR_VFLAG_SET) {
+		job_attr_def[(int)JOB_ATR_SchedSelect].at_free(
+			&pjob->ji_wattr[(int)JOB_ATR_SchedSelect]);
+		job_attr_def[(int)JOB_ATR_max_resc_req].at_free(
+			&pjob->ji_wattr[(int)JOB_ATR_max_resc_req]);
+		job_attr_def[(int)JOB_ATR_min_resc_req].at_free(
+			&pjob->ji_wattr[(int)JOB_ATR_min_resc_req]);
+	}
 	svr_evaljobstate(pjob, &newstate, &newsubstate, 1);
 	(void)svr_setjobstate(pjob, newstate, newsubstate);
 }
 
 /**
  * @brief
- * 		req_rerunjob - service the Rerun Job Request
+ * req_rerunjob - service the Rerun Job Request
  *
- *		This request Reruns a job by:
+ *	This request Reruns a job by:
  *		sending to MOM a signal job request with SIGKILL
  *		marking the job as being rerun by setting the substate.
  *
@@ -345,7 +353,7 @@ req_rerunjob(struct batch_request *preq)
 
 /**
  * @brief
- * 		Function that causes a rerun request to return with a timeout message.
+ * 	Function that causes a rerun request to return with a timeout message.
  *
  * @param[in,out]	pwt	-	work task which contains the job structure which holds the rerun request
  */
@@ -365,8 +373,8 @@ timeout_rerun_request(struct work_task *pwt)
 		"Response timed out. Job rerun request still in progress for");
 
 	/* clear no-timeout flag on connection */
-	if (conn_idx != -1)
-		svr_conn[conn_idx].cn_authen &= ~PBS_NET_CONN_NOTIMEOUT;
+		if (conn_idx != -1)
+			svr_conn[conn_idx].cn_authen &= ~PBS_NET_CONN_NOTIMEOUT;
 
 	pjob->ji_rerun_preq = NULL;
 

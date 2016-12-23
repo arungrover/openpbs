@@ -302,12 +302,13 @@ states(char *string, char *q, char *r, char *h, char *w, char *t, char *e, int l
  * @param[in] n - attribute name
  * @param[in] r - resource name
  * @param[in] v - value for the attribute
+ * @param[in] op - operator to be printed
  *
  * @return Void
  *
  */
 void
-prt_attr(char *n, char *r, char *v)
+prt_attr(char *n, char *r, char *v, enum batch_op op)
 {
 	char *c;
 	char *comma = ",";
@@ -321,7 +322,24 @@ prt_attr(char *n, char *r, char *v)
 		start += strlen(r) + 1;
 		printf(".%s", r);
 	}
-	printf(" = ");
+	switch(op)
+	{
+		case GT:
+			printf (" > ");
+			break;
+		case GE:
+			printf (" >= ");
+			break;
+		case LT:
+			printf (" < ");
+			break;
+		case LE:
+			printf (" <= ");
+			break;
+		default:
+			printf (" = ");
+			break;
+	}
 	c = strtok(v, comma);
 	while (c) {
 		if ((l = strlen(c)) + start < 78) {
@@ -1070,16 +1088,16 @@ display_statjob(struct batch_status *status, struct batch_status *prtheader, int
 							 * Use a stack variable instead.
 							 */
 							char noval[] = "UNKNOWN";
-							prt_attr(a->name, a->resource, noval);
+							prt_attr(a->name, a->resource, noval, a->op);
 							printf("\n");
 						} else
-							prt_attr(a->name, a->resource, ctime(&epoch));
+							prt_attr(a->name, a->resource, ctime(&epoch), a->op);
 					} else if (strcmp(a->name, ATTR_resv_state) == 0) {
-						prt_attr(a->name, a->resource, cvtResvstate(a->value));
+						prt_attr(a->name, a->resource, cvtResvstate(a->value), a->op);
 						printf("\n");
 					} else if (strcmp(a->name, ATTR_submit_arguments) == 0) {
 						(void)decode_xml_arg_list_str((a->value),  &cmdargs);
-						prt_attr(a->name, a->resource, cmdargs);
+						prt_attr(a->name, a->resource, cmdargs, a->op);
 						printf("\n");
 					} else if (strcmp(a->name, ATTR_executable) == 0) {
 						/*
@@ -1094,11 +1112,11 @@ display_statjob(struct batch_status *status, struct batch_status *prtheader, int
 								exit(1);
 						}
 						(void)sprintf(hpcbp_executable, "<%s>%s</%s>",
-								HPCBP_EXEC_TAG, a->value, HPCBP_EXEC_TAG);
-						prt_attr(a->name, a->resource, hpcbp_executable);
+							HPCBP_EXEC_TAG, a->value, HPCBP_EXEC_TAG);
+						prt_attr(a->name, a->resource, hpcbp_executable, a->op);
 						printf("\n");
 					} else {
-						prt_attr(a->name, a->resource, a->value);
+						prt_attr(a->name, a->resource, a->value, a->op);
 						printf("\n");
 					}
 				}
@@ -1271,7 +1289,7 @@ display_statque(struct batch_status *status, int prtheader, int full)
 			a = p->attribs;
 			while (a != NULL) {
 				if (a->name != NULL) {
-					prt_attr(a->name, a->resource, a->value);
+					prt_attr(a->name, a->resource, a->value, a->op);
 					printf("\n");
 				}
 				a = a->next;
@@ -1393,7 +1411,7 @@ display_statserver(struct batch_status *status, int prtheader, int full)
 			a = p->attribs;
 			while (a != NULL) {
 				if (a->name != NULL) {
-					prt_attr(a->name, a->resource, a->value);
+					prt_attr(a->name, a->resource, a->value, a->op);
 					printf("\n");
 				}
 				a = a->next;

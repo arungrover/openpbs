@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 1994-2016 Altair Engineering, Inc.
  * For more information, contact Altair at www.altair.com.
- *  
+ *
  * This file is part of the PBS Professional ("PBS Pro") software.
- * 
+ *
  * Open Source License Information:
  *  
  * PBS Pro is free software. You can redistribute it and/or modify it under the
@@ -77,5 +77,4 @@ extern int	parse_jobid(char *, char **, char **, char **);
 extern int	parse_stage_name(char *, char *, char *, char *);
 extern void	prt_error(char *, char *, int);
 extern int	cnt2mom(char *server);
-extern void     set_attr_resc(struct attrl **, char *, char *, char *);
-
+extern void     set_attr_resc(struct attrl **, char *, char *, char *, int);

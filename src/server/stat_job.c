@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 1994-2016 Altair Engineering, Inc.
  * For more information, contact Altair at www.altair.com.
- *  
+ *
  * This file is part of the PBS Professional ("PBS Pro") software.
- * 
+ *
  * Open Source License Information:
  *  
  * PBS Pro is free software. You can redistribute it and/or modify it under the
@@ -79,12 +79,12 @@ extern char	     statechars[];
 
 /**
  * @brief
- * 		svrcached - either link in (to phead) a cached svrattrl struct which is
- *		pointed to by the attribute;  or if the cached struct isn't there or
- *		is out of date, then replace it with a new svrattrl structure.
+ * svrcached - either link in (to phead) a cached svrattrl struct which is
+ *	pointed to by the attribute;  or if the cached struct isn't there or
+ *	is out of date, then replace it with a new svrattrl structure.
  * @par
  *		When replacing, unlink and delete old one if the reference count goes
- *		to zero.
+ *	to zero.
  *
  * @par[in,out]	pat	-	attribute structure which contains a cached svrattrl struct
  * @par[in,out]	phead	-	pbs_list_head
@@ -97,6 +97,8 @@ svrcached(attribute *pat, pbs_list_head *phead, attribute_def *pdef)
 	svrattrl *working = NULL;
 	svrattrl *wcopy;
 	svrattrl *encoded;
+	resource_def    *prdefres;
+	resource        *prresentry;
 
 	if (resc_access_perm & PRIV_READ)
 		encoded = pat->at_priv_encoded;
@@ -120,6 +122,17 @@ svrcached(attribute *pat, pbs_list_head *phead, attribute_def *pdef)
 			pat->at_flags &= ~ATR_VFLAG_MODCACHE;
 			while (working) {
 				working->al_refct++;	/* incr ref count */
+				if ((working->al_atopl.name != NULL) && ((strcmp(working->al_atopl.name, ATTR_l) == 0)||
+									 (strcmp(working->al_atopl.name, ATTR_l_max) == 0)||
+									 (strcmp(working->al_atopl.name, ATTR_l_min) == 0)))
+				{
+					prdefres = find_resc_def(svr_resc_def, working->al_atopl.resource, svr_resc_size);
+					if (prdefres != NULL) {
+						prresentry = find_resc_entry(pat,prdefres);
+						if (prresentry != NULL)
+							working->al_atopl.op = prresentry->rs_value.op;
+					}
+				}
 				working = working->al_sister;
 			}
 		}
@@ -129,6 +142,16 @@ svrcached(attribute *pat, pbs_list_head *phead, attribute_def *pdef)
 		working = encoded;
 		if (working->al_refct < 2) {
 			while (working) {
+				if ((working->al_atopl.name != NULL) && ((strcmp(working->al_atopl.name, ATTR_l) == 0)||
+									 (strcmp(working->al_atopl.name, ATTR_l_max) == 0)||
+									 (strcmp(working->al_atopl.name, ATTR_l_min) == 0)))
+				{
+				        prdefres = find_resc_def(svr_resc_def, working->al_atopl.resource, svr_resc_size);
+					prresentry = find_resc_entry(pat,prdefres);
+					if (prresentry != NULL)
+						working->al_atopl.op = prresentry->rs_value.op;
+
+				}
 				CLEAR_LINK(working->al_link);
 				append_link(phead, &working->al_link, working);
 				working->al_refct++;	/* incr ref count */
@@ -146,6 +169,15 @@ svrcached(attribute *pat, pbs_list_head *phead, attribute_def *pdef)
 				wcopy = malloc(sizeof(struct svrattrl));
 				if (wcopy) {
 					*wcopy = *working;
+					if ((wcopy->al_atopl.name != NULL) && ((strcmp(wcopy->al_atopl.name, ATTR_l) == 0)||
+									 (strcmp(working->al_atopl.name, ATTR_l_max) == 0)||
+									 (strcmp(working->al_atopl.name, ATTR_l_min) == 0)))
+					{
+						prdefres = find_resc_def(svr_resc_def, working->al_atopl.resource, svr_resc_size);
+						prresentry = find_resc_entry(pat,prdefres);
+						if (prresentry != NULL)
+							wcopy->al_atopl.op = prresentry->rs_value.op;
+					}
 					working = working->al_sister;
 					CLEAR_LINK(wcopy->al_link);
 					append_link(phead, &wcopy->al_link, wcopy);
@@ -211,8 +243,8 @@ status_attrib(svrattrl *pal, attribute_def *padef, attribute *pattr, int limit, 
 
 /**
  * @brief
- * 		status_job - Build the status reply for a single job, regular or Array,
- *		but not a subjob of an Array Job.
+ * status_job - Build the status reply for a single job, regular or Array,
+ *	but not a subjob of an Array Job.
  *
  * @param[in,out]	pjob	-	ptr to job to status
  * @param[in]	preq	-	request structure
@@ -325,8 +357,8 @@ status_job(job *pjob, struct batch_request *preq, svrattrl *pal, pbs_list_head *
 
 /**
  * @brief
- * 		status_subjob - status a single subjob (of an Array Job)
- *		Works by statusing the parrent unless subjob is actually running.
+ * status_subjob - status a single subjob (of an Array Job)
+ *	Works by statusing the parrent unless subjob is actually running.
  *
  * @param[in,out]	pjob	-	ptr to parent Array
  * @param[in]	preq	-	request structure

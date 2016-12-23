@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 1994-2016 Altair Engineering, Inc.
  * For more information, contact Altair at www.altair.com.
- *  
+ *
  * This file is part of the PBS Professional ("PBS Pro") software.
- * 
+ *
  * Open Source License Information:
  *  
  * PBS Pro is free software. You can redistribute it and/or modify it under the
@@ -39,8 +39,8 @@
  * @file    req_quejob.c
  *
  * @brief
- * 		Functions relating to the Queue Job Batch Request sequence, including
- * 		Queue Job, Job Script, Ready to Commit, and Commit.
+ * Functions relating to the Queue Job Batch Request sequence, including
+ * Queue Job, Job Script, Ready to Commit, and Commit.
  *
  * Included functions are:
  * 	validate_perm_res_in_select()
@@ -202,15 +202,19 @@ static char *pbs_o_que = "PBS_O_QUEUE=";
 /**
  * @brief
  * 		validate_perm_res_in_select -	checks to see if the resources
- * 		appearing in select spec 'val' are  valid based on
+ * 		appearing in select spec 'sel' are  valid based on
  * 		"caller's" permission level (i.e. resc_access_perm).
+ * 		It also validates that if any consummable resource present in
+ * 		select spec is submitted with "!=" conditional operator then that
+ * 		is not allowed.
  *
- * @param[in]	val	-	select spec 'val'
+ * @param[in]	sel	-	select spec 'sel'
  *
  * @return	error code
  * @retval	0	: success
  * @retval	!0	: failure
  * @retval	PBSE_INVALSELECTRESC	: 'resc_in_err' is also set to the name of the offending resource.
+ * @retval	PBSE_NECONSUMABLE_RESC	:  returned when a consumable has "!=" operator set.
  *
  * @note
  *		NOTE:	'resc_in_err' is a malloced-string which is used and
@@ -218,8 +222,8 @@ static char *pbs_o_que = "PBS_O_QUEUE=";
  *		So upon PBS_INVALSELECTRES return, be sure to
  *		issue req_reject().
 */
-static int
-validate_perm_res_in_select(char *val)
+int
+validate_perm_res_in_select(char *sel)
 {
 	char        *chunk;
 	int 	     nchk;
@@ -228,40 +232,69 @@ validate_perm_res_in_select(char *val)
 	int	     rc = 0;
 	int	     j;
 	resource_def *presc;
+	char        *sel_or;
+	char	    *val;
+	char	    *id = "validate_perm_res_in_select";
 
-	if (val == NULL)
+	if (sel == NULL)
 		return (0);	/* nothing to validate */
+	val = strdup(sel);
+	if (val == NULL)
+		return (PBSE_SYSTEM);
+	sel_or = parse_select_or_string(val); /* break "||" seperated substrings */
+	if (sel_or == NULL) {
+		sprintf(log_buffer, "failed to parse ORed select spec: %s", val);
+		log_err(errno, id, log_buffer);
+		free(val);
+		return PBSE_SYSTEM;
+	}
+	while(sel_or) {
+		chunk = parse_plus_spec(sel_or, &rc); /* break '+' seperated substrings */
+		if (rc != 0) {
+			free(val);
+			free(sel_or);
+			return (rc);
+		}
 
-	chunk = parse_plus_spec(val, &rc); /* break '+' seperated substrings */
-	if (rc != 0)
-		return (rc);
+		while (chunk) {
 
-	while (chunk) {
 
 #ifdef NAS /* localmod 082 */
-		if (parse_chunk(chunk, 0, &nchk, &nelem, &pkvp, NULL) == 0) {
+			if (parse_chunk(chunk, 0, &nchk, &nelem, &pkvp, NULL) == 0) {
 #else
-		if (parse_chunk(chunk, &nchk, &nelem, &pkvp, NULL) == 0) {
+			if (parse_chunk(chunk, &nchk, &nelem, &pkvp, NULL) == 0) {
 #endif /* localmod 082 */
 
-			/* first check for any invalid resources in the select */
-			for (j=0; j<nelem; ++j) {
-
-				presc = find_resc_def(svr_resc_def, pkvp[j].kv_keyw,
-					svr_resc_size);
-				if (presc) {
-					if ((presc->rs_flags & resc_access_perm) == 0) {
-						if ((resc_in_err = strdup(pkvp[j].kv_keyw)) == NULL)
-							return PBSE_SYSTEM;
-						return PBSE_INVALSELECTRESC;
+				/* first check for any invalid resources in the select */
+				for (j=0; j<nelem; ++j) {
+					presc = find_resc_def(svr_resc_def, pkvp[j].kv_keyw,
+						svr_resc_size);
+					if (presc) {
+						if ((presc->rs_flags & resc_access_perm) == 0) {
+							if ((resc_in_err = strdup(pkvp[j].kv_keyw)) == NULL)
+								return PBSE_SYSTEM;
+							return PBSE_INVALSELECTRESC;
+						}
+						if ((presc->rs_flags & (ATR_DFLAG_FNASSN | ATR_DFLAG_ANASSN | ATR_DFLAG_RASSN))
+							&& (pkvp[j].op != EQ)) {
+							free(val);
+							free(sel_or);
+							return PBSE_NECONSUMABLE_RESC;
+						}
 					}
-				}
-			} /* for */
-		} /* if */
-		chunk = parse_plus_spec(NULL, &rc);
-		if (rc != 0)
-			return (rc);
-	} /* while */
+				} /* for */
+			} /* if */
+			chunk = parse_plus_spec(NULL, &rc);
+			if (rc != 0) {
+				free(val);
+				free(sel_or);
+				return (rc);
+			}
+		} /* while chunk*/
+		free(sel_or);
+		sel_or = parse_select_or_string(NULL);
+	} /* while multi select */
+	free(val);
 	return (0);
 }
 #endif
@@ -273,7 +306,7 @@ validate_perm_res_in_select(char *val)
 #define SET_RESC_MAXWT  8
 /**
  * @brief
- *		Queue Job Batch Request processing routine
+ *	Queue Job Batch Request processing routine
  *
  * @param[in] - ptr to the decoded request
  *
@@ -320,6 +353,8 @@ req_quejob(struct batch_request *preq)
 	hook		*last_phook = NULL;
 	unsigned int	hook_fail_action = 0;
 #endif
+	resource_def	*prdefres;
+	resource	*prresentry;
 	char		hook_msg[HOOK_MSG_SIZE];
 
 	/* set basic (user) level access permission */
@@ -662,9 +697,33 @@ req_quejob(struct batch_request *preq)
 		if ((index == JOB_ATR_resource) && (psatl->al_resc != NULL) &&
 			(strcmp(psatl->al_resc, "neednodes") == 0))
 			rc = 0;
-		else
+		else {
 			rc = pdef->at_decode(&pj->ji_wattr[index],
 				psatl->al_name, psatl->al_resc, psatl->al_value);
+			if ((index == JOB_ATR_resource) && (psatl->al_resc != NULL)) {
+				prdefres = find_resc_def(svr_resc_def, psatl->al_resc, svr_resc_size);
+				/* consumable resources can not request for "!=" operator */
+				if ((prdefres!=NULL) && (psatl->al_atopl.op == NE) &&
+				    ((prdefres->rs_flags & ATR_DFLAG_ANASSN) ||
+				    (prdefres->rs_flags & ATR_DFLAG_RASSN) ||
+				    (prdefres->rs_flags & ATR_DFLAG_FNASSN))) {
+					job_purge(pj);
+					reply_badattr(rc, 1, psatl, preq);
+					return;
+				}
+				prresentry = find_resc_entry(&pj->ji_wattr[index],prdefres);
+				if (prresentry != NULL)
+					prresentry->rs_value.op = psatl->al_atopl.op;
+				else {
+					log_err(-1, "req_quejob", "resource definition not found,\
+						    this should never happen");
+					job_purge(pj);
+					reply_badattr(PBSE_UNKRESC, 1, psatl, preq);
+					return;
+				}
+
+			}
+		}
 #ifndef PBS_MOM
 		if (rc != 0) {
 			if (rc == PBSE_UNKRESC) {
@@ -1054,10 +1113,10 @@ req_quejob(struct batch_request *preq)
 	 */
 
 	/* Important, only jobs in execution queues get euser attribute set */
-	if (((pj->ji_wattr[(int)JOB_ATR_euser].at_flags & ATR_VFLAG_SET) &&
-		pj->ji_wattr[(int)JOB_ATR_euser].at_val.at_str) &&
-		(server.sv_attr[SRV_ATR_ssignon_enable].at_flags & ATR_VFLAG_SET) &&
-		(server.sv_attr[SRV_ATR_ssignon_enable].at_val.at_long == 1)) {
+		if (((pj->ji_wattr[(int)JOB_ATR_euser].at_flags & ATR_VFLAG_SET) &&
+			pj->ji_wattr[(int)JOB_ATR_euser].at_val.at_str) &&
+			(server.sv_attr[SRV_ATR_ssignon_enable].at_flags & ATR_VFLAG_SET) &&
+			(server.sv_attr[SRV_ATR_ssignon_enable].at_val.at_long == 1)) {
 			char *credb = NULL;
 			size_t credl = 0;
 			int	ret;
@@ -1074,7 +1133,7 @@ req_quejob(struct batch_request *preq)
 				req_reject(PBSE_SSIGNON_NO_PASSWORD, 0, preq);
 				return;
 			}
-	}
+		}
 
 	(void)strcpy(pj->ji_qs.ji_queue, pque->qu_qs.qu_name);
 
@@ -1717,7 +1776,7 @@ done:
 
 /**
  * @brief
- * 		req_jobcredential - receive a set of credentials to be used by the job
+ * req_jobcredential - receive a set of credentials to be used by the job
  *
  * @param[in]	preq	-	ptr to the decoded request
  */
@@ -1795,7 +1854,7 @@ req_jobcredential(struct batch_request *preq)
 
 /**
  * @brief
- * 		req_gsscontext - do handshake for a GSS context.
+ * req_gsscontext - do handshake for a GSS context.
  *
  * @param[in,out]	preq	-	ptr to the decoded request
  */
@@ -1880,11 +1939,11 @@ req_gsscontext(struct batch_request *preq)
 
 /**
  * @brief
- *		Receive job script section
+ *	Receive job script section
  * @par Functionality:
- *		For Mom, each section is appended to the file
- *		For Server, its appended to the ji_script member
- *		of the job structure, to be later saved to the DB
+ *	For Mom, each section is appended to the file
+ *	For Server, its appended to the ji_script member
+ *	of the job structure, to be later saved to the DB
  *
  *  @param[in,out]	preq	-	Pointer to batch request structure
  */
@@ -2025,11 +2084,11 @@ req_jobscript(struct batch_request *preq)
 
 /**
  * @brief
- * 		req_mvjobfile - receive a job file
- *		This request is used to move a file associated with a job, typically
- *		the standard output or error, between a server and a server or from
- *		a mom back to a server.  For a server, the destination is alway
- *		within the spool directory.
+ * req_mvjobfile - receive a job file
+ *	This request is used to move a file associated with a job, typically
+ *	the standard output or error, between a server and a server or from
+ *	a mom back to a server.  For a server, the destination is alway
+ *	within the spool directory.
  *
  * @param[in,out]	preq	-	ptr to the decoded request
  */
@@ -2172,10 +2231,10 @@ req_mvjobfile(struct batch_request *preq)
 #else	/* PBS_MOM - MOM MOM MOM */
 /**
  * @brief
- * 		req_mvjobfile - move the specifled job standard files
- *		This is MOM's version.  The files are owned by the user and placed
- *		in either the spool area or the user's home directory depending
- *		on the compile option, see std_file_name().
+ * req_mvjobfile - move the specifled job standard files
+ *	This is MOM's version.  The files are owned by the user and placed
+ *	in either the spool area or the user's home directory depending
+ *	on the compile option, see std_file_name().
  *
  * @param[in,out]	preq	-	ptr to the decoded request
  */
@@ -2267,10 +2326,10 @@ req_mvjobfile(struct batch_request *preq)
 
 /**
  * @brief
- *		Commit ownership of job
+ *	Commit ownership of job
  * @par Functionality:
- *		Set state of job to JOB_STATE_QUEUED (or Held or Waiting) and
- *		enqueue the job into its destination queue.
+ *	Set state of job to JOB_STATE_QUEUED (or Held or Waiting) and
+ *	enqueue the job into its destination queue.
  *
  *  @param[in]	preq	-	The batch request structure
  *
@@ -2531,18 +2590,18 @@ req_commit(struct batch_request *preq)
 
 /**
  * @brief
- * 		locate_new_job - locate a "new" job which has been set up req_quejob on
- *		the servers new job list.
+ * locate_new_job - locate a "new" job which has been set up req_quejob on
+ *	the servers new job list.
  *
  * @par Functionality:
- *		This function is used by the sub-requests which make up the global
- *		"Queue Job Request" to locate the job structure.
+ *	This function is used by the sub-requests which make up the global
+ *	"Queue Job Request" to locate the job structure.
  *
- *		If the jobid is specified (will be for rdytocommit and commit, but not
- *		for script), we search for a matching jobid.
+ *	If the jobid is specified (will be for rdytocommit and commit, but not
+ *	for script), we search for a matching jobid.
  *
- *		The job must (also) match the socket specified and the host associated
- *		with the socket unless ji_fromsock == -1, then its a recovery situation.
+ *	The job must (also) match the socket specified and the host associated
+ *	with the socket unless ji_fromsock == -1, then its a recovery situation.
  *
  * @param[in]	preq	-	The batch request structure
  * @param[in]	jobid	-	Job Id which needs to be located
@@ -2593,7 +2652,7 @@ locate_new_job(struct batch_request *preq, char *jobid)
 #ifndef PBS_MOM	/* SERVER only */
 /**
  * @brief
- *		"resvSub" Batch Request processing routine
+ *	"resvSub" Batch Request processing routine
  *
  *  @param[in]	-	ptr to the decoded request
  */
@@ -2659,14 +2718,14 @@ req_resvSub(struct batch_request *preq)
 		return;
 	}
 	/* Are reservations from submitting host allowed? */
-	if (server.sv_attr[(int)SRV_ATR_acl_Resvhost_enable].at_val.at_long) {
-		/* acl enabled so need to check it */
-		if (acl_check(&server.sv_attr[(int)SRV_ATR_acl_Resvhosts],
-			preq->rq_host, ACL_Host) == 0) {
+		if (server.sv_attr[(int)SRV_ATR_acl_Resvhost_enable].at_val.at_long) {
+			/* acl enabled so need to check it */
+			if (acl_check(&server.sv_attr[(int)SRV_ATR_acl_Resvhosts],
+				preq->rq_host, ACL_Host) == 0) {
 				req_reject(PBSE_RESVAUTH_H, 0, preq);
 				return;
+			}
 		}
-	}
 
 	resc_access_perm = preq->rq_perm | ATR_DFLAG_Creat;
 
@@ -3240,12 +3299,12 @@ static struct dont_set_in_max {
  *		"batch manager" subsystem to create a queue having the desired
  *		queue attributes
  *
- * @param[in]	presv	-	The reservation to which a queue is to be be associated
+ * @param[in] presv - The reservation to which a queue is to be be associated
  *
  * @par
  * 		Note that the queue is created by issuing a request to "ourselves"
- * 		(the server) and that this request is fulfilled asynchronously. The queue
- * 		may fail to be created and cause the reservation to be queue-less.
+ * (the server) and that this request is fulfilled asynchronously. The queue
+ * may fail to be created and cause the reservation to be queue-less.
  *
  * @return	error code
  * @retval	0	- success
@@ -3562,25 +3621,25 @@ act_resv_add_owner(attribute *pattr, void *pobj, int amode)
 
 /**
  * @brief
- * 		handle_qmgr_reply_to_resvQcreate - this is the function that's to be
- *		called to handle the qmgr's response to the earlier issued request
- *		for queue creation for a reservation.  If the response from the
- *		qmgr is successful, copy the queue's name into the ri_queue field
- *		of the reservation and set the reservation's ri_qp field pointing
- *		to this newly established queue.  If not successful log a message.
+ * handle_qmgr_reply_to_resvQcreate - this is the function that's to be
+ *	called to handle the qmgr's response to the earlier issued request
+ *	for queue creation for a reservation.  If the response from the
+ *	qmgr is successful, copy the queue's name into the ri_queue field
+ *	of the reservation and set the reservation's ri_qp field pointing
+ *	to this newly established queue.  If not successful log a message.
  * @par Functionality:
- *		This function should only be called through an INTERNALLY GENERATED
- *		request to another server (including ourself).
- *		It frees the request structure and closes the connection (handle).
+ *	This function should only be called through an INTERNALLY GENERATED
+ *	request to another server (including ourself).
+ *	It frees the request structure and closes the connection (handle).
  * @par
- *		In the work task entry, wt_event is the connection handle and
- *		wt_parm1 is a pointer to the request structure (containing the reply).
- *		wt_parm2 should have the address of the reservation structure
+ *	In the work task entry, wt_event is the connection handle and
+ *	wt_parm1 is a pointer to the request structure (containing the reply).
+ *	wt_parm2 should have the address of the reservation structure
  *
  * @note
- *		THIS SHOULD NOT BE USED IF AN EXTERNAL (CLIENT) REQUEST IS "relayed",
- *		because the request/reply structure is still needed to reply back
- *		to the client.
+ *	THIS SHOULD NOT BE USED IF AN EXTERNAL (CLIENT) REQUEST IS "relayed",
+ *	because the request/reply structure is still needed to reply back
+ *	to the client.
  *
  * @param[in,out]	pwt	-	earlier issued request for queue creation for a reservation.
  */
@@ -3622,7 +3681,7 @@ handle_qmgr_reply_to_resvQcreate(struct work_task *pwt)
  * @brief
  * 		Validate job and reservation place directives.
  *
- * @param[in]	pj	-	The job to validate.
+ * @param[in] pj - The job to validate.
  *
  * @note
  * 		The reservation associated to the job is obtained

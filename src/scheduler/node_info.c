@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 1994-2016 Altair Engineering, Inc.
  * For more information, contact Altair at www.altair.com.
- *  
+ *
  * This file is part of the PBS Professional ("PBS Pro") software.
- * 
+ *
  * Open Source License Information:
  *  
  * PBS Pro is free software. You can redistribute it and/or modify it under the
@@ -142,6 +142,7 @@
 #include "resource.h"
 #include "pbs_internal.h"
 #include "server_info.h"
+#include "fifo.h"
 #include "pbs_share.h"
 #ifdef NAS
 #include "site_code.h"
@@ -173,13 +174,13 @@ query_nodes(int pbs_sd, server_info *sinfo)
 	int num_nodes = 0;			/* the number of nodes */
 	int i;
 
-	/* get nodes from PBS server */
-	if ((nodes = pbs_statvnode(pbs_sd, NULL, NULL, NULL)) == NULL) {
-		err = pbs_geterrmsg(pbs_sd);
-		sprintf(errbuf, "Error getting nodes: %s", err);
-		schdlog(PBSEVENT_SCHED, PBS_EVENTCLASS_NODE, LOG_INFO, "", errbuf);
-		return NULL;
-	}
+		/* get nodes from PBS server */
+		if ((nodes = pbs_statvnode(pbs_sd, NULL, NULL, NULL)) == NULL) {
+			err = pbs_geterrmsg(pbs_sd);
+			sprintf(errbuf, "Error getting nodes: %s", err);
+			schdlog(PBSEVENT_SCHED, PBS_EVENTCLASS_NODE, LOG_INFO, "", errbuf);
+			return NULL;
+		}
 
 	cur_node = nodes;
 	while (cur_node != NULL) {
@@ -251,8 +252,8 @@ query_nodes(int pbs_sd, server_info *sinfo)
 
 /**
  * @brief
- *      query_node_info	- collect information from a batch_status and
- *      put it in a node_info struct for easier access
+ *      query_node_info - collect information from a batch_status and
+ *                        put it in a node_info struct for easier access
  *
  * @param[in]	node	-	a node returned from a pbs_statvnode() call
  * @param[in,out]	sinfo	-	server information
@@ -515,7 +516,7 @@ new_node_info()
 
 /**
  * @brief
- *		free_nodes - free all the nodes in a node_info array
+ *	free_nodes - free all the nodes in a node_info array
  *
  * @param[in,out]	ninfo_arr - the node info array
  *
@@ -588,7 +589,7 @@ free_node_info(node_info *ninfo)
 
 /**
  * @brief
- *		set_node_type - set the node type bits
+ *	set_node_type - set the node type bits
  *
  * @param[in,out]	ninfo	-	the node to set the type
  * @param[in]	ntype	-	the type string from the server
@@ -618,10 +619,10 @@ set_node_type(node_info *ninfo, char *ntype)
 /**
  * @brief
  * 		set the node state info bits from a single or comma separated list of
- * 		states.
+ * states.
  *
- * @param[in]	ninfo	-	the node to set the state
- * @param[in]	state	-	the state string from the server
+ * @param[in] ninfo - the node to set the state
+ * @param[in] state - the state string from the server
  *
  * @retval	0	: on success
  * @retval	1	: on failure
@@ -665,14 +666,14 @@ set_node_info_state(node_info *ninfo, char *state)
  * @brief
  * 		Remove a node state
  *
- * @param[in]	node	-	The node being considered
- * @param[in]	state	-	The state to remove
+ * @param[in] node	- The node being considered
+ * @param[in] state	- The state to remove
  *
  * @par Side-Effects:
  * 		Handles node exclusivity in a special way.
- * 		If handling resv-exclusive, unset is_exclusive along
- * 		If handling job-exclusive, unset is_exclusive only if resv-exclusive isn't
- * 		set.
+ * If handling resv-exclusive, unset is_exclusive along
+ * If handling job-exclusive, unset is_exclusive only if resv-exclusive isn't
+ * set.
  *
  * @retval	0	: on success
  * @retval	1	: on failure
@@ -734,12 +735,12 @@ remove_node_state(node_info *ninfo, char *state)
  * @brief
  * 		Add a node state
  *
- * @param[in]	node	-	The node being considered
- * @param[in]	state	-	The state to add
+ * @param[in] node	- The node being considered
+ * @param[in] state	- The state to add
  *
  * @par Side-Effects:
  * 		Handle node exclusivity in a special way.
- * 		If handling resv-exclusive or job-exclusive, turn is_exclusive bit on.
+ * If handling resv-exclusive or job-exclusive, turn is_exclusive bit on.
  *
  * @retval	0	: on success
  * @retval	1	: on failure
@@ -920,20 +921,20 @@ talk_with_mom(node_info *ninfo)
 }
 /**
  * @brief
- *		node_filter - filter a node array and return a new filterd array
+ *	node_filter - filter a node array and return a new filterd array
  *
  * @param[in]	nodes	-	the array to filter
  * @param[in]	size	-	size of nodes (<0 for function to figure it out)
  * @param[in]	filter_func	-	pointer to a function that will filter the nodes
- *								- returns 1: job will be added to filtered array
- *								- returns 0: job will NOT be added to filtered array
- *	  							arg - an optional arg passed to filter_func
- *	  							flags - describe how nodes are filtered
+ *		- returns 1: job will be added to filtered array
+ *		- returns 0: job will NOT be added to filtered array
+ *	  arg - an optional arg passed to filter_func
+ *	  flags - describe how nodes are filtered
  *
  * @return pointer to filtered array
  *
  * @par
- * filter_func prototype: int func( node_info *, void * )
+ *	filter_func prototype: int func( node_info *, void * )
  *
  */
 node_info **
@@ -971,7 +972,7 @@ node_filter(node_info **nodes, int size,
 
 /**
  * @brief
- *		find_node_info - find a node in a node array
+ *	find_node_info - find a node in a node array
  *
  * @param[in]	nodename	-	the node to find
  * @param[in]	ninfo_arr	-	the array of nodes to look in
@@ -997,7 +998,7 @@ find_node_info(node_info **ninfo_arr, char *nodename)
 
 /**
  * @brief
- *		find_node_by_host - find a node by its host resource rather then
+ *	find_node_by_host - find a node by its host resource rather then
  *				its name -- will return first found vnode
  *
  * @param[in]	ninfo_arr	-	array of nodes to search
@@ -1019,7 +1020,7 @@ find_node_by_host(node_info **ninfo_arr, char *host)
 	for (i = 0; ninfo_arr[i] != NULL; i++) {
 		res = find_resource(ninfo_arr[i]->res, getallres(RES_HOST));
 		if (res != NULL) {
-			if (compare_res_to_str(res, host, CMP_CASELESS))
+			if (compare_res_to_str(res, host, CMP_CASELESS, EQ))
 				break;
 		}
 	}
@@ -1029,7 +1030,7 @@ find_node_by_host(node_info **ninfo_arr, char *host)
 
 /**
  * @brief
- *		dup_nodes - duplicate an array of nodes
+ *	dup_nodes - duplicate an array of nodes
  *
  * @param[in]	onodes	-	the array to duplicate
  * @param[in]	nsinfo	-	the new server
@@ -1148,7 +1149,7 @@ dup_nodes(node_info **onodes, server_info *nsinfo,
 
 /**
  * @brief
- *		dup_node_info - duplicate a node by creating a new one and coping all
+ *	dup_node_info - duplicate a node by creating a new one and coping all
  *		        the data into the new
  *
  * @param[in]	onode	-	the node to dup
@@ -1259,7 +1260,7 @@ dup_node_info(node_info *onode, server_info *nsinfo,
 
 /**
  * @brief
- *		copy_node_ptr_array - copy an array of jobs using a different set of
+ *	copy_node_ptr_array - copy an array of jobs using a different set of
  *			      of node pointer (same nodes, different array).
  *			      This means we have to use the names from the
  *			      first array and find them in the second array
@@ -1317,7 +1318,7 @@ copy_node_ptr_array(node_info  **oarr, node_info  **narr)
 
 /**
  * @brief
- *		collect_resvs_on_nodes - collect all the running resvs from resv array
+ *	collect_resvs_on_nodes - collect all the running resvs from resv array
  *				on the nodes
  *
  * @param[in]	ninfo	-	the nodes to collect for
@@ -1347,12 +1348,12 @@ collect_resvs_on_nodes(node_info **ninfo_arr, resource_resv **resresv_arr, int s
 
 /**
  * @brief
- *		collect_jobs_on_nodes - collect all the jobs in the job array on the
+ *	collect_jobs_on_nodes - collect all the jobs in the job array on the
  *				nodes
  *
- * @param[in]	ninfo	-	the nodes to collect for
- * @param[in]	resresv_arr	-	the array of jobs to consider
- * @param[in]	size	-	the size (in number of pointers) of the job arrays
+ *	@param[in] ninfo - the nodes to collect for
+ *	@param[in] resresv_arr - the array of jobs to consider
+ *	@param[in] size -  the size (in number of pointers) of the job arrays
  *
  * @retval	1	: upon success
  * @retval	2	: if a job reported on nodes was not found in the job arrays
@@ -1476,7 +1477,7 @@ collect_jobs_on_nodes(node_info **ninfo_arr, resource_resv **resresv_arr, int si
 
 /**
  * @brief
- *		update_node_on_run - update internal scheduler node data when a
+ *	update_node_on_run - update internal scheduler node data when a
  *			     resource resv is run.
  *
  * @param[in]	nspec	-	the nspec for the node allocation
@@ -1602,7 +1603,7 @@ update_node_on_run(nspec *ns, resource_resv *resresv)
 
 /**
  * @brief
- *		update_node_on_end - update a node when a resource resv ends
+ *	update_node_on_end - update a node when a resource resv ends
  *
  * @param[in]	ninfo	-	the node where the job was running
  * @param[in]	resresv -	the resource resv which is ending
@@ -1712,7 +1713,7 @@ update_node_on_end(node_info *ninfo, resource_resv *resresv)
 
 /**
  * @brief
- *		should_talk_with_mom - check if we should talk to this mom
+ *	should_talk_with_mom - check if we should talk to this mom
  *
  * @param[in]	ninfo	-	the mom we are checking
  *
@@ -1756,7 +1757,7 @@ should_talk_with_mom(node_info *ninfo)
 	if (talk) {
 		res = find_resource(ninfo->res, getallres(RES_HOST));
 		if (res != NULL) {
-			if (!compare_res_to_str(res, ninfo->name, CMP_CASELESS))
+			if (!compare_res_to_str(res, ninfo->name, CMP_CASELESS, EQ))
 				talk = 0;
 		}
 	}
@@ -1767,7 +1768,7 @@ should_talk_with_mom(node_info *ninfo)
 
 /**
  * @brief
- * 		new_nspec - allocate a new nspec
+ * 	new_nspec - allocate a new nspec
  *
  * @return	newly allocated and initialized nspec
  *
@@ -1794,7 +1795,7 @@ new_nspec()
 
 /**
  * @brief
- * 		free_nspec - free the memory used for an nspec
+ * 	free_nspec - free the memory used for an nspec
  *
  * @param[in]	ns	-	the nspec to free
  *
@@ -1815,7 +1816,7 @@ free_nspec(nspec *ns)
 
 /**
  * @brief
- * 		dup_nspec - duplicate an nspec
+ * 	dup_nspec - duplicate an nspec
  *
  * @param[in]	ons	-	the nspec to duplicate
  * @param[in]	nsinfo	-	the new server info
@@ -1860,7 +1861,7 @@ dup_nspec(nspec *ons, node_info **ninfo_arr)
 
 /**
  * @brief
- * 		dup_nspecs - duplicate an array of nspecs
+ * 	dup_nspecs - duplicate an array of nspecs
  *
  * @param[in]	onspecs	-	the nspecs to duplicate
  * @param[in]	ninfo_arr	-	the nodes corresponding to the nspecs
@@ -1904,7 +1905,7 @@ dup_nspecs(nspec **onspecs, node_info **ninfo_arr)
 
 /**
  * @brief
- *		empty_nspec_array - free the contents of an nspec array but not
+ *	empty_nspec_array - free the contents of an nspec array but not
  *			    the array itself.
  *
  * @param[in,out]	nspec_arr	-	the nspec array
@@ -1928,7 +1929,7 @@ empty_nspec_array(nspec **nspec_arr)
 
 /**
  * @brief
- * 		free_nspecs - free a nspec array
+ * 	free_nspecs - free a nspec array
  *
  * @param[in,out]	ns	-	the nspec array
  *
@@ -1948,7 +1949,7 @@ free_nspecs(nspec **ns)
 
 /**
  * @brief
- *		find_nspec - find an nspec in an array
+ *	find_nspec - find an nspec in an array
  *
  * @param[in]	nspec_arr	-	the array of nspecs to search
  * @param[in]	ninfo	-	the node_info to find
@@ -2001,20 +2002,20 @@ find_nspec_by_rank(nspec **nspec_arr, unsigned int rank)
  *	@brief
  *		eval a select spec to see if it is satisfiable
  *
- * @param[in]	policy	-	policy info
- * @param[in]	spec	-	the select spec
- * @param[in]	placespec	-	the placement spec (-l place)
- * @param[in]	ninfo_arr	- array of nodes to satisfy the spec
- * @param[in]	nodepart	-	the node partition array for node grouping
- *		 	 					if NULL, we're not doing node grouping
- * @param[in]	resresv	-	the resource resv the spec is from
- * @param[in]	flags	-	flags to change functions behavior
- *	      					EVAL_OKBREAK - ok to break chunk up across vnodes
- *	      					EVAL_EXCLSET - allocate entire nodelist exclusively
- * @param[out]	nspec_arr	-	the node solution
- * @param[out]	err	-	error structure to return error information
+ *        @param[in] policy - policy info
+ *	  @param[in] spec - the select spec
+ *	  @param[in] placespec - the placement spec (-l place)
+ *	  @param[in] ninfo_arr - array of nodes to satisfy the spec
+ *	  @param[in] nodepart - the node partition array for node grouping
+ *		 	 if NULL, we're not doing node grouping
+ *	  @param[in] resresv - the resource resv the spec is from
+ *	  @param[in] flags - flags to change functions behavior
+ *	      EVAL_OKBREAK - ok to break chunk up across vnodes
+ *	      EVAL_EXCLSET - allocate entire nodelist exclusively
+ *	  @param[out] nspec_arr - the node solution
+ *	  @param[out] err       - error structure to return error information
  *
- * @return	int
+ *      @return int
  * @retval	1	: if the nodespec can be satisfied
  * @retval	0	: if not
  *
@@ -2121,6 +2122,10 @@ eval_selspec(status *policy, selspec *spec, place *placespec,
 				can_fit = 1;
 				if (nodepart[i]->excl)
 					alloc_rest_nodepart(*nspec_arr, nodepart[i]->ninfo_arr);
+				/* since one of the nodepart satisfies the request, we can ignore previous
+				 * errors, if any
+				 */
+				clear_schd_error(failerr);
 			}
 			else {
 				empty_nspec_array(*nspec_arr);
@@ -2184,18 +2189,18 @@ eval_selspec(status *policy, selspec *spec, place *placespec,
  * @brief
  * 		handle the place spec for vnode placement of chunks
  *
- * @param[in] policy     - policy info
- * @param[in] spec       - the select spec
- * @param[in] ninfo_arr  - array of nodes to satisfy the spec
- * @param[in] pl         - parsed placement spec
- * @param[in] resresv    - the resource resv the spec if from
- * @param[in] flags	-	flags to change function's behavior
- *	      				EVAL_OKBREAK - ok to break chunk up across vnodes
- * @param[out]	nspec_arr	-	the node solution will be allocated and
- *				   				returned by this pointer by reference
- * @param[out]	err	-	error structure to return error information
+ *        @param[in] policy     - policy info
+ *	  @param[in] spec       - the select spec
+ *	  @param[in] ninfo_arr  - array of nodes to satisfy the spec
+ *	  @param[in] pl         - parsed placement spec
+ *	  @param[in] resresv    - the resource resv the spec if from
+ *	  @param[in] flags - flags to change function's behavior
+ *	      EVAL_OKBREAK - ok to break chunk up across vnodes
+ *	  @param[out] nspec_arr - the node solution will be allocated and
+ *				   returned by this pointer by reference
+ *	  @param[out] err       - error structure to return error information
  *
- * @return	int
+ *	@return int
  * @retval	1	: if the selspec can be satisfied
  * @retval	0	: if not
  *
@@ -2222,6 +2227,7 @@ eval_placement(status *policy, selspec *spec, node_info **ninfo_arr, place *pl,
 	selspec *dselspec = NULL;
 	int do_exclhost = 0;
 	node_info **nptr = NULL;
+	sch_resource_t res_val;
 	static schd_error *failerr = NULL;
 
 
@@ -2371,8 +2377,11 @@ eval_placement(status *policy, selspec *spec, node_info **ninfo_arr, place *pl,
 								if (!hostsets[i]->ninfo_arr[0]->lic_lock) {
 
 									req = find_resource_req(spec->chunks[c]->req, getallres(RES_NCPUS));
-									if (req != NULL)
-										cur_flt_lic -= req->amount;
+									if (req != NULL) {
+										if (get_assigned_amount(hostsets[i]->res, req, &res_val) != NULL) {
+											cur_flt_lic -= res_val;
+										}
+									}
 								}
 
 								for (; *nsa != NULL; nsa++) {
@@ -2444,8 +2453,11 @@ eval_placement(status *policy, selspec *spec, node_info **ninfo_arr, place *pl,
 								tot++;
 								dselspec->chunks[c]->num_chunks--;
 								req = find_resource_req(spec->chunks[c]->req, getallres(RES_NCPUS));
-								if (req != NULL)
-									cur_flt_lic -= req->amount;
+								if (req != NULL) {
+									if (get_assigned_amount(hostsets[i]->res, req, &res_val) != NULL) {
+										cur_flt_lic -= res_val;
+									}
+								}
 
 								while (*nsa != NULL)
 									nsa++;
@@ -2540,11 +2552,15 @@ eval_placement(status *policy, selspec *spec, node_info **ninfo_arr, place *pl,
 													if (res->indirect_res != NULL)
 														res = res->indirect_res;
 
-													res->assigned += req->amount;
+													if (get_assigned_amount(res, req, &res_val) != NULL) {
+														res->assigned += res_val;
+													}
 												}
 												if (!(*nsa)->ninfo->lic_lock &&
 													(req->def == getallres(RES_NCPUS))) {
-													cur_flt_lic -= req->amount;
+													if (get_assigned_amount(hostsets[i]->res, req, &res_val) != NULL) {
+														cur_flt_lic -= res_val;
+													}
 												}
 											}
 											req = req->next;
@@ -2637,16 +2653,16 @@ eval_placement(status *policy, selspec *spec, node_info **ninfo_arr, place *pl,
  * @brief
  * 		handle a complex (plus'd) select spec
  *
- * @param[in]	policy	-	policy info
- * @param[in]	spec	-	the select spec
- * @param[in]	ninfo_arr	-	array of nodes to satisify the spec
- * @param[in]	pl	-	parsed placement spec
- * @param[in]	resresv	-	the resource resv the spec if from
- * @param[in]	flags	-	flags to change functions behavior
- *	      					EVAL_OKBREAK - ok to break chunck up across vnodes
- *	      					EVAL_EXCLSET - allocate entire nodelist exclusively
- * @param[out]	nspec_arr	-	the node solution
- * @param[out]	err	-	error structure to return error information
+ *        @param[in] policy     - policy info
+ *	  @param[in] spec       - the select spec
+ *	  @param[in] ninfo_arr  - array of nodes to satisify the spec
+ *	  @param[in] pl         - parsed placement spec
+ *	  @param[in] resresv    - the resource resv the spec if from
+ *	  @param[in] flags - flags to change functions behavior
+ *	      EVAL_OKBREAK - ok to break chunck up across vnodes
+ *	      EVAL_EXCLSET - allocate entire nodelist exclusively
+ *	  @param[out] nspec_arr - the node solution
+ *	  @param[out] err       - error structure to return error information
  *
  * @retval	1	: if the selspec can be satisfied
  * @retval	0	: if not
@@ -2673,6 +2689,7 @@ eval_complex_selspec(status *policy, selspec *spec, node_info **ninfo_arr, place
 	int c;
 	resource_req *req;
 	schd_resource *res;
+	sch_resource_t val;
 
 	if (spec == NULL || ninfo_arr == NULL)
 		return 0;
@@ -2733,7 +2750,8 @@ eval_complex_selspec(status *policy, selspec *spec, node_info **ninfo_arr, place
 				if (!(*nsa)->ninfo->lic_lock) {
 					req = find_resource_req((*nsa)->resreq, getallres(RES_NCPUS));
 					if (req != NULL)
-						cur_flt_lic -= req->amount;
+						if(get_assigned_amount((*nsa)->ninfo->res, req, &val) != NULL)
+							cur_flt_lic -= val;
 				}
 
 				num_nodes_used++;
@@ -2747,7 +2765,8 @@ eval_complex_selspec(status *policy, selspec *spec, node_info **ninfo_arr, place
 					while (req != NULL) {
 						res = find_resource((*nsa)->ninfo->res, req->def);
 						if (res != NULL)
-							res->assigned += req->amount;
+							if(get_assigned_amount(res, req, &val) != NULL)
+								res->assigned += val;
 
 						req = req->next;
 					}
@@ -2797,19 +2816,19 @@ eval_complex_selspec(status *policy, selspec *spec, node_info **ninfo_arr, place
  * @brief
  * 		eval a non-plused select spec for satisfiability
  *
- * @param[in]	policy	-	policy info
- * @param[in]	chk	-	the chunk to satisfy
- * @param[in]	pninfo_arr	-	the array of nodes
- * @param[in]	pl	-	placement information (from -l place)
- * @param[in]	resresv	-	the job the spec is from - needed for resvs
- * @param[in]	flags	-	flags to change functions behavior
- *	      					EVAL_OKBREAK - ok to break chunck up across vnodes
- *	      					EVAL_EXCLSET - allocate entire nodelist exclusively
- * @param[in]	flt_lic	-	the number of floating licenses available
- * @param[out]	nspec_arr	-	the node solution
- * @param[out]	err	-	error structure to return error information
+ *        @param[in] policy - policy info
+ * 	  @param[in] chk - the chunk to satisfy
+ * 	  @param[in] pninfo_arr - the array of nodes
+ *	  @param[in] pl - placement information (from -l place)
+ *	  @param[in] resresv - the job the spec is from - needed for resvs
+ *	  @param[in] flags - flags to change functions behavior
+ *	      EVAL_OKBREAK - ok to break chunck up across vnodes
+ *	      EVAL_EXCLSET - allocate entire nodelist exclusively
+ *	  @param[in] flt_lic - the number of floating licenses available
+ *	  @param[out] nspec_arr - the node solution
+ *	  @param[out] err       - error structure to return error information
  *
- * @return	int
+ *       @return int
  * @retval	1	: if the select spec is satisfiable
  * @retval	0	: if not
  *
@@ -2846,6 +2865,7 @@ eval_simple_selspec(status *policy, chunk *chk, node_info **pninfo_arr,
 	int licenses_allocated;	/* licenses allocated to a job on a node */
 	resource_req *ncpusreq;
 	resdef *ncpusdef = find_resdef(consres, "ncpus");
+	sch_resource_t val;
 
 	if (chk == NULL || pninfo_arr == NULL || resresv== NULL || pl == NULL || nspec_arr == NULL)
 		return 0;
@@ -2963,8 +2983,10 @@ eval_simple_selspec(status *policy, chunk *chk, node_info **pninfo_arr,
 					err)) {
 				if (!ninfo_arr[i]->lic_lock) {
 					ncpusreq = find_resource_req(specreq_cons, ncpusdef);
-					if (ncpusreq != NULL)
-						cur_ncpus = ncpusreq->amount;
+					if (ncpusreq != NULL) {
+						if (get_assigned_amount(ninfo_arr[i]->res, ncpusreq, &val) != NULL)
+							cur_ncpus = val;
+					}
 					else
 						cur_ncpus = 0;
 				}
@@ -3016,8 +3038,10 @@ eval_simple_selspec(status *policy, chunk *chk, node_info **pninfo_arr,
 						}
 						if (!ninfo_arr[i]->lic_lock) {
 							ncpusreq = find_resource_req(specreq_cons, ncpusdef);
-							if (ncpusreq != NULL)
-								licenses_allocated = cur_ncpus - ncpusreq->amount;
+							if (ncpusreq != NULL) {
+								if (get_assigned_amount(ninfo_arr[i]->res, ncpusreq, &val) != NULL)
+									licenses_allocated = cur_ncpus - val;
+							}
 							else
 								licenses_allocated = cur_ncpus;
 						}
@@ -3030,8 +3054,10 @@ eval_simple_selspec(status *policy, chunk *chk, node_info **pninfo_arr,
 
 						if (!ninfo_arr[i]->lic_lock) {
 							ncpusreq = find_resource_req(specreq_noncons, ncpusdef);
-							if (ncpusreq != NULL)
-								licenses_allocated = ncpusreq->amount;
+							if (ncpusreq != NULL) {
+								if (get_assigned_amount(ninfo_arr[i]->res, ncpusreq, &val) != NULL)
+									licenses_allocated = val;
+							}
 							else
 								licenses_allocated = 0;
 						}
@@ -3131,18 +3157,18 @@ eval_simple_selspec(status *policy, chunk *chk, node_info **pninfo_arr,
  *			    for a simple select spec and return the number
  *			    of chunks it can satisfy
  *
- * @param[in]	specreq	-	resources in the select spec
- * @param[in]	node	-	the node to evaluate
- * @param[in]	pl	-	place spec for request
+ *	  @param[in] specreq - resources in the select spec
+ *	  @param[in] node - the node to evaluate
+ *	  @param[in] pl - place spec for request
  * @param[in]	resresv	-	resource resv which is requesting
- * @param[in]	flags	-	flags to change behavior of function
- *							EVAL_OKBREAK - OK to break chunk across vnodes
- * @param[out]	err	-	error status if node is ineligible
+ *	  @param[in] flags - flags to change behavior of function
+ *		EVAL_OKBREAK - OK to break chunk across vnodes
+ *	  @param[out] err - error status if node is ineligible
  *
  * @par NOTE:
  * 		all resources in specreq will be honored regardless of
- *      whether they are in conf.res_to_check or not due to the fact
- *		that chunk resources only contain such resources.
+ *                 whether they are in conf.res_to_check or not due to the fact
+ *		   that chunk resources only contain such resources.
  *
  * @retval	1	: if node is statically eligible to run the request
  * @retval	0	: if node is ineligible
@@ -3243,11 +3269,11 @@ is_vnode_eligible(node_info *node, resource_resv *resresv,
  * @brief
  * 		check if a vnode is eligible for a chunk
  *
- * @param[in]	specreq	-	resources from chunk
- * @param[in]	node	-	vnode tocheck
- * @param[out]	err	-	error structure
+ * @param[in] specreq - resources from chunk
+ * @param[in] node - vnode tocheck
+ * @param[out] err - error structure
  *
- * @return	int
+ * @return int
  * @retval	1	: eligible
  * @retval	0	: not eligible
  */
@@ -3276,18 +3302,18 @@ is_vnode_eligible_chunk(resource_req *specreq, node_info *node,
 /**
  * @brief
  * 		check to see if there are enough
- *		consumable resources on a vnode to make it
- *		eligible for a request
- *		Note: This function will allocate <= 1 chunk
+ *				consumable resources on a vnode to make it
+ *				eligible for a request
+ *				Note: This function will allocate <= 1 chunk
  *
- * @param[in][out] specreq_cons - IN : requested consumable resources
- *				 				  OUT: requested - allocated resources
+ *	  @param[in][out] specreq_cons - IN : requested consumable resources
+ *				 OUT: requested - allocated resources
  * @param[in]	node	-	the node to evaluate
  * @param[in]	pl	-	place spec for request
  * @param[in]	resresv	-	resource resv which is requesting
  * @param[in]	cur_flt_lic	-	current number of PBS licenses available
  * @param[in]	flags	-	flags to change behavior of function
- *              			EVAL_OKBREAK - OK to break chunk across vnodes
+ *              EVAL_OKBREAK - OK to break chunk across vnodes
  * @param[out]	err	-	error status if node is ineligible
  *
  *	@retval	1	: if resources were allocated from the node
@@ -3301,10 +3327,12 @@ resources_avail_on_vnode(resource_req *specreq_cons, node_info *node,
 	/* used for allocating partial chunks */
 	resource_req tmpreq = {0};
 	resource_req *req;
+	resource_req *computed_req = NULL;
 	resource_req *newreq, *aoereq;
 	schd_resource *res;
 	sch_resource_t num;
 	sch_resource_t amount;
+	sch_resource_t val;
 	int allocated = 0;
 	long long num_chunks = 0;
 	int is_p;
@@ -3326,8 +3354,9 @@ resources_avail_on_vnode(resource_req *specreq_cons, node_info *node,
 				tmpreq.type = req->type;
 				tmpreq.res_str = req->res_str;
 				tmpreq.def = req->def;
+				tmpreq.op = req->op;
 				tmpreq.next = NULL;
-				num_chunks = check_resources_for_node(&tmpreq, node, resresv, err);
+				num_chunks = check_resources_for_node(&tmpreq, node, resresv, err, &computed_req);
 
 				if (!node->lic_lock && (cur_flt_lic < num_chunks) &&
 					!strcmp(req->name, "ncpus"))
@@ -3364,7 +3393,13 @@ resources_avail_on_vnode(resource_req *specreq_cons, node_info *node,
 					amount = num_chunks;
 
 					if (ns != NULL) {
-						newreq = dup_resource_req(req);
+						if ((computed_req != NULL) && is_conditional_resreq(req)) {
+							newreq = computed_req;
+							amount = num_chunks =  newreq->amount;
+
+						}
+						else
+							newreq = dup_resource_req(req);
 						if (newreq == NULL)
 							return 0;
 
@@ -3380,7 +3415,10 @@ resources_avail_on_vnode(resource_req *specreq_cons, node_info *node,
 					/* now that we have allocated some resources to this node, we need
 					 * to remove them from the requested amount
 					 */
-					req->amount -= amount;
+					if (amount > req->amount)
+						req->amount = 0;
+					else
+						req->amount -= amount;
 
 					res = find_resource(node->res, req->def);
 					if (res != NULL) {
@@ -3416,7 +3454,7 @@ resources_avail_on_vnode(resource_req *specreq_cons, node_info *node,
 		}
 	}
 	else {
-		num_chunks = check_resources_for_node(specreq_cons, node, resresv, err);
+		num_chunks = check_resources_for_node(specreq_cons, node, resresv, err, &computed_req);
 
 		if (num_chunks > 0) {
 			is_p = is_provisionable(node, resresv, err);
@@ -3433,8 +3471,10 @@ resources_avail_on_vnode(resource_req *specreq_cons, node_info *node,
 
 		if (!node->lic_lock) {
 			req = find_resource_req(specreq_cons, getallres(RES_NCPUS));
-			if (req != NULL)
-				num = req->amount;
+			if (req != NULL) {
+				if (get_assigned_amount(node->res, req, &val) != NULL)
+					num = val;
+			}
 			else
 				num = 0;
 			if (cur_flt_lic < num) {
@@ -3449,7 +3489,11 @@ resources_avail_on_vnode(resource_req *specreq_cons, node_info *node,
 
 		if (ns != NULL && num_chunks != 0) {
 			ns->ninfo = node;
-			ns->resreq = dup_resource_req_list(specreq_cons);
+
+			if ((computed_req != NULL) && (is_conditional_resreq(specreq_cons)))
+				ns->resreq = computed_req;
+			else
+				ns->resreq = dup_resource_req_list(specreq_cons);
 
 			if (ns->go_provision != 0) {
 				aoereq = create_resource_req("aoe", resresv->aoename);
@@ -3471,18 +3515,20 @@ resources_avail_on_vnode(resource_req *specreq_cons, node_info *node,
 /**
  * @brief
  * 		check to see how many chunks can fit on a
- *		node looking at both resources available
- *		now and future advanced reservations
+ *				   node looking at both resources available
+ *				   now and future advanced reservations
  *
  * @param[in]	resreq	-	requested resources
  * @param[in]	node    -	node to check for
  * @param[in]	resresv -	the resource resv to check for
  * @param[out]	err    -	schd_error reply if there aren't enough resources
+ * @param[out] computed_req -	list of resource request that can be satisfied on
+ *				each chunk (set only if resreq is conditional)
  *
  * @par NOTE:
  * 		all resources in resreq will be honored regardless of
- *      whether they are in conf.res_to_check or not due to the fact
- *		that chunk resources only contain such resources.
+ *                 whether they are in conf.res_to_check or not due to the fact
+ *		   that chunk resources only contain such resources.
  *
  * @retval
  * 		number of chunks which can be satisifed during the duration
@@ -3490,7 +3536,7 @@ resources_avail_on_vnode(resource_req *specreq_cons, node_info *node,
  */
 long long
 check_resources_for_node(resource_req *resreq, node_info *ninfo,
-	resource_resv *resresv, schd_error *err)
+	resource_resv *resresv, schd_error *err, resource_req **computed_req)
 {
 	/* the minimum number of chunks which can be satisified for the duration
 	 * of the request
@@ -3500,7 +3546,9 @@ check_resources_for_node(resource_req *resreq, node_info *ninfo,
 	int resresv_excl = 0;
 	resource_req *req;
 	schd_resource *nres;
+	schd_resource *resmin;
 	schd_resource *cur_res;
+	schd_resource *cur_resmin;
 	event_list *calendar;
 
 	schd_resource *noderes;
@@ -3517,11 +3565,15 @@ check_resources_for_node(resource_req *resreq, node_info *ninfo,
 	unsigned int event_mask;
 	int i;
 	char logbuf[MAX_LOG_SIZE];
+	sch_resource_t val;
+	int is_conditional;
+	resource_req *temp_req;
 
 	if (resreq == NULL || ninfo == NULL || err == NULL || resresv == NULL)
 		return -1;
 
 	noderes = ninfo->res;
+	resmin = noderes;
 
 	/* don't enforce max load if job is being qrun */
 	if (cstat.load_balancing && resresv->server->qrun_job ==NULL) {
@@ -3551,6 +3603,7 @@ check_resources_for_node(resource_req *resreq, node_info *ninfo,
 	cur_time = ninfo->server->server_time;
 	end_time = cur_time + calc_time_left(resresv);
 
+	is_conditional = is_conditional_resreq(resreq);
 	/* check if there are any timed events to check for conflicts with. We do not
 	 * need to check for timed conflicts if the current object is a job inside a
 	 * reservation.
@@ -3567,6 +3620,7 @@ check_resources_for_node(resource_req *resreq, node_info *ninfo,
 		 * at t2.
 		 */
 		nres = dup_ind_resource_list(noderes);
+		resmin = dup_ind_resource_list(noderes);
 		resresv_excl = is_excl(resresv->place_spec, ninfo->sharing);
 
 		if (nres != NULL) {
@@ -3636,11 +3690,21 @@ check_resources_for_node(resource_req *resreq, node_info *ninfo,
 								req = find_resource_req(ns->resreq, cur_res->def);
 								if (req != NULL) {
 									cur_res->assigned += is_run_event ? req->amount : -req->amount;
+									if (is_conditional) {
+										cur_resmin = find_alloc_resource(resmin, cur_res->def);
+										if (cur_resmin == NULL) {
+											free_resource_list(resmin);
+											free_resource_list(nres);
+											return 0;
+										}
+										if (cur_res->assigned > cur_resmin->assigned)
+											cur_resmin->assigned = cur_res->assigned;
+									}
 								}
 							}
 							cur_res = cur_res->next;
 						}
-						if (is_run_event) {
+						if (is_run_event && !is_conditional) {
 							chunks = check_avail_resources(nres, resreq,
 								CHECK_ALL_BOOLS|UNSET_RES_ZERO, NULL,
 								INSUFFICIENT_RESOURCE, err);
@@ -3653,6 +3717,9 @@ check_resources_for_node(resource_req *resreq, node_info *ninfo,
 			free_resource_list(nres);
 		}
 		else {
+
+			free_resource_list(nres);
+			free_resource_list(resmin);
 			set_schd_error_codes(err, NOT_RUN, SCHD_ERROR);
 			return -1;
 		}
@@ -3660,263 +3727,60 @@ check_resources_for_node(resource_req *resreq, node_info *ninfo,
 		if (min_chunks == 0) {
 			if (err->error_code != PROV_RESRESV_CONFLICT)
 				set_schd_error_codes(err, NOT_RUN, RESERVATION_CONFLICT);
+			if (is_conditional)
+				free_resource_list(resmin);
+
 		}
 	}
+	if ((is_conditional) && (min_chunks > 0)) {
+		if (resmin != noderes) {
+			chunks = check_avail_resources(resmin, resreq,
+				CHECK_ALL_BOOLS|UNSET_RES_ZERO, NULL,
+				INSUFFICIENT_RESOURCE, err);
+			if (chunks < min_chunks)
+				min_chunks = chunks;
+		}
+		if ((min_chunks > 0) && (computed_req != NULL)) {
+			temp_req = dup_resource_req_list(resreq);
+			if (temp_req == NULL) {
+				if (resmin != noderes)
+					free_resource_list(resmin);
+				set_schd_error_codes(err, NOT_RUN, SCHD_ERROR);
+				return 0;
+			}
+			*computed_req = temp_req;
+			for (; (temp_req != NULL) && (temp_req->type.is_consumable); temp_req = temp_req->next)
+			{
+				sch_resource_t val;
+				if( get_assigned_amount(resmin, temp_req, &val) == NULL) {
+					if (resmin != noderes)
+						free_resource_list(resmin);
+					set_schd_error_codes(err, NOT_RUN, SCHD_ERROR);
+					return 0;
+				}
+				/* change the job's resource request by computed value */
+				temp_req->amount = val;
+				temp_req->op = EQ;
+			}
+		}
+	}
+	if(resmin != noderes)
+		free_resource_list(resmin);
 
 	return min_chunks;
 }
 
-/**
- * @brief
- *		parse_placespec - allocate a new place structure and parse
- *		a placement spec (-l place)
- *
- * @param[in]	place_str	-	placespec as a string
- *
- * @return	newly allocated place
- * @retval	NULL	: invalid placement spec
- *
- */
-place *
-parse_placespec(char *place_str)
-{
-	/* copy place spec into - max log size should be big enough */
-	char str[MAX_LOG_SIZE];
-	char *tok;
-	char *tokptr;
-	int invalid = 0;
-	place *pl;
 
-	if (place_str == NULL)
-		return NULL;
-
-	pl = new_place();
-
-	if (pl == NULL)
-		return NULL;
-
-	strcpy(str, place_str);
-
-	tok = string_token(str, ":", &tokptr);
-
-	while (tok != NULL && !invalid) {
-		if (!strcmp(tok, PLACE_Pack)  )
-			pl->pack = 1;
-		else if (!strcmp(tok, PLACE_Scatter)  )
-			pl->scatter = 1;
-		else if (!strcmp(tok, PLACE_Excl)  )
-			pl->excl = 1;
-		else if (!strcmp(tok, PLACE_Free))
-			pl->free = 1;
-		else if (!strcmp(tok, PLACE_Shared))
-			pl->share = 1;
-		else if (!strcmp(tok, PLACE_VScatter))
-			pl->vscatter = 1;
-		else if (!strcmp(tok, PLACE_ExclHost)) {
-			pl->exclhost = 1;
-			pl->excl = 1;
-		}
-		else if (!strncmp(tok, PLACE_Group, 5)) {
-			/* format: group=res */
-			if (tok[5] == '=') {
-				/* "group=" is 6 characters so tok[6] should be the first character of
-				 * the resource
-				 */
-				pl->group = string_dup(&tok[6]);
-			}
-			else
-				invalid = 1;
-		}
-		else
-			invalid = 1;
-
-		tok = string_token(NULL, ":", &tokptr);
-	}
-
-	/* pack and scatter vscatter, and free are all mutually exclusive */
-	if (pl->pack + pl->scatter + pl->free  + pl->vscatter> 1  )
-		invalid = 1;
-
-	/* if no scatter, vscatter, pack, or free given, default to free */
-	if (pl->pack + pl->scatter + pl->free  + pl->vscatter== 0)
-		pl->free = 1;
-
-	if (invalid) {
-		free_place(pl);
-		return NULL;
-	}
-
-	return pl;
-}
-
-/**
- * @brief
- * 		parse a select spec into a selspec structure with
- *		a dependant array of chunks.  Non-consuamble resources
- *		are sorted first in the chunk resource list
- *
- * @param[in]	selspec	-	the select spec to parse
- *
- * @return	selspec*
- * @retval	pointer to a selspec obtained by parsing the select spec
- *			of the job/resv.
- * @retval	NULL	: on error or invalid spec
- *
- * @par MT-safe: No
- */
-selspec *
-parse_selspec(char *select_spec)
-{
-	/* select specs can be large.  We need to allocate a buffer large enough
-	 * to handle the spec.  We'll keep it around so we don't have to allocate
-	 * it on every call
-	 */
-	static char *specbuf = NULL;
-	static int specbuf_size = 0;
-	int s;
-	char *tmpptr;
-
-	selspec *spec;
-	int num_plus;
-	char *p;
-
-	char *tok;
-	char *endp = NULL;
-
-	resource_req *req_head = NULL;
-	resource_req *req_end = NULL;
-	resource_req *req;
-	int ret;
-	int invalid = 0;
-
-	int num_kv;
-	struct key_value_pair *kv;
-
-	int num_chunks;
-	int num_cpus = 0;
-
-	int seq_num = 0;
-
-	int i;
-	int n = 0;
-
-	if (select_spec == NULL)
-		return NULL;
-
-	if ((spec = new_selspec()) == NULL)
-		return NULL;
-
-	for (num_plus = 0, p = select_spec; *p != '\0'; p++) {
-		if (*p == '+')
-			num_plus++;
-	}
-
-	/* num_plus + 2: 1 for the initial chunk 1 for the NULL ptr */
-	if ((spec->chunks = calloc(num_plus + 2, sizeof(chunk *))) == NULL) {
-		log_err(errno, "parse_selspec", MEM_ERR_MSG);
-		free_selspec(spec);
-	}
-
-	s = strlen(select_spec);
-	if (s > specbuf_size) {
-		tmpptr = realloc(specbuf, s * 2 + 1);
-		if (tmpptr == NULL) {
-			log_err(errno, "parse_selspec", MEM_ERR_MSG);
-			return 0;
-		}
-		specbuf_size = s * 2;
-		specbuf = tmpptr;
-	}
-
-	strcpy(specbuf, select_spec);
-
-	tok = string_token(specbuf, "+", &endp);
-
-	tmpptr = NULL;
-	while (tok != NULL && !invalid) {
-		tmpptr = string_dup(tok);
-#ifdef NAS /* localmod 082 */
-		ret = parse_chunk(tok, 0, &num_chunks, &num_kv, &kv, NULL);
-#else
-		ret = parse_chunk(tok, &num_chunks, &num_kv, &kv, NULL);
-#endif /* localmod 082 */
-
-		if (!ret) {
-			for (i = 0; i < num_kv && !invalid; i++) {
-				req = create_resource_req(kv[i].kv_keyw, kv[i].kv_val);
-
-				if (req == NULL)
-					invalid = 1;
-				else  {
-						if (strcmp(req->name, "ncpus") == 0) {
-							/* Given: -l select=nchunk1:ncpus=Y + nchunk2:ncpus=Z +... */
-							/* Then: # of cpus = (nchunk1 * Y) + (nchunk2 * Z) + ... */
-							num_cpus += (num_chunks * req->amount);
-						}
-					if (!invalid && (req->type.is_boolean || conf.res_to_check == NULL ||
-						find_string(conf.res_to_check, kv[i].kv_keyw))) {
-						if (!resdef_exists_in_array(spec->defs, req->def))
-							add_resdef_to_array(&(spec->defs), req->def);
-						if (req_head == NULL)
-							req_end = req_head = req;
-						else {
-							if (req->type.is_consumable) {
-								req_end->next = req;
-								req_end = req;
-							}
-							else {
-								req->next = req_head;
-								req_head = req;
-							}
-						}
-					}
-					else
-						free_resource_req(req);
-				}
-			}
-			spec->chunks[n] = new_chunk();
-			if (spec->chunks[n] != NULL) {
-				spec->chunks[n]->num_chunks = num_chunks;
-				spec->chunks[n]->seq_num = seq_num;
-				spec->total_chunks += num_chunks;
-				spec->total_cpus = num_cpus;
-				spec->chunks[n]->req = req_head;
-				spec->chunks[n]->str_chunk = tmpptr;
-				tmpptr = NULL;
-				req_head = NULL;
-				req_end = NULL;
-				n++;
-			}
-			else
-				invalid = 1;
-		}
-		else
-			invalid = 1;
-
-		tok = string_token(NULL, "+", &endp);
-		seq_num++;
-	}
-
-	if (invalid) {
-		free_selspec(spec);
-		if (tmpptr != NULL)
-			free(tmpptr);
-
-		return NULL;
-	}
-
-	return spec;
-}
 
 /**
  * @brief
  * 		create an execvnode from a node solution array
  *
- * @param[in]	ns	-	the nspec struct with the chosen nodes to run the job on
+ * @param[in] ns - the nspec struct with the chosen nodes to run the job on
  *
- * @par MT-safe:	no
+ * @par MT-safe: no
  *
- * @return	execvnode in static memory
+ * @return execvnode in static memory
  *
  */
 char *
@@ -4007,7 +3871,7 @@ create_execvnode(nspec **ns)
 
 /**
  * @brief
- *		parse_execvnode - parse an execvnode into an nspec array
+ *	parse_execvnode - parse an execvnode into an nspec array
  *
  * @param[in]	execvnode	-	the execvnode to parse
  * @param[in]	sinfo	-	server to get the nodes from
@@ -4070,6 +3934,7 @@ parse_execvnode(char *execvnode, server_info *sinfo)
 				nspec_arr[i]->ninfo = ninfo;
 				for (j = 0; j < num_el; j++) {
 					req = create_resource_req(kv[j].kv_keyw, kv[j].kv_val);
+					req->op = EQ;
 					if (req != NULL) {
 						if (nspec_arr[i]->resreq == NULL)
 							nspec_arr[i]->resreq = req;
@@ -4122,7 +3987,7 @@ parse_execvnode(char *execvnode, server_info *sinfo)
 
 /**
  * @brief
- *		node_state_to_str - convert a node's state into a string for printing
+ *	node_state_to_str - convert a node's state into a string for printing
  *
  * @param[in]	ninfo	-	the node
  *
@@ -4168,8 +4033,8 @@ node_state_to_str(node_info *ninfo)
 
 /**
  * @brief
- *		combine_nspec_array - find and combine any nspec's for the same node
- *		in an nspec array
+ *	combine_nspec_array - find and combine any nspec's for the same node
+ *				in an nspec array
  *
  * @param[in,out]	nspec_arr	-	array to combine
  *
@@ -4263,7 +4128,7 @@ combine_nspec_array(nspec **nspec_arr)
 
 /**
  * @brief
- *		create_node_array_from_nspec - create a node_info array by copying the
+ *	create_node_array_from_nspec - create a node_info array by copying the
  *				       ninfo pointers out of a nspec array
  *
  * @param[in]	nspec_arr	-	source nspec array
@@ -4306,25 +4171,25 @@ create_node_array_from_nspec(nspec **nspec_arr)
 
 /**
  * @brief
- *		reorder the nodes for the avoid_provision or smp_cluster_dist policies
+ *	reorder the nodes for the avoid_provision or smp_cluster_dist policies
  *      without changing the source array.  We do so by holding our own
  *      static array of node pointers that we will sort for the different policies
  *
  * @param[in]	nodes	: nodes to reorder
  * @param[in]	resresv : job or reservation for which reorder is done
  *
- * @see	last_node_name - the last allocated node - used for round_robin
+ * @see last_node_name - the last allocated node - used for round_robin
  *
- * @return	node_info **
- * @retval	reordered list of nodes if needed
- * @retval	'nodes' parameter if nodes do not need reordering
+ * @return      node_info **
+ * @retval      reordered list of nodes if needed
+ * @retval      'nodes' parameter if nodes do not need reordering
  * @retval	NULL	: on error
  *
  * @par Side Effects:
  *      local variable node_array holds onto memory in the heap for reuse.
  *      The caller should not free the return
  *
- * @par MT-safe:	No
+ * @par MT-safe: No
  *
  * @par MT-safe: No
  */
@@ -4419,7 +4284,7 @@ reorder_nodes(node_info **nodes, resource_resv *resresv)
 					for (; i < nsize; i++) {
 						cur_hostres = find_resource(tmparr[i]->res, getallres(RES_HOST));
 						if (cur_hostres != NULL) {
-							if (!compare_res_to_str(cur_hostres, hostres->str_avail[0], CMP_CASELESS))
+							if (!compare_res_to_str(cur_hostres, hostres->str_avail[0], CMP_CASELESS, EQ))
 								break;
 						}
 					}
@@ -4449,7 +4314,7 @@ reorder_nodes(node_info **nodes, resource_resv *resresv)
 
 /**
  * @brief
- *		ok_break_chunk - is it OK to break up a chunk on a list of nodes?
+ *	ok_break_chunk - is it OK to break up a chunk on a list of nodes?
  *
  * @param[in]	resresv	-	the requestor (unused for the moment)
  * @param[in]	nodes   -	the list of nodes to check
@@ -4495,7 +4360,7 @@ ok_break_chunk(resource_resv *resresv, node_info **nodes)
 
 /**
  * @brief
- *		is_excl - is a request/node combination exclusive?  This is based
+ *	is_excl - is a request/node combination exclusive?  This is based
  *		  on both the place directive of the request and the
  *		  sharing attribute of the node
  *
@@ -4507,7 +4372,7 @@ ok_break_chunk(resource_resv *resresv, node_info **nodes)
  * @retval	0	: if not
  *
  * @note
- *		Assumes if pl is NULL, no request excl/shared request was given
+ *	Assumes if pl is NULL, no request excl/shared request was given
  */
 int
 is_excl(place *pl, enum vnode_sharing sharing)
@@ -4540,9 +4405,9 @@ is_excl(place *pl, enum vnode_sharing sharing)
  * 		take a node solution and extend it by allocating the rest of
  *		a node array to it.
  *
- * @param[in][out]	nsa	-	currently allocated node solution to be
- *							extended with ninfo_arr
- * @param[in] ninfo_arr - node array to allocate to nspec array
+ *	  @param[in][out] nsa - currently allocated node solution to be
+ *				extended with ninfo_arr
+ *	  @param[in] ninfo_arr - node array to allocate to nspec array
  *
  * @note
  *		must be allocated by caller
@@ -4596,7 +4461,7 @@ alloc_rest_nodepart(nspec **nsa, node_info **ninfo_arr)
 
 /**
  * @brief
- *		set_res_on_host - set a resource on all the vnodes of a host
+ *	set_res_on_host - set a resource on all the vnodes of a host
  *
  * @param[in]	res_name	-	name of the res to set
  * param[in]	res_value	-	value to set the res
@@ -4626,7 +4491,7 @@ set_res_on_host(char *res_name, char *res_value,
 			hostres = find_resource(ninfo_arr[i]->res, getallres(RES_HOST));
 
 			if (hostres != NULL) {
-				if (compare_res_to_str(hostres, host, CMP_CASELESS)) {
+				if (compare_res_to_str(hostres, host, CMP_CASELESS, EQ)) {
 					res = find_alloc_resource_by_str(ninfo_arr[i]->res, res_name);
 					if (res != NULL) {
 						if (ninfo_arr[i]->res == NULL)
@@ -4643,14 +4508,14 @@ set_res_on_host(char *res_name, char *res_value,
 
 /**
  * @brief
- *		update_mom_resources - update resources set via mom_resources so all
- *		vnodes on a host indirectly point to the
- *		natural vnode
+ *	update_mom_resources - update resources set via mom_resources so all
+ *			       vnodes on a host indirectly point to the
+ *			       natural vnode
  *
  * @note
- *		ASSUMPTION: only the 'natural' vnodes talk with mom
- *		'natural' vnodes are vnodes whose host resource is the
- *		same as its vnode name
+ *	ASSUMPTION: only the 'natural' vnodes talk with mom
+ *		    'natural' vnodes are vnodes whose host resource is the
+ *		    same as its vnode name
  *
  * @param[in]	ninfo_arr	-	node array to update
  *
@@ -4689,15 +4554,15 @@ update_mom_resources(node_info **ninfo_arr)
  * @brief
  * 		determine if a chunk can fit on one vnode in node list
  *
- * @param[in]	req	-	requested resources to compare to nodes
- * @param[in]	ninfo_arr	-	node array
+ *	  @param[in] req - requested resources to compare to nodes
+ *	  @param[in] ninfo_arr - node array
  *
  * @par NOTE:
  * 		all resources in req will be honored regardless of
- * 	    whether they are in conf.res_to_check or not due to the fact
- *		that chunk resources only contain such resources
+ *                 whether they are in conf.res_to_check or not due to the fact
+ *		   that chunk resources only contain such resources
  *
- * @return	int
+ *    @return int
  * @retval	1	: chunk can fit in 1 vnode
  * @retval	0	: chunk can not fit / error
  *
@@ -4736,10 +4601,10 @@ can_fit_on_vnode(resource_req *req, node_info **ninfo_arr)
 
 /**
  * @brief
- *		Checks if an AOE is available on a vnode
+ *	Checks if an AOE is available on a vnode
  *
  * @par Functionality:
- *		This function checks if an AOE is available on a vnode.
+ *	This function checks if an AOE is available on a vnode.
  *
  * @param[in]	ninfo		-	pointer to node_info
  * @param[in]	resresv		-	pointer to resource_resv
@@ -4749,7 +4614,7 @@ can_fit_on_vnode(resource_req *req, node_info **ninfo_arr)
  * @retval	 1 : AOE available
  *
  * @par Side Effects:
- *		Unknown
+ *	Unknown
  *
  * @par MT-safe: No
  *
@@ -4773,40 +4638,40 @@ is_aoe_avail_on_vnode(node_info *ninfo, resource_resv *resresv)
 
 /**
  * @brief
- *		Checks if a vnode is eligible to be provisioned
+ *	Checks if a vnode is eligible to be provisioned
  *
  * @par Functionality:
- *		This function checks if a vnode is eligible to be provisioned.
- *		A vnode is eligible to be provisioned if it satisfies all of the
- *		following conditions:-
- *			(1) AOE instantiated on the vnode is different from AOE requested by the
- *			the job or reservation,
- *			(2) Server has provisioning enabled,
- *			(3) Vnode has provisioning enabled,
- *			(4) Vnode does not have suspended jobs
- *  		(5) Vnode does not have any running jobs (inside / outside resvs)
- *			(6) No conflicts with reservations already running on the Vnode
- *			(7) No conflicts with jobs already running on the Vnode
+ *	This function checks if a vnode is eligible to be provisioned.
+ *	A vnode is eligible to be provisioned if it satisfies all of the
+ *	following conditions:-
+ *	(1) AOE instantiated on the vnode is different from AOE requested by the
+ *	the job or reservation,
+ *	(2) Server has provisioning enabled,
+ *	(3) Vnode has provisioning enabled,
+ *	(4) Vnode does not have suspended jobs
+ *  	(5) Vnode does not have any running jobs (inside / outside resvs)
+ *	(6) No conflicts with reservations already running on the Vnode
+ *	(7) No conflicts with jobs already running on the Vnode
  *
  * @see
- *		should_backfill_with_job
+ *	should_backfill_with_job
  *
  * @param[in]	node		-	pointer to node_info
  * @param[in]	resresv		-	pointer to resource_resv
  * @param[in]	err		-	pointer to schd_error
  *
  * @return	int
- * @retval	NO_PROVISIONING_NEEDED	: resresv doesn't request aoe
+ * @retval	 NO_PROVISIONING_NEEDED : resresv doesn't request aoe
  *			or node doesn't need provisioning
- * @retval	PROVISIONING_NEEDED : vnode is provisionable and needs
+ * @retval	 PROVISIONING_NEEDED : vnode is provisionable and needs
  *			provisioning
- * @retval	NOT_PROVISIONABLE  : vnode is not provisionable
+ * @retval	 NOT_PROVISIONABLE  : vnode is not provisionable
  *			(see err for more details)
  *
  * @par Side Effects:
- *		Unknown
+ *	Unknown
  *
- * @par MT-safe:	No
+ * @par MT-safe: No
  *
  */
 int
@@ -4885,19 +4750,19 @@ is_provisionable(node_info *node, resource_resv *resresv, schd_error *err)
 
 /**
  * @brief
- *		handles everything which happens to a node when it comes back up
+ *	handles everything which happens to a node when it comes back up
  *
- * @param[in]	node	-	the node to bring back up
- * @param[in]	arg		-	NULL param
+ * @param[in]	node		- the node to bring back up
+ * @param[in]	arg		- NULL param
  *
  * @par Side Effects:
  * 		Sets the resv-exclusive state if the node had it
- * 		previously set.
+ * previously set.
  *
- * @par MT-safe:	Unknown
+ * @par MT-safe: Unknown
  *
- * @retval	1 - node was successfully brought up
- * @retval	0 - node couldn't be brought up
+ * @retval 1 - node was successfully brought up
+ * @retval 0 - node couldn't be brought up
  *
  */
 int
@@ -4927,10 +4792,10 @@ node_up_event(node_info *node, void *arg)
 
 /**
  * @brief
- *		handles everything which happens to a node when it goes down
+ *	handles everything which happens to a node when it goes down
  *
- * @param[in]	node	-	node to bring down
- * @param[in]	arg		-	NULL param
+ * @param[in]	node		- node to bring down
+ * @param[in]	arg		- NULL param
  *
  * @par Side Effects: None
  * @par MT-safe: Unknown
@@ -4977,12 +4842,12 @@ node_down_event(node_info *node, void *arg)
  * @brief
  * 		filter function to check if node is in a string array of node names
  *
- * @see	node_filter
+ * @see node_filter
  *
- * @param[in]	node	- node to check
- * @param[in] 	strarr	- array of node names
+ * @param[in] node - node to check
+ * @param[in] strarr - array of node names
  *
- * @returns	int
+ * @returns int
  * @retval	1	: include node in array
  * @retval	0	: don't include node in array
  */
@@ -5000,10 +4865,10 @@ node_in_str(node_info *node, void *strarr)
 
 /**
  * @brief
- *		create an array of unique nodes from a names in a string array
+ *	create an array of unique nodes from a names in a string array
  *
- * @param[in]	nodes	-	nodes to create array from
- * @param[in]	strnodes	-	string array of vnode names
+ * @param[in] nodes - nodes to create array from
+ * @param[in] strnodes - string array of vnode names
  *
  * @return node array
  *
@@ -5048,11 +4913,11 @@ create_node_array_from_str(node_info **nodes, char **strnodes)
  * @brief
  * 		find a node by its unique rank
  *
- * @param[in]	ninfo_arr	-	node array to search
+ * @param[in] ninfo_arr - node array to search
  * @param[in] rank	-	unique numeric identifier for node
  *
- * @return	node_info *
- * @retval	found node
+ * @return node_info *
+ * @retval found node
  * @retval	NULL	: if node is not found
  */
 node_info *
@@ -5109,9 +4974,9 @@ free_node_scratch(node_scratch *nscr)
  * 		determine if resresv conflicts based on exclhost state of the
  *        future events on this node.
  *
- * @param	calendar - server's calendar of events
- * @param	resresv  - job or resv to check
- * @param	ninfo    - node to check
+ * @param calendar - server's calendar of events
+ * @param resresv  - job or resv to check
+ * @param ninfo    - node to check
  *
  * @return int
  * @retval 1	: no excl conflict
@@ -5139,7 +5004,7 @@ sim_exclhost(event_list *calendar, resource_resv *resresv, node_info *ninfo)
  * @param[in]	arg1	-	job/reservation
  * @param[in]	arg2	- node
  *
- * @return	int
+ * @return int
  * @retval	1	: no excl conflict
  * @retval	0	: continue looping
  * @retval	-1	: excl conflict
@@ -5172,8 +5037,8 @@ sim_exclhost_func(timed_event *te, void *arg1, void *arg2)
  * @brief
  * 		set current_aoe on a node.  Free existing value if set
  *
- * @param[in]	node	-	node to set
- * @paran[in]	aoe	-	aoe to set on ode
+ * @param[in] node - node to set
+ * @paran[in] aoe - aoe to set on ode
  *
  * @return void
  */
@@ -5194,10 +5059,10 @@ set_current_aoe(node_info *node, char *aoe)
  * @brief
  * 		should we exclhost this job - a function of node sharing and job place
  *
- * @param[in]	sharing	-	the nodes sharing attribute value
- * @param[in]	placespec	-	job place attribute
+ * @param[in] sharing - the nodes sharing attribute value
+ * @param[in] placespec - job place attribute
  *
- * @return	int
+ * @return int
  * @retval	1	: do exclhost
  * @retval	0	: don't do exclhost (or invalid input)
  */
@@ -5233,15 +5098,15 @@ is_exclhost(place *placespec, enum vnode_sharing sharing)
  * @brief
  * 		check nodes for eligibility and mark them ineligible if not
  *
- * @param[in]	ninfo_arr	-	array to check
- * @param[in]	resresv	-	resresv to check to place on nodes
+ * @param[in] ninfo_arr - array to check
+ * @param[in] resresv - resresv to check to place on nodes
  * @param[out]	err	-	error structure
  * 
  * @warning
  * 		If an error occurs in this function, no indication will be returned.
- *		This is not a huge concern because, it will just cause more work to be done.
+ *	This is not a huge concern because, it will just cause more work to be done.
  * 
- * @return	void
+ * @return void
  */
 void
 check_node_array_eligibility(node_info **ninfo_arr, resource_resv *resresv, place *pl, schd_error *err)

@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 1994-2016 Altair Engineering, Inc.
  * For more information, contact Altair at www.altair.com.
- *  
+ *
  * This file is part of the PBS Professional ("PBS Pro") software.
- * 
+ *
  * Open Source License Information:
  *  
  * PBS Pro is free software. You can redistribute it and/or modify it under the
@@ -46,6 +46,7 @@
 #include <string.h>
 #include "grunt.h"
 #include "pbs_error.h"
+#include "pbs_ifl.h"
 
 #ifdef NAS /* localmod 082 */
 #ifndef	MAX
@@ -60,12 +61,12 @@
  *	into <name1> <value1[,value2 ...>
  *	     <name2> <value3[,value4 ...>
  *
- * @par
+ *      @par
  *	after call,
  *		*name will point to "name1"
  *		*value will point to "value1 ..." upto but not
  *			including the colon before "name2".
- * 
+ *
  * @param[in] start - the start of the string to parse.
  * @param[in] name - point to "name1"
  * @param[in] value - will point to "value1 ..." upto but not
@@ -73,23 +74,25 @@
  * @param[in] last - points to where parsing stopped, use as "start" on
  *		     next call to continue.  last is set only if the function
  *		     return is "1".
+ * @param[in] op - pointer to the operator.
  *
  * @return	int
- * @return 	int
- * @retval 	1 	if  name and value are found,
- * @retval	0 	if nothing (more) is parsed (null input)
- * @retval	-1 	if a syntax error was detected.
+ *      @return 	int
+ *	@retval 	1 if  name and value are found,
+ *      @retval		0 if nothing (more) is parsed (null input)
+ *      @retval		-1 if a syntax error was detected.
  *
- * @par
+ *      @par
  *	each string is null terminated.
  */
 
 static int
-parse_resc_equal_string(char  *start, char **name, char **value, char **last)
+parse_resc_equal_string(char  *start, char **name, char **value, char **last, int *op)
 {
 	char	 *pc;
 	char     *backup;
 	int	  quoting = 0;
+	int	 found_cond = 0;
 
 	if ((start==NULL) || (name==NULL) || (value==NULL) || (last==NULL))
 		return -1;	/* error */
@@ -115,17 +118,56 @@ parse_resc_equal_string(char  *start, char **name, char **value, char **last)
 	*name = pc;
 
 	/* have found start of name, look for end of it */
+	/* settig operator to default */
+	*op = EQ;
+	while (!isspace((int)*pc) && (*pc != '=') && *pc && (found_cond == 0)) {
+		switch (*pc)
+		{
+			case '<':
+				if (*(pc+1) == '=')
+					*op = LE;
+				else
+					*op = LT;
+				found_cond = 1;
+				break;
+			case '>':
+				if (*(pc+1) == '=')
+					*op = GE;
+				else
+					*op = GT;
+				found_cond = 1;
+				break;
+			case '!':
+				if (*(pc+1) == '=')
+					*op = NE;
+				found_cond = 1;
+				break;
+		}
+		if (!found_cond)
+			pc++;
+	}
 
-	while (!isspace((int)*pc) && (*pc != '=') && *pc)
-		pc++;
-
-	/* now look for =, while stripping blanks between end of name and = */
+	/* now look for =,>,<,! operators while stripping blanks between end of name and these operators */
 
 	while (isspace((int)*pc) && *pc)
 		*pc++ = '\0';
-	if (*pc != '=')
-		return (-1);	/* should have found a = as first non blank */
-	*pc++ = '\0';
+	if ((*pc != '=') && (*pc != '<') && (*pc != '>') && (*pc != '!'))
+		return (-1);	/* should have found a =,<,>,! as first non blank */
+	if((*pc == '<') || (*pc == '>') || (*pc == '!') || (*pc == '='))
+	{
+		if ((pc+1) != NULL && *(pc+1) == '=') {
+			if (*(pc) == '=')
+				return (-1);
+			else {
+				*pc = '\0';
+				pc += 2; /* skip = */
+			}
+		}
+		else {
+			*pc = '\0';
+			pc++;
+		}
+	}
 
 	/* that follows is the value string, skip leading white space */
 
@@ -186,17 +228,17 @@ parse_resc_equal_string(char  *start, char **name, char **value, char **last)
  *	-parse_node_resc_r - (thread safe) parse the node and resource string of the form:
  *	nodeA:resc1=value1:resc2=value2
  *
- * @param[in]	str - start of string to parse (string will be
- *                    munged, so make a copy before calling this
- *                    function)
- * @param[out]	nodep - pointer to node name
- * @param[out]	pnelm - number of used elements in key_valye_pair
- *                      array
- * @param[in][out] nl - total number of elements in key_value_pair
- *                      array
- * @param[in][out] kv - pointer to array of key_value_pair structures
- *			will be malloced if nl == 0, will grow if needed
- *			will not be freed by this routine
+ *	  @param[in]	str - start of string to parse (string will be
+ *                           munged, so make a copy before calling this
+ *                           function)
+ *	  @param[out]	nodep - pointer to node name
+ *	  @param[out]	pnelm - number of used elements in key_valye_pair
+ *                           array
+ *	  @param[in][out] nl - total number of elements in key_value_pair
+ *                           array
+ *	  @param[in][out] kv - pointer to array of key_value_pair structures
+ *			  will be malloced if nl == 0, will grow if needed
+ *			  will not be freed by this routine
  *
  * @return  int
  * @retval  0 = ok
@@ -212,6 +254,7 @@ parse_node_resc_r(char *str, char **nodep, int *pnelem, int *nlkv, struct key_va
 	char	     *word;
 	char	     *value;
 	char	     *last;
+	int	      op = EQ;
 
 
 	if (str == NULL)
@@ -259,7 +302,7 @@ parse_node_resc_r(char *str, char **nodep, int *pnelem, int *nlkv, struct key_va
 	if (*pc == '\0')
 		return -1;
 
-	i = parse_resc_equal_string(pc, &word, &value, &last);
+	i = parse_resc_equal_string(pc, &word, &value, &last, &op);
 	while (i == 1) {
 		if (nelm >= *nlkv) {
 			/* make more space in k_v table */
@@ -272,9 +315,10 @@ parse_node_resc_r(char *str, char **nodep, int *pnelem, int *nlkv, struct key_va
 		}
 		(*kv)[nelm].kv_keyw = word;
 		(*kv)[nelm].kv_val  = value;
+		(*kv)[nelm].op = op;
 		nelm++;
 
-		i = parse_resc_equal_string(last, &word, &value, &last);
+		i = parse_resc_equal_string(last, &word, &value, &last, &op);
 	}
 	if (i == -1)
 		return PBSE_BADATVAL;
@@ -322,25 +366,25 @@ parse_node_resc(char *str, char **nodep, int *nl, struct key_value_pair **kv)
  *
  *	Chunk is of the form: [#][:word=value[:word=value...]]
  *
- * @param str    = string to parse (will be munged) (input)
+ *	  @param str    = string to parse (will be munged) (input)
  #ifdef NAS localmod 082
  * @param[in] extra	= number of extra entries to reserve in pkv (input)
  #endif localmod 082
  * @param[in] nchk   = number of chunks, "#" (output)
  * @param[in] pnelem = of active data elements in key_value_pair
- *                     array (output)
+ *                        array (output)
  * @param[in] nkve   = total number of elements (size) in the
- *                     key_value_pair array (input/output)
+ *                        key_value_pair array (input/output)
  * @param[in] pkv    = pointer to array of key_value_pair (input/output)
  * @param[in] dflt   = upon receiving a select specification with
- *                     no number of chunks factor, we default to a nchk
- *                     factor of 1.  The new resource default_chunk.nchunk
- *                     controls the value of this chunk factor when it is
- *                     not set.  The dflt argument specifies whether the
- *                     number of nchk was provided on the select line or not
- *                     such that at a later time we can determine if
- *                     the default_chunk.nchunk resource should be
- *                     applied or not (see make_schedselect) (output)
+ *                        no number of chunks factor, we default to a nchk
+ *                        factor of 1.  The new resource default_chunk.nchunk
+ *                        controls the value of this chunk factor when it is
+ *                        not set.  The dflt argument specifies whether the
+ *                        number of nchk was provided on the select line or not
+ *                        such that at a later time we can determine if
+ *                        the default_chunk.nchunk resource should be
+ *                        applied or not (see make_schedselect) (output)
  *
  * @par	Note:
  *	the key_value_pair array, rtn, will be grown if additional
@@ -369,6 +413,7 @@ parse_chunk_r(char *str, int *nchk, int *pnelem, int *nkve, struct key_value_pai
 	char *word;
 	char *value;
 	char *last;
+	int   op = EQ;
 
 	if (str == NULL)
 		return (PBSE_INTERNAL);
@@ -392,6 +437,7 @@ parse_chunk_r(char *str, int *nchk, int *pnelem, int *nkve, struct key_value_pai
 	for (i=0; i<*nkve; ++i) {
 		(*pkv)[i].kv_keyw  = NULL;
 		(*pkv)[i].kv_val   = NULL;
+		(*pkv)[i].op       = op;
 	}
 
 	pc = str;
@@ -424,7 +470,7 @@ parse_chunk_r(char *str, int *nchk, int *pnelem, int *nkve, struct key_value_pai
 
 	/* next comes "resc=value" pairs */
 
-	i = parse_resc_equal_string(pc, &word, &value, &last);
+	i = parse_resc_equal_string(pc, &word, &value, &last, &op);
 	while (i == 1) {
 #ifdef NAS /* localmod 082 */
 		while (nelem + extra >= *nkve) {
@@ -440,15 +486,17 @@ parse_chunk_r(char *str, int *nchk, int *pnelem, int *nkve, struct key_value_pai
 			for (i=*nkve; i<*nkve+KVP_SIZE; ++i) {
 				(*pkv)[i].kv_keyw  = NULL;
 				(*pkv)[i].kv_val   = NULL;
+				(*pkv)[i].op       = EQ;
 			}
 			*nkve += KVP_SIZE;
 		}
 		(*pkv)[nelem].kv_keyw  = word;
 		(*pkv)[nelem].kv_val   = value;
+		(*pkv)[nelem].op = op;
 		nelem++;
 		/* continue with next resc=value pair          */
 
-		i = parse_resc_equal_string(last, &word, &value, &last);
+		i = parse_resc_equal_string(last, &word, &value, &last, &op);
 	}
 	if (i == -1)
 		return PBSE_BADATVAL;
@@ -462,11 +510,72 @@ parse_chunk_r(char *str, int *nchk, int *pnelem, int *nkve, struct key_value_pai
 }
 
 /**
- * @brief
- * 	parse_chunk - (not thread safe) decode a chunk of a selection specification
+ * parse_select_or_string - (not thread safe) decode a string of multiple selection specification
+ *	string seperated by "||" operator.
+ *
+ *	@param[in] str - Input string containing multiple ORed select
+ *	@return char *
+ *	@retval NULL  - In case there are no more strings to parse or failure
+ *	@retval !NULL - First chunk of select specification found in input
+ *			parameter str.
+ *
+ *	@par MT-Safe: no
+ */
+char *
+parse_select_or_string(char *str)
+{
+	static char * pc = NULL;
+	char * ps = NULL;
+	char * temp = NULL;
+	char *or;
+	char ch;
+
+	if (str != NULL)
+		pc = str;
+	if (pc == NULL)
+		return NULL;
+
+	or = strstr(pc,"||");
+	if (or == NULL) {
+		ps = pc;
+		pc = NULL;
+		return (strdup(ps));
+
+	}
+	else {
+		ps = pc;
+		while ((*pc != '|') && (*pc != '\0'))
+			++pc;
+		if (*pc == '|') {
+			ch = *pc;
+			*pc = '\0';
+			temp = strdup(ps);
+			if (temp == NULL) {
+				/* memory allocation failed */
+				pc = NULL;
+				return NULL;
+			}
+			*pc = ch;
+			pc +=2; /* skip "||" */
+		}
+		else {
+			temp = strdup(ps);
+			if (temp == NULL) {
+				/* memory allocation failed */
+				pc = NULL;
+				return NULL;
+			}
+			pc = NULL;
+		}
+		return temp; 
+	}
+}
+
+/**
+ * parse_chunk - (not thread safe) decode a chunk of a selection specification
  *	string,
  *
- * @par
+ *	@par
  *	Chunk is of the form: [#][:word=value[:word=value...]]
  *
  * @param[in]  str  = string to parse
@@ -475,7 +584,7 @@ parse_chunk_r(char *str, int *nchk, int *pnelem, int *nkve, struct key_value_pai
  #endif localmod 082
  * @param[in]	nchk = number of chunks, "#"
  * @param[in]	nrtn = number of active (used) word=value pairs in the
- *		       key_value_pair array
+ *			key_value_pair array
  * @param[in]	rtn  = pointer to static array of key_value_pair
  * @param[in]  dflt = the nchk value was set to 1 by default
  *
@@ -514,8 +623,8 @@ parse_chunk(char *str, int *nchk, int *nrtn, struct key_value_pair **rtn, int *s
 
 /**
  * @brief
- *	parse_plus_spec_r - (thread safe)
- * @par
+ * parse_plus_spec_r - (thread safe)
+ *	@par
  *	Called with "str" set for start of string of a set of plus connnected
  *	substrings "substring1+substring2+...";
  *
@@ -526,7 +635,7 @@ parse_chunk(char *str, int *nchk, int *nrtn, struct key_value_pair **rtn, int *s
  *			 = 0 = no parens or found both in one substring
  *			 < 0 = found ')' at end of substring
  *
- * @par
+ *      @par
  *	IMPORTANT: the input string will be munged by the various
  *	parsing routines, if you need an untouched original,  pass
  *	in a pointer to a copy.
@@ -591,8 +700,8 @@ parse_plus_spec_r(char *selstr, char **last, int *hp)
 
 /**
  * @brief
- *	parse_plus_spec - not thread safe
- * @par
+ * parse_plus_spec - not thread safe
+ *	@par
  *	Called with "str" set for start of string of a set of plus connnected
  *	substrings "substring1+substring2+...";  OR
  *	called with null to continue where left off.
@@ -600,11 +709,11 @@ parse_plus_spec_r(char *selstr, char **last, int *hp)
  * @param[in] selstr - string holding select specs
  * @param[in] rc - flag
  *
- * @return 	A pointer to next substring
- * @retval	next substring (char *)
- * @retval	NULL if end of the spec
+ *	@return 	A pointer to next substring
+ *	@retval		next substring (char *)
+ *	@retval		NULL if end of the spec
  *
- * @par
+ *	@par
  *	IMPORTANT: the "selstr" is copied into a locally allocated "static"
  *	char array for parsing.  The orignal string is untouched.  The array
  *	is grown as need to hold "selstr".

@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 1994-2016 Altair Engineering, Inc.
  * For more information, contact Altair at www.altair.com.
- *  
+ *
  * This file is part of the PBS Professional ("PBS Pro") software.
- * 
+ *
  * Open Source License Information:
  *  
  * PBS Pro is free software. You can redistribute it and/or modify it under the
@@ -349,11 +349,16 @@ int check_preempt_targets_for_none(char ** res_list);
 int is_finished_job(int error);
 
 /*
+ * This function makes a list of RASSN resources by combining the resources requested
+ * in each chunk and default chunks resources.
+ */
+void make_job_rassn(status *policy, resource_resv *njob);
+
+/*
  * compare two jobs to see if they overlap using a complete err list as
  * criteria similarity criteria.
  */
 int preemption_similarity(resource_resv *hjob, resource_resv *pjob, schd_error *full_err);
-
 
 #ifdef	__cplusplus
 }

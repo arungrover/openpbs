@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 1994-2016 Altair Engineering, Inc.
  * For more information, contact Altair at www.altair.com.
- *  
+ *
  * This file is part of the PBS Professional ("PBS Pro") software.
- * 
+ *
  * Open Source License Information:
  *  
  * PBS Pro is free software. You can redistribute it and/or modify it under the
@@ -96,8 +96,56 @@ struct {
 	{ND_Force_Exclhost,   VNS_FORCE_EXCLHOST}
 };
 
-/**
- * @brief
+/*
+ * conversion of enum batch_op to string
+ */
+char *batch_op_to_str(int op)
+{
+	char *ret = NULL;
+	switch(op)
+	{
+		case SET:
+			ret = "set";
+			break;
+		case UNSET:
+			ret = "unset";
+			break;
+		case INCR:
+			ret = "++";
+			break;
+		case DECR:
+			ret = "--";
+			break;
+		case EQ:
+			ret = "=";
+			break;
+		case NE:
+			ret = "!=";
+			break;
+		case GE:
+			ret = ">=";
+			break;
+		case GT:
+			ret = ">";
+			break;
+		case LE:
+			ret = "<=";
+			break;
+		case LT:
+			ret = "<";
+			break;
+		case DFLT:
+			ret = "default";
+			break;
+		default:
+			ret = "=";
+			break;
+	}
+	return ret;
+}
+
+/*
+ *
  * 	char_in_set - is the char c in the tokenset
  *
  * @param[in] c - the char
@@ -127,7 +175,7 @@ char_in_set(char c, const char *tokset)
  * @param[in]      str - the string to tokenize
  * @param[in] 	   tokset - the tokenset to look for
  * @param[in/out]  ret_str - the char ptr where we left off after the tokens
- *		             ** ret_str is opaque to the caller
+ *		** ret_str is opaque to the caller
  *
  * @par	call: 
  *	string_token( string, tokenset, &tokptr)
@@ -283,7 +331,7 @@ pbs_strcat(char **strbuf, int *ssize, char *str)
 /**
  * @brief 
  *	get a line from a file of any length.  Extend string via realloc
- *	if necessary
+ *		if necessary
  *
  * @param fp[in] - open file
  * @param pbuf[in,out] - pointer to buffer to fill (may change ala realloc)
@@ -549,15 +597,15 @@ lock_file(FILE *fp, int op, char *filename, int lock_retry,
 /**
  * @brief 
  *	calculate the number of digits to the right of the decimal point in
- *	a floating point number.  This can be used in conjunction with
- *	printf() to not print trailing zeros.
+ *        a floating point number.  This can be used in conjunction with
+ *        printf() to not print trailing zeros.
  *
  * @param[in] fl - the float point number
  * @param[in] digits - the max number of digits to check.  Can be -1 for max
  *            number of digits for 32/64 bit numbers.
  *
  * @par	Use: int x = float_digits(fl, 8);
- * 	printf("%0.*f\n", x, fl);
+ * printf("%0.*f\n", x, fl);
  *
  * @note It may be unwise to use use a large value for digits (or -1) due to
  * that the precision of a double will decrease after the first handful of
@@ -722,7 +770,7 @@ replace(char *str, char	*sub, char *repl, char	*retstr)
  *
  * @param[in]	path - file pathname being checked.
  *
- * @return 	int
+ * @return int
  * @retval	1	if 'path' exists.
  * @retval	0	if 'path'does not exist.
  */

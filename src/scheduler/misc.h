@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 1994-2016 Altair Engineering, Inc.
  * For more information, contact Altair at www.altair.com.
- *  
+ *
  * This file is part of the PBS Professional ("PBS Pro") software.
- * 
+ *
  * Open Source License Information:
  *  
  * PBS Pro is free software. You can redistribute it and/or modify it under the
@@ -225,6 +225,16 @@ int is_valid_pbs_name(char *str, int len);
  *              a null string ("") is returned on error
  */
 char *res_to_str(void *p, enum resource_fields fld);
+
+/*
+ *
+ *      res_to_str_alloc - turn a resource (resource/resource_req) into
+ *                   a string for printing.
+ *      returns the resource in string format. String returned is a newly
+ *		allocated buffer
+ *              a null string ("") is returned on error
+ */
+char *res_to_str_alloc(void *p, enum resource_fields fld);
 
 /*
  *

@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 1994-2016 Altair Engineering, Inc.
  * For more information, contact Altair at www.altair.com.
- *  
+ *
  * This file is part of the PBS Professional ("PBS Pro") software.
- * 
+ *
  * Open Source License Information:
  *  
  * PBS Pro is free software. You can redistribute it and/or modify it under the
@@ -171,7 +171,7 @@ int add_job_to_calendar(int pbs_sd, status *policy, server_info *sinfo, resource
  *	       first move it to the local server and then run it.
  *	       if it's a local job, just run it.
  */
-int run_job(int pbs_sd, resource_resv *rjob, char *execvnode, int throughput, schd_error *err);
+int run_job(int pbs_sd, resource_resv *rjob, char *execvnode, char *schedselect, int throughput, schd_error *err);
 
 /*
  *	should_backfill_with_job - should we call add_job_to_calendar() with job
@@ -219,6 +219,19 @@ int main_sched_loop(status *policy, int sd, server_info *sinfo, schd_error **rer
  *	return success 1 or error 0
  */
 int scheduler_simulation_task(int pbs_sd, int debug);
+
+/*
+ * update_resc_assn - This function updates the amount of resources assigned in node
+ *			specification and also in job's resource request.
+ */
+void update_resc_assn(nspec **ns, resource_resv *pjob);
+
+
+/*
+ * get_assigned_amount - This function returns the amount of resource needed to be
+ *			assigned by checking the operator in resource request.
+ */
+sch_resource_t* get_assigned_amount(schd_resource *res, resource_req *req, sch_resource_t *val);
 
 #ifdef	__cplusplus
 }

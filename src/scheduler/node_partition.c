@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 1994-2016 Altair Engineering, Inc.
  * For more information, contact Altair at www.altair.com.
- *  
+ *
  * This file is part of the PBS Professional ("PBS Pro") software.
- * 
+ *
  * Open Source License Information:
  *  
  * PBS Pro is free software. You can redistribute it and/or modify it under the
@@ -90,7 +90,7 @@
 
 /**
  * @brief
- *		new_node_partition - allocate and initialize a node_partition
+ *	new_node_partition - allocate and initialize a node_partition
  *
  * @return new node partition
  * @retval	NULL	: on error
@@ -123,7 +123,7 @@ new_node_partition()
 
 /**
  * @brief
- *		free_node_partition_array - free an array of node_partitions
+ *	free_node_partition_array - free an array of node_partitions
  *
  * @param[in]	np_arr	-	node partition array to free
  *
@@ -146,7 +146,7 @@ free_node_partition_array(node_partition **np_arr)
 
 /**
  * @brief
- *		free_node_partition - free a node_partition structure
+ *	free_node_partition - free a node_partition structure
  *
  * @param[in]	np	-	the node_partition to free
  *
@@ -176,7 +176,7 @@ free_node_partition(node_partition *np)
 
 /**
  * @brief
- *		dup_node_partition_array - duplicate a node_partition array
+ *	dup_node_partition_array - duplicate a node_partition array
  *
  * @param[in]	onp_arr	-	the node_partition array to duplicate
  * @param[in]	nsinfo	-	server for the new node partition
@@ -219,7 +219,7 @@ dup_node_partition_array(node_partition **onp_arr, server_info *nsinfo)
 
 /**
  * @brief
- *		dup_node_partition - duplicate a node_partition structure
+ *	dup_node_partition - duplicate a node_partition structure
  *
  * @param[in]	onp	-	the node_partition structure to duplicate
  * @param[in]	nsinfo	-	server for the new node partiton (the nodes are needed)
@@ -271,7 +271,7 @@ dup_node_partition(node_partition *onp, server_info *nsinfo)
 
 /**
  * @brief
- *		find_node_partition - find a node partition by (resource_name=value)
+ *	find_node_partition - find a node partition by (resource_name=value)
  *			      partition name from a pool of partitions
  *
  * @param[in]	np_arr	-	array of node partitions to search name
@@ -300,8 +300,8 @@ find_node_partition(node_partition **np_arr, char *name)
  * @param[in]	np_arr	-	array of node partitions to search
  * @param[in]	rank	-	unique rank of node partition
  *
- * @return	node_partition **
- * @retval	found node partition
+ * @return node_partition **
+ * @retval found node partition
  * @retval	NULL	: if node partition isn't found or on error
  */
 
@@ -331,15 +331,15 @@ find_node_partition_by_rank(node_partition **np_arr, int rank)
  *		away due to the fact that the node partition has insufficient
  *		resources.
  *
- * @param[in]	policy	-	policy info
- * @param[in]	nodes	-	the nodes which to create partitions from
- * @param[in]	resnames	-	node grouping resource names
- * @param[in]	flags	-	flags which change operations of node partition creation
- *							NP_INGNORE_EXCL - ignore vnodes marked excl
- *	 						NP_CREATE_REST - create a part for vnodes w/ no np resource
- * @param[out]	num_parts	-	the number of partitions created
+ *        @param[in] policy - policy info
+ *	  @param[in] nodes - the nodes which to create partitions from
+ *	  @param[in] resnames - node grouping resource names
+ *	  @param[in] flags - flags which change operations of node partition creation
+ *		NP_INGNORE_EXCL - ignore vnodes marked excl
+ *	 	NP_CREATE_REST - create a part for vnodes w/ no np resource
+ *	  @param[out] num_parts - the number of partitions created
  *
- * @return	node_partition ** (NULL terminated node_partition array)
+ *	@return node_partition ** (NULL terminated node_partition array)
  * @retval	: created node_partition array
  * @retval	: NULL on error
  *
@@ -519,14 +519,14 @@ create_node_partitions(status *policy, node_info **nodes, char **resnames, unsig
 				res = &unset_res;
 			}
 			if (res != NULL) {
-				if (compare_res_to_str(res, np_arr[np_i]->res_val, CMP_CASE)) {
+				if (compare_res_to_str(res, np_arr[np_i]->res_val, CMP_CASE, EQ)) {
 					if (np_arr[np_i]->ok_break) {
 						tmpres = find_resource(nodes[node_i]->res, getallres(RES_HOST));
 						if (tmpres != NULL) {
 							if (hostres == NULL)
 								hostres = tmpres;
 							else {
-								if (!compare_res_to_str(hostres, tmpres->str_avail[0], CMP_CASELESS))
+								if (!compare_res_to_str(hostres, tmpres->str_avail[0], CMP_CASELESS, EQ))
 									np_arr[np_i]->ok_break = 0;
 							}
 						}
@@ -552,10 +552,10 @@ create_node_partitions(status *policy, node_info **nodes, char **resnames, unsig
  * @brief
  * 		update metadata for an entire array of node partitions
  *
- * @param[in] policy	-	policy info
- * @param[in] nodepart	-	partition array to update
+ *        @param[in] policy - policy info
+ *	  @param[in] nodepart - partition array to update
  *
- * @return	int
+ *	@return int
  * @retval	1	: on all success
  * @retval	0	: on any failure
  *
@@ -591,11 +591,11 @@ node_partition_update_array(status *policy, node_partition **nodepart)
  * 		update the meta data about a node partition
  *			like free_nodes and consumable resources in res
  *
- * @param[in]	policy	-	policy info
- * @param[in]	np	-	the node partition to update
- * @param[in]	nodes	-	the entire node array used to create these node partitions
+ *	@param[in] policy - policy info
+ *	@param[in] np - the node partition to update
+ *	@param[in] nodes - the entire node array used to create these node partitions
  *
- * @return	int
+ *	@return int
  * @retval	1	: on success
  * @retval	0	: on failure
  *
@@ -655,7 +655,7 @@ node_partition_update(status *policy, node_partition *np)
 
 /**
  * @brief
- *		new_np_cache - constructor
+ *	new_np_cache - constructor
  *
  * @return	new np_cache structure
  */
@@ -679,7 +679,7 @@ new_np_cache(void)
 
 /**
  * @brief
- *		free_np_cache_array - destructor for array
+ *	free_np_cache_array - destructor for array
  *
  * @param[in,out]	npc_arr	-	np cashe array.
  */
@@ -701,7 +701,7 @@ free_np_cache_array(np_cache **npc_arr)
 
 /**
  * @brief
- *		free_np_cache - destructor
+ *	free_np_cache - destructor
  *
  * @param[in,out]	npc_arr	-	np cashe array.
  */
@@ -725,7 +725,7 @@ free_np_cache(np_cache *npc)
 
 /**
  * @brief
- *		find_np_cache - find a np_cache by the array of resource names and
+ *	find_np_cache - find a np_cache by the array of resource names and
  *			nodes which created it.
  *
  * @param[in]	npc_arr	-	the array to search
@@ -763,17 +763,17 @@ find_np_cache(np_cache **npc_arr,
  *		and nodes which created it.  If the np_cache
  *		does not exist, create it and add it to the list
  *
- * @param[in]	policy	-	policy info
+ *        @param[in] policy - policy info
  * @param[in,out]	pnpc_arr	-	pointer to np_cache array -- if *npc_arr == NULL
- *		 	           				a np_cache will be created and it will be set
- *			           				Example: you pass &(sinfo -> npc_arr)
+ *		 	           a np_cache will be created and it will be set
+ *			           Example: you pass &(sinfo -> npc_arr)
  * @param[in]	resnames	-	the names used to create the pool of node parts
  * @param[in]	ninfo_arr	-	the node array used to create the pool of node_parts
  * @param[in]	sort_func	-	sort function to sort placement sets.
- *				  				sets are only sorted when they are created.
- *				  				If NULL is passed in, no sorting is done
+ *				  sets are only sorted when they are created.
+ *				  If NULL is passed in, no sorting is done
  *
- * @return	np_cache *
+ *	@return np_cache *
  * @retval	found	: created np_cache
  * @retval 	NULL	: on error
  *
@@ -829,7 +829,7 @@ find_alloc_np_cache(status *policy, np_cache ***pnpc_arr,
 
 /**
  * @brief
- *		add_np_cache - add an np_cache to an array
+ *	add_np_cache - add an np_cache to an array
  *
  * @param[in]	policy	-	policy info
  * @param[in,out]	pnpc_arr	-	pointer to np_cache array -- if *npc_arr == NULL
@@ -870,13 +870,13 @@ add_np_cache(np_cache ***npc_arr, np_cache *npc)
  * 		do an initial check to see if a resresv can fit into a node partition
  *        based on the meta data we keep.
  *
- * @param[in]	policy	-	policy info
- * @param[in]	np	-	node partition to check
- * @param[in]	resresv	-	job/resv to see if it can fit
+ * @param[in] policy - policy info
+ * @param[in] np - node partition to check
+ * @param[in] resresv - job/resv to see if it can fit
  * @param[in]	flags	-	check_flags
- *							COMPARE_TOTAL - compare with resources_available value
- *							RETURN_ALL_ERR - return all the errors, not just the first failure
- * @param[in]	err	-	schd_error structure to return why job/resv can't fit
+ *			COMPARE_TOTAL - compare with resources_available value
+ *			RETURN_ALL_ERR - return all the errors, not just the first failure
+ * @param[in] err - schd_error structure to return why job/resv can't fit
  *
  * @return	int
  * @retval	1	: can fit
@@ -989,9 +989,9 @@ resresv_can_fit_nodepart(status *policy, node_partition *np, resource_resv *resr
  *				          nodes, rather than from a placement
  *				          set resource=value
  *
- * @param[in]	policy	-	policy info
- * @param[in]	name	-	the name of the node partition
- * @param[in]	nodes	-	the nodes to create the placement set with
+ *      @param[in] policy - policy info
+ *   	@param[in] name  - the name of the node partition
+ *	@param[in] nodes - the nodes to create the placement set with
  *
  * @return	node_partition * - the node partition
  * @NULL	: on error
@@ -1051,10 +1051,10 @@ create_specific_nodepart(status *policy, char *name, node_info **nodes)
  * @brief
  * 		create the placement sets for the server and queues
  *
- * @param[in]	policy	-	policy info
- * @param[in]	sinfo	-	the server
+ * @param[in] policy - policy info
+ * @param[in] sinfo - the server
  *
- * @return	int
+ * @return int
  * @retval	1	: success
  * @retval	0	: failure
  */
@@ -1125,7 +1125,7 @@ create_placement_sets(status *policy, server_info *sinfo)
 				ngroup_nodes = qinfo->nodes;
 			else
 				ngroup_nodes = sinfo->unassoc_nodes;
-			
+
 			if(qinfo->node_group_key)
 				ngkey = qinfo->node_group_key;
 			else

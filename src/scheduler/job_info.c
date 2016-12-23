@@ -1008,16 +1008,15 @@ query_job(struct batch_status *job, server_info *sinfo, schd_error *err)
 			resresv->job->resv_id = string_dup(attrp->value);
 		else if (!strcmp(attrp->name, ATTR_altid))    /* vendor ID */
 			resresv->job->alt_id = string_dup(attrp->value);
-		else if (!strcmp(attrp->name, ATTR_SchedSelect))
+		else if (!strcmp(attrp->name, ATTR_SchedSelect)) {
 #ifdef NAS /* localmod 031 */
-		{
 			resresv->job->schedsel = string_dup(attrp->value);
 #endif /* localmod 031 */
-
-			resresv->select = parse_selspec(attrp->value);
-#ifdef NAS /* localmod 031 */
+			resresv->multi_select = parse_selspec(attrp->value);
+			resresv->num_selspec = count_array((void*)resresv->multi_select);
+			if (resresv->multi_select != NULL)
+				resresv->select = resresv->multi_select[0]->spec; 
 		}
-#endif /* localmod 031 */
 		else if (!strcmp(attrp->name, ATTR_array_id))
 			resresv->job->array_id = string_dup(attrp->value);
 		else if (!strcmp(attrp->name, ATTR_node_set))
@@ -1056,7 +1055,7 @@ query_job(struct batch_status *job, server_info *sinfo, schd_error *err)
 			/* create a selspec from the exec_vnode so the job can be replaced */
 			selectspec = create_select_from_nspec(resresv->nspec_arr);
 			if (selectspec != NULL) {
-				resresv->job->execselect = parse_selspec(selectspec);
+				resresv->job->execselect = parse_single_selspec(selectspec);
 				free(selectspec);
 			}
 
@@ -1066,7 +1065,7 @@ query_job(struct batch_status *job, server_info *sinfo, schd_error *err)
 		else if (!strcmp(attrp->name, ATTR_l)) { /* resources requested*/
 			resreq = find_alloc_resource_req_by_str(resresv->resreq, attrp->resource);
 			if (resreq != NULL)
-				set_resource_req(resreq, attrp->value);
+				set_resource_req(resreq, attrp->value, attrp->op);
 			if (resresv->resreq == NULL)
 				resresv->resreq = resreq;
 			if (!strcmp(attrp->resource, "place")) {
@@ -1077,25 +1076,20 @@ query_job(struct batch_status *job, server_info *sinfo, schd_error *err)
 					resresv->is_invalid = 1;
 
 				}
-#ifdef NAS
-				if (!strcmp(attrp->resource, "nodect")) { /* nodect for sort */
-					/* localmod 040 */
-					count = strtol(attrp->value, &endp, 10);
-					if (*endp != '\n')
-						resresv->job->nodect = count;
-					else
-						resresv->job->nodect = 0;
-					/* localmod 034 */
-					resresv->job->accrue_rate = resresv->job->nodect; /* XXX should be SBU rate */
 				}
-#endif
+			else if (resresv->resreq_orig != NULL) {
+				resreq = find_alloc_resource_req(resresv->resreq_orig, resreq->def);
+				if (resreq != NULL)
+					set_resource_req(resreq, attrp->value, attrp->op);
 			}
+			else
+				resresv->resreq_orig = dup_resource_req_list(resresv->resreq);
 		}
 		else if (!strcmp(attrp->name, ATTR_used)) { /* resources used */
 			resreq =
 				find_alloc_resource_req_by_str(resresv->job->resused, attrp->resource);
 			if (resreq != NULL)
-				set_resource_req(resreq, attrp->value);
+				set_resource_req(resreq, attrp->value, EQ);
 			if (resresv->job->resused ==NULL)
 				resresv->job->resused = resreq;
 		}
@@ -1123,6 +1117,10 @@ query_job(struct batch_status *job, server_info *sinfo, schd_error *err)
 		else if (!strcmp(attrp->name, ATTR_r)) { /* reque allowed ? */
 			if (strcmp(attrp->value, ATR_FALSE) == 0)
 				resresv->job->can_requeue = 0;
+		}
+		else if (!strcmp(attrp->name, ATTR_multi_select_job)) {
+			if (strcmp(attrp->value, ATR_TRUE) == 0)
+				resresv->job->is_multiselect = 1;
 		}
 
 		attrp = attrp->next;
@@ -1172,6 +1170,7 @@ new_job_info()
 	jinfo->can_requeue     = 1; /* default can be reuqued */
 
 	jinfo->is_provisioning = 0;
+	jinfo->is_multiselect = 0;
 	jinfo->is_preempted = 0;
 
 	jinfo->job_name = NULL;
@@ -1925,6 +1924,7 @@ dup_job_info(job_info *ojinfo, queue_info *nqinfo)
 	njinfo->topjob_ineligible = ojinfo->topjob_ineligible;
 	njinfo->is_checkpointed = ojinfo->is_checkpointed;
 	njinfo->is_provisioning = ojinfo->is_provisioning;
+	njinfo->is_multiselect = ojinfo->is_multiselect;
 
 	njinfo->can_checkpoint = ojinfo->can_checkpoint;
 	njinfo->can_requeue    = ojinfo->can_requeue;
@@ -2308,10 +2308,24 @@ find_and_preempt_jobs(status *policy, int pbs_sd, resource_resv *hjob, server_in
 					done = 0; /* preemption failed for some job, need to loop */
 					/* add to the fail list */
 					fail_list[fail_count++] = jobs[i];
+					/* preemption of one job failed, If this is a multi select job
+					 * then to avoid choosing a different select specification we
+					 * need to temporarily (for this cycle) make this job a 
+					 * non-multi-select job.
+					 */
+					if ((hjob->job->is_multiselect) && (pbs_sd != SIMULATE_SD)) {
+						clear_multi_selspec_array(hjob);
+						hjob->job->is_multiselect = 0;
+						hjob->num_selspec = 0;
+					}
 				}
 			}
 		}
 		free(jobs);
+		if (!done) {
+			for (i = 0; (i < hjob->num_selspec) && (hjob->multi_select[i] != NULL); i++)
+				hjob->multi_select[i]->selspec_status = 0;
+		}
 		num_tries++;
 	}
 
@@ -2392,6 +2406,7 @@ find_jobs_to_preempt(status *policy, resource_resv *hjob, server_info *sinfo, in
 	resource_resv *njob;
 	resource_resv *pjob;
 	int rc = 0;
+	int num = 0;
 	int retval = 0;
 	char buf[MAX_LOG_SIZE];
 	char log_buf[MAX_LOG_SIZE];
@@ -2406,6 +2421,7 @@ find_jobs_to_preempt(status *policy, resource_resv *hjob, server_info *sinfo, in
 	schd_error *full_err = NULL;
 	schd_error *cur_err;
 	timed_event *te = NULL;
+	int selspec_satisfied = 0;
 
 	resource_req *preempt_targets_req = NULL;
 	char **preempt_targets_list = NULL;
@@ -2646,6 +2662,10 @@ find_jobs_to_preempt(status *policy, resource_resv *hjob, server_info *sinfo, in
 
 
 			clear_schd_error(err);
+			for(num = 0;num < njob -> num_selspec; num++) {
+				njob -> select = njob -> multi_select[num]->spec;
+				if (njob->job->is_multiselect)
+					make_job_rassn(sinfo -> policy, njob);
 			if ((ns_arr = is_ok_to_run(policy, -1, nsinfo,
 				njob->job->queue, njob, NO_FLAGS, err)) != NULL) {
 
@@ -2667,13 +2687,19 @@ find_jobs_to_preempt(status *policy, resource_resv *hjob, server_info *sinfo, in
 					}
 					njob = nj;
 				}
-
-
 				schdlog(PBSEVENT_DEBUG2, PBS_EVENTCLASS_JOB, LOG_DEBUG, njob->name,
 					"Simulation: Preempted enough work to run job");
+					if (njob->job->is_multiselect) {
+						njob->multi_select[num]->selspec_status = 1;
+						update_resc_assn(ns_arr, njob);
+					}
 				rc = sim_run_update_resresv(policy, njob, ns_arr, RURR_NO_FLAGS);
+					selspec_satisfied = 1;
 				break;
 			}
+			}
+			if (selspec_satisfied)
+					break;
  
 			if (old_errorcode == err->error_code) {
 				switch(old_errorcode)
@@ -2793,6 +2819,8 @@ find_jobs_to_preempt(status *policy, resource_resv *hjob, server_info *sinfo, in
 	free_schd_error(err);
 	free(old_errorarg1);
 
+	if ((rc > 0) && (selspec_satisfied == 1))
+		hjob->multi_select[num]->selspec_status = 1;
 
 	return pjobs_list;
 }
@@ -3187,7 +3215,6 @@ select_index_to_preempt(status *policy, resource_resv *hjob,
 					}
 				}
 			}
-
 
 		}
 
@@ -4224,6 +4251,59 @@ is_finished_job(int error)
 		default:
 			return(0);
 	}
+}
+
+/**
+ *
+ *	@brief This function makes a list of RASSN resources by combining the resources requested
+ *		in each chunk and default chunks resources.
+ *
+ *	@param[in] policy - policy structure.
+ *	@param[in] njob - Job for which rassn requested need to be created.
+ *
+ *	@return void
+ */
+void make_job_rassn(status *policy, resource_resv *njob)
+{
+	resource_req *req;
+	resource_req *temp;
+	int i = 0;
+
+	free_resource_req_list(njob->resreq);
+	njob->resreq = NULL;
+
+	for (;njob->select->chunks[i] != NULL; i++)
+	{
+		for (temp = njob->select->chunks[i]->req; temp != NULL; temp = temp->next)
+		{
+			if(resdef_exists_in_array(policy->resdef_to_check_rassn, temp->def))
+			{
+				req = find_alloc_resource_req(njob->resreq, temp->def);
+				if (req != NULL)
+				{
+					req->amount += njob->select->chunks[i]->num_chunks * temp->amount;
+					req->op = temp->op;
+					if (req->res_str != NULL)
+						free(req->res_str);
+					req->res_str = res_to_str_alloc(req, RF_REQUEST);
+					if (njob->resreq == NULL)
+						njob->resreq = req;
+				}
+			}
+		}
+	}
+	for (temp = njob->resreq_orig; temp != NULL; temp = temp->next)
+	{
+		req = find_resource_req(njob->resreq, temp->def);
+		if (req == NULL)
+		{
+			req = find_alloc_resource_req(njob->resreq, temp->def);
+			if (req != NULL) {
+				set_resource_req(req, temp->res_str, EQ);
+			}
+		}
+	}
+	return;
 }
 
 

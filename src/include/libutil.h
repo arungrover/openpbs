@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 1994-2016 Altair Engineering, Inc.
  * For more information, contact Altair at www.altair.com.
- *  
+ *
  * This file is part of the PBS Professional ("PBS Pro") software.
- * 
+ *
  * Open Source License Information:
  *  
  * PBS Pro is free software. You can redistribute it and/or modify it under the
@@ -62,6 +62,8 @@ int is_full_path(char *path);
 int file_exists(char *path);
 int is_same_host(char *, char *);
 
+/* function to convert batch_op to string */
+char *batch_op_to_str(int op);
 /* Determine if a placement directive is present in a placment string. */
 int place_sharing_check(char *, char *);
 

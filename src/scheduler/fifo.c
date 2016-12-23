@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 1994-2016 Altair Engineering, Inc.
  * For more information, contact Altair at www.altair.com.
- *  
+ *
  * This file is part of the PBS Professional ("PBS Pro") software.
- * 
+ *
  * Open Source License Information:
  *  
  * PBS Pro is free software. You can redistribute it and/or modify it under the
@@ -28,7 +28,7 @@
  * organizations to create proprietary derivative works of PBS Pro and distribute 
  * them - whether embedded or bundled with other software - under a commercial 
  * license agreement.
- * 
+ *
  * Use of Altair’s trademarks, including but not limited to "PBS™", 
  * "PBS Professional®", and "PBS Pro™" and Altair’s logos is subject to Altair's 
  * trademark licensing policies.
@@ -129,10 +129,10 @@ extern int	get_sched_cmd_noblk(int sock, int *val, char **jobid);
  * @brief
  * 		initialize conf struct and parse conf files
  *
- * @param[in]	argc	-	passed in from main (may be 0)
- * @param[in]	argv	-	passed in from main (may be NULL)
+ *	  @param[in] argc - passed in from main (may be 0)
+ *	  @param[in] argv - passed in from main (may be NULL)
  *
- * @return	Success/Failure
+ *	@return Success/Failure
  * @retval	0	: success
  * @retval	!= 0	: failure
  */
@@ -246,10 +246,10 @@ schedinit(void)
  *		      status information used by the scheduler which
  *		      can change from cycle to cycle
  *
- * @param[in]	policy	-	status structure to update
- * @param[in]	current_time	-	current time or 0 to call time()
+ *	  @param[in] policy - status structure to update
+ *	  @param[in] current_time - current time or 0 to call time()
  *
- * @return nothing
+ *	@return nothing
  *
  */
 void
@@ -332,10 +332,10 @@ update_cycle_status(struct status *policy, time_t current_time)
  *		 data that needed to happen post query_server()
  *		 (like preemption)
  *
- * @param[in]	policy	-	policy info
- * @param[in]	sinfo	-	the server
+ *      @param[in] policy - policy info
+ *      @param[in] sinfo - the server
  *
- * @return	int
+ *	@return int
  * @retval	1	: success
  * @retval	0	: failure
  *
@@ -448,7 +448,7 @@ init_scheduling_cycle(status *policy, server_info *sinfo)
 
 /**
  * @brief
- *		schedule - this function gets called to start each scheduling cycle
+ *	schedule - this function gets called to start each scheduling cycle
  *		   It will handle the difference cases that caused a
  *		   scheduling cycle
  *
@@ -460,7 +460,7 @@ init_scheduling_cycle(status *policy, server_info *sinfo)
  *						SCH_SCHEDULE_TIME	: The scheduling interval expired
  *						SCH_SCHEDULE_RECYC	: A scheduling recycle(see admin guide)
  *						SCH_SCHEDULE_CMD	: The server scheduling variabe was set
- *												or reset to true
+ *					or reset to true
  *						SCH_SCHEDULE_FIRST	: the first cycle after the server starts
  *						SCH_CONFIGURE	: perform scheduling configuration
  *						SCH_QUIT	: have the scheduler quit
@@ -530,13 +530,13 @@ schedule(int cmd, int sd, char *runjobid)
 
 /**
  * @brief
- *		intermediate_schedule - responsible for starting/restarting scheduling
+ *	intermediate_schedule - responsible for starting/restarting scheduling
  *		cycle.
  *
  * @param[in]	sd	-	connection descriptor to the pbs server
  * @param[in]	jobid	-	job to run for a qrun request
  *
- * returns 0
+ *	returns 0
  *
  */
 int
@@ -577,7 +577,7 @@ intermediate_schedule(int sd, char *jobid)
 
 /**
  * @brief
- *		scheduling_cycle - the controling function of the scheduling cycle
+ *	scheduling_cycle - the controling function of the scheduling cycle
  *
  * @param[in]	sd	-	connection descriptor to the pbs server
  * @param[in]	jobid	-	job to run for a qrun request
@@ -727,20 +727,20 @@ scheduling_cycle(int sd, char *jobid)
 /**
  * @brief
  * 		the main scheduler loop
- *		Loop until njob = next_job() returns NULL
- *		if njob can run now, run it
- *		if not, attempt preemption
- *		if successful, run njob
- *		njob can't run:
- *		if we can backfill
- *		add job to calendar
- *		deal with normal job can't run stuff
+ *			  Loop until njob = next_job() returns NULL
+ *			   if njob can run now, run it
+ *			   if not, attempt preemption
+ *				if successful, run njob
+ *			   njob can't run:
+ *			     if we can backfill
+ *				add job to calendar
+ *			     deal with normal job can't run stuff
  *
- * @param[in]	policy	-	policy info
- * @param[in]	sd	-	connection descriptor to server or
- *		   	  			SIMULATE_SD if we're simulating
- * @param[in]	sinfo	-	pbs universe we're going to loop over
- * @param[out]	rerr	-	error bits from the last job considered
+ *	  @param[in] policy - policy info
+ *	  @param[in] sd     - connection descriptor to server or
+ *		   	  SIMULATE_SD if we're simulating
+ *	  @param[in] sinfo  - pbs universe we're going to loop over
+ *	  @param[out] rerr   - error bits from the last job considered
  *
  *	@return return code of last job scheduled
  *	@retval -1	: on error
@@ -811,15 +811,7 @@ main_sched_loop(status *policy, int sd, server_info *sinfo, schd_error **rerr)
 		schdlog(PBSEVENT_DEBUG, PBS_EVENTCLASS_JOB, LOG_DEBUG,
 			njob->name, "Considering job to run");
 
-		if (njob->is_shrink_to_fit) {
-			/* Pass the suitable heuristic for shrinking */
-			ns_arr = is_ok_to_run_STF(policy, sd, sinfo, qinfo, njob, err, shrink_job_algorithm);
-		}
-		else
-			ns_arr = is_ok_to_run(policy, sd, sinfo, qinfo, njob, NO_FLAGS, err);
-		
-		if (err->status_code == NEVER_RUN)
-			njob->can_never_run = 1;
+		ns_arr = can_run_job(policy, sd, sinfo, qinfo, njob, err);
 
 		if (ns_arr != NULL) { /* success! */
 			resource_resv *tj;
@@ -1035,7 +1027,7 @@ main_sched_loop(status *policy, int sd, server_info *sinfo, schd_error **rerr)
 
 /**
  * @brief
- *		end_cycle_tasks - stuff which needs to happen at the end of a cycle
+ *	end_cycle_tasks - stuff which needs to happen at the end of a cycle
  *
  * @param[in]	sinfo	-	the server structure
  *
@@ -1083,7 +1075,7 @@ end_cycle_tasks(server_info *sinfo)
 
 /**
  * @brief
- *		update_last_running - update the last_running job array
+ *	update_last_running - update the last_running job array
  *			      keep the currently running jobs till next
  *			      scheduling cycle
  *
@@ -1109,7 +1101,7 @@ update_last_running(server_info *sinfo)
 
 /**
  * @brief
- *		update_job_can_not_run - do post job 'can't run' processing
+ *	update_job_can_not_run - do post job 'can't run' processing
  *				 mark it 'can_not_run'
  *				 update the job comment and log the reason why
  *				 take care of deleting a 'can_never_run job
@@ -1170,22 +1162,23 @@ update_job_can_not_run(int pbs_sd, resource_resv *job, schd_error *err)
 
 /**
  * @brief
- * 		run_job - handle the running of a pbs job.  If it's a peer job
+ * 	run_job - handle the running of a pbs job.  If it's a peer job
  *	       first move it to the local server and then run it.
  *	       if it's a local job, just run it.
  *
- * @param[in]	pbs_sd	-	pbs connection descriptor to the LOCAL server
- * @param[in]	rjob	-	the job to run
- * @param[in]	execvnode	-	the execvnode to run a multi-node job on
- * @param[in]	throughput	-	thoughput mode enabled?
- * @param[out]	err	-	error struct to return errors
+ * 	  @param[in]  pbs_sd - pbs connection descriptor to the LOCAL server
+ * 	  @param[in]  rjob - the job to run
+ *	  @param[in]  execvnode  - the execvnode to run a multi-node job on
+ *	  @param[in]  schedselect - the selected schedselect using which node solution was found 
+ *	  @param[in]  throughput - thoughput mode enabled?
+ *	  @param[out] err - error struct to return errors
  *
  * @retval	0	: success
  * @retval	1	: failure
  * @retval -1	: error
  */
 int
-run_job(int pbs_sd, resource_resv *rjob, char *execvnode, int throughput, schd_error *err)
+run_job(int pbs_sd, resource_resv *rjob, char *execvnode, char * schedselect, int throughput, schd_error *err)
 {
 	char buf[100];	/* used to assemble queue@localserver */
 	char *errbuf;		/* comes from pbs_geterrmsg() */
@@ -1214,7 +1207,7 @@ run_job(int pbs_sd, resource_resv *rjob, char *execvnode, int throughput, schd_e
 				rjob->server->name);
 		}
 
-		rc = pbs_movejob(rjob->job->peer_sd, rjob->name, buf, NULL);
+			rc = pbs_movejob(rjob->job->peer_sd, rjob->name, buf, NULL);
 
 		/*
 		 * After successful transfer of the peer job to local server,
@@ -1241,15 +1234,15 @@ run_job(int pbs_sd, resource_resv *rjob, char *execvnode, int throughput, schd_e
 					schdlog(PBSEVENT_SCHED, PBS_EVENTCLASS_JOB, LOG_NOTICE, rjob->name, logbuf);
 				}
 				if (throughput)
-					rc = pbs_asyrunjob(pbs_sd, rjob->name, execvnode, NULL);
+					rc = pbs_asyrunjob(pbs_sd, rjob->name, execvnode, schedselect);
 				else
-					rc = pbs_runjob(pbs_sd, rjob->name, execvnode, NULL);
+					rc = pbs_runjob(pbs_sd, rjob->name, execvnode, schedselect);
 			}
 		} else {
 			if (throughput)
-				rc = pbs_asyrunjob(pbs_sd, rjob->name, execvnode, NULL);
+				rc = pbs_asyrunjob(pbs_sd, rjob->name, execvnode, schedselect);
 			else
-				rc = pbs_runjob(pbs_sd, rjob->name, execvnode, NULL);
+				rc = pbs_runjob(pbs_sd, rjob->name, execvnode, schedselect);
 		}
 	}
 
@@ -1276,14 +1269,14 @@ run_job(int pbs_sd, resource_resv *rjob, char *execvnode, int throughput, schd_e
  * 		check the run_job return code and decide whether to
  *        consider this job as running or not.
  *
- * @param[in]	pbsrc	-	return code of run_job
- * @param[in]	bjob	-	job structure
+ * @param[in] pbsrc - return code of run_job
+ * @param[in] bjob - job structure
  *
- * @return	int
- * @retval	1	-	Job ran successfully
- * @retval	2	-	Job may not be running, ignoring error.
- * @retval	0	-	Job did not run
- * @retval	-1	-	Invalid function parameter
+ * @return int
+ * @retval 1 - Job ran successfully
+ * @retval 2 - Job may not be running, ignoring error.
+ * @retval 0 - Job did not run
+ * @retval -1 - Invalid function parameter
  */
 static int translate_runjob_return_code (int pbsrc, resource_resv *bjob)
 {
@@ -1311,17 +1304,17 @@ static int translate_runjob_return_code (int pbsrc, resource_resv *bjob)
  *		run.  Currently we only simulate the running
  *		of reservations.
  *
- * @param[in]	policy	-	policy info
- * @param[in]	pbs_sd	-	connection descriptor to pbs_server or
- *			  				SIMULATE_SD if we're simulating
- * @param[in]	sinfo	-	server job is on
- * @param[in]	qinfo	-	queue job resides in or NULL if reservation
- * @param[in]	resresv	-	the job/reservation to run
- * @param[in]	ns_arr	-	node solution of where job/resv should run
- *				  			needs to be attached to the job/resv or freed
- * @param[in]	flags	-	flags to modify procedure
- *							RURR_ADD_END_EVENT - add an end event to calendar for this job
- * @param[out]	err	-	error struct to return errors
+ *        @param[in] policy - policy info
+ *	  @param[in] pbs_sd - connection descriptor to pbs_server or
+ *			  SIMULATE_SD if we're simulating
+ *	  @param[in]  sinfo  - server job is on
+ *	  @param[in]  qinfo  - queue job resides in or NULL if reservation
+ *	  @param[in]  resresv  - the job/reservation to run
+ *	  @param[in]  ns_arr - node solution of where job/resv should run
+ *				  needs to be attached to the job/resv or freed
+ *	  @param[in]  flags  - flags to modify procedure
+ *		RURR_ADD_END_EVENT - add an end event to calendar for this job
+ *	  @param[out] err    - error struct to return errors
  *
  * @retval	1	: success
  * @retval	0	: failure (see err for more info)
@@ -1355,6 +1348,8 @@ run_update_resresv(status *policy, int pbs_sd, server_info *sinfo,
 	unsigned int eval_flags = NO_FLAGS;	/* flags to pass to eval_selspec() */
 	timed_event *te;			/* used to create timed events */
 	resource_resv *rr;
+	char *schedselect = NULL;
+	char *id = "run_update_resresv";
 
 	if (resresv == NULL || sinfo == NULL)
 		ret = -1;
@@ -1420,8 +1415,15 @@ run_update_resresv(status *policy, int pbs_sd, server_info *sinfo,
 			ns = ns_arr;
 		/* 3) calculate where to run the resresv ourselves */
 		else {
-			if (!find_correct_nodes(policy, sinfo, qinfo, rr, &ninfo_arr, &nodepart)) {
-				set_schd_error_codes(err, NOT_RUN, SCHD_ERROR);
+			for (i=0; i < resresv->num_selspec && resresv->multi_select[i] != NULL; i++)
+			{
+				if (resresv->multi_select[i]->selspec_status) {
+					resresv->select = resresv->multi_select[i]->spec;
+					break;
+				}
+			}
+			if (!find_correct_nodes(policy, sinfo, qinfo, resresv, &ninfo_arr, &nodepart)) {
+				err->error_code = SCHD_ERROR;
 				return -1;
 			}
 
@@ -1453,7 +1455,7 @@ run_update_resresv(status *policy, int pbs_sd, server_info *sinfo,
 					while (attrp != NULL) {
 						req = find_alloc_resource_req_by_str(ns[0]->resreq, attrp->resource);
 						if (req != NULL)
-							set_resource_req(req, attrp->value);
+							set_resource_req(req, attrp->value, EQ);
 
 						if (rr->resreq == NULL)
 							rr->resreq = req;
@@ -1470,6 +1472,22 @@ run_update_resresv(status *policy, int pbs_sd, server_info *sinfo,
 
 			if (pbs_sd != SIMULATE_SD) {
 				if (rr->is_job) { /* don't bother if we're a reservation */
+					update_resc_assn(ns, resresv);
+					for (i=0; i < resresv->num_selspec && resresv->multi_select[i] != NULL; i++)
+					{
+						if (resresv->multi_select[i]->selspec_status)
+						{
+							schedselect = (char *)malloc(strlen(resresv->multi_select[i]->str_spec)
+										    + strlen("schedselect=") + 1);
+							if (schedselect == NULL) {
+								log_err(errno, id, MEM_ERR_MSG);
+								err->error_code = SCHD_ERROR;
+							        return -1;
+							}
+							sprintf(schedselect, "schedselect=%s", resresv->multi_select[i]->str_spec);
+							break;
+						}
+					}
 					execvnode = create_execvnode(ns);
 					if (execvnode != NULL) {
 						/* The nspec array coming out of the node selection code could
@@ -1501,13 +1519,14 @@ run_update_resresv(status *policy, int pbs_sd, server_info *sinfo,
 					fflush(stdout);
 #endif /* localmod 031 */
 
-					pbsrc = run_job(pbs_sd, rr, execvnode, sinfo->throughput_mode, err);
+					pbsrc = run_job(pbs_sd, rr, execvnode, schedselect, sinfo->throughput_mode, err);
 
 #ifdef NAS_CLUSTER /* localmod 125 */
 					ret = translate_runjob_return_code(pbsrc, resresv);
 #else
 					if (!pbsrc)
 						ret = 1;
+					free(schedselect);
 #endif /* localmod 125 */
 				}
 				else
@@ -1517,6 +1536,9 @@ run_update_resresv(status *policy, int pbs_sd, server_info *sinfo,
 				/* if we're simulating, resresvs can't fail to run */
 				ret = 1;
 				execvnode = "";
+				if (resresv->is_job)
+					update_resc_assn(ns,resresv);
+
 			}
 		}
 		else  { /* should never happen */
@@ -1550,7 +1572,7 @@ run_update_resresv(status *policy, int pbs_sd, server_info *sinfo,
 		if (rr->is_job && !(flags & RURR_NOPRINT)) {
 				schdlog(PBSEVENT_SCHED, PBS_EVENTCLASS_JOB,
 					LOG_INFO, rr->name, "Job run");
-		}
+			}
 
 
 		update_resresv_on_run(rr, ns);
@@ -1646,11 +1668,11 @@ run_update_resresv(status *policy, int pbs_sd, server_info *sinfo,
  * @brief
  * 		simulate the running of a resource resv
  *
- * @param[in]	policy	-	policy info
- * @param[in]	resresv	-	the resource resv to simulate running
- * @param[in]	ns_arr  -	node solution of where a job/resv should run
- * @param[in]	flags	-	flags to modify procedure
- *							RURR_ADD_END_EVENT - add an end event to calendar for this job
+ *        @param[in] policy - policy info
+ *	  @param[in] resresv - the resource resv to simulate running
+ *	  @param[in] ns_arr  - node solution of where a job/resv should run
+ *	  @param[in] flags  - flags to modify procedure
+ *		RURR_ADD_END_EVENT - add an end event to calendar for this job
  *
  * @retval	1	: success
  * @retval	0	: failure
@@ -1688,12 +1710,12 @@ sim_run_update_resresv(status *policy, resource_resv *resresv, nspec **ns_arr, u
  * @brief
  * 		should we call add_job_to_calendar() with job
  *
- * @param[in]	policy	-	policy structure
- * @param[in]	sinfo   -	server where job resides
- * @param[in]	resresv -	the job to check
+ *	  @param[in] policy  - policy structure
+ *	  @param[in] sinfo   - server where job resides
+ *	  @param[in] resresv - the job to check
  * @param[in]	num_topjobs	-	number of topjobs added to the calendar
  *
- * @return	int
+ *	@return int
  * @retval	1	: we should backfill
  * @retval	0	: we should not
  *
@@ -1768,15 +1790,15 @@ should_backfill_with_job(status *policy, server_info *sinfo, resource_resv *resr
 /**
  * @brief
  * 		Find the start time of the top job and init
- *       all the necessary variables in sinfo to correctly backfill
- *       around it.  If no start time can be found, the job is not added
- *	     to the calendar.
+ *             all the necessary variables in sinfo to correctly backfill
+ *             around it.  If no start time can be found, the job is not added
+ *	       to the calendar.
  *
- * @param[in]	policy	-	policy info
- * @param[in]	pbs_sd	-	connection descriptor to pbs server
- * @param[in]	policy	-	policy structure
- * @param[in]	sinfo	-	the server to find the topjob in
- * @param[in]	topjob	-	the job we want to backfill around
+ *        @param[in] policy     - policy info
+ *	  @param[in] pbs_sd	- connection descriptor to pbs server
+ *        @param[in] policy     - policy structure
+ *	  @param[in] sinfo      - the server to find the topjob in
+ *	  @param[in] topjob     - the job we want to backfill around
  *
  * @retval	1	: success
  * @retval	0	: failure
@@ -1880,7 +1902,7 @@ add_job_to_calendar(int pbs_sd, status *policy, server_info *sinfo,
 					create_node_array_from_nspec(bjob->nspec_arr);
 				selectspec = create_select_from_nspec(bjob->nspec_arr);
 				if (selectspec != NULL) {
-					bjob->job->execselect = parse_selspec(selectspec);
+					bjob->job->execselect = parse_single_selspec(selectspec);
 					free(selectspec);
 				}
 			}
@@ -1960,7 +1982,7 @@ add_job_to_calendar(int pbs_sd, status *policy, server_info *sinfo,
 
 /**
  * @brief
- *		find_ready_resv_job - find a job in a reservation which can run
+ *	find_ready_resv_job - find a job in a reservation which can run
  *
  * @param[in]	resvs	-	running resvs
  *
@@ -1991,7 +2013,7 @@ find_ready_resv_job(resource_resv **resvs)
 
 /**
  * @brief
- *		find_runnable_resresv - find the next runnable resouce resv in an array
+ *	find_runnable_resresv - find the next runnable resouce resv in an array
  *
  * @param[in]	resresv_arr	-	array of resource resvs to search
  *
@@ -2021,9 +2043,9 @@ find_runnable_resresv(resource_resv **resresv_arr)
 
 /**
  * @brief
- *		find_non_normal_job - find a runable sched job which is not a normal job in the list of jobs.
+ *	find_non_normal_job - find a runable sched job which is not a normal job in the list of jobs.
  * @par
- * 		ASSUMPTION: express jobs will be sorted to the front of the list, followed by preempted job, followed by starving job
+ * 	ASSUMPTION: express jobs will be sorted to the front of the list, followed by preempted job, followed by starving job
  *
  * @param[in]	jobs	-	the array of jobs
  *
@@ -2054,7 +2076,7 @@ find_non_normal_job(resource_resv **jobs) {
 #ifdef NAS
 /**
  * @return
- *		find_susp_job - find a suspended job
+ *	find_susp_job - find a suspended job
  *
  * @param[in]	jobs	-	the array of jobs
  *
@@ -2085,12 +2107,12 @@ find_susp_job(resource_resv **jobs) {
  * @brief
  * 		find the next job to be considered to run by the scheduler
  *
- * @param[in]	policy	-	policy info
- * @param[in]	sinfo	-	the server the jobs are on
- * @param[in]	flag	-	whether or not to initialize, sort/re-sort jobs.
+ *        @param[in] policy - policy info
+ *	  @param[in] sinfo  - the server the jobs are on
+ *	  @param[in] flag - whether or not to initialize, sort/re-sort jobs.
  *
- * @return	resource_resv *
- * @retval	the next job to consider
+ *      @return resource_resv *
+ *	@retval  the next job to consider
  * @retval  NULL	: on error or if there are no more jobs to run
  *
  * @par MT-safe: No
@@ -2250,3 +2272,143 @@ next_job(status *policy, server_info *sinfo, int flag)
 	}
 	return rjob;
 }
+
+/**
+ * @brief get_assigned_amount - This function returns the amount of resource needed to be
+ *				assigned by checking the operator in resource request.
+ * @param res[in] - resource to check
+ * @prama req[in] - resource requested by the job
+ * @param val[out] - memory where resource value needs to be assigned.
+ *
+ * @return sch_resource_t* returns NULL or address where resource value is assigned.
+ */
+sch_resource_t*
+get_assigned_amount(schd_resource *reslist, resource_req *req, sch_resource_t *val)
+{
+	schd_resource *temp = NULL;
+	sch_resource_t avail;
+	if ((reslist == NULL) || (req == NULL) || (val == NULL))
+		return NULL;
+
+	*val = 0;
+	temp = find_resource(reslist, req->def);
+	if (temp != NULL) {
+		if (temp->indirect_res != NULL)
+			temp = temp->indirect_res;
+		avail = dynamic_avail(temp);
+		switch (req->op) {
+			case EQ:
+				*val = req->amount;
+				break;
+			case GT:
+			case GE:
+				*val = avail;
+				break;
+			case LT:
+				*val = (req->amount <= avail)?(req->amount -1):avail;
+				break;
+			case LE:
+				*val = (req->amount <= avail)?(req->amount):avail;
+				break;
+			default:
+				*val = req->amount;
+				break;
+		}
+	}
+	else
+		return NULL;
+	return val;
+}
+
+/**
+ * @brief update_resc_assn - This function updates the amount of resources assigned in node
+ *				specification and also in job's resource request.
+ *
+ * @param ns[in,out] - Node specification array where job will run.
+ * @param pjob[in,out] - Job which is going to run
+ *
+ * @return void
+ */
+void 
+update_resc_assn(nspec **ns, resource_resv *pjob)
+{
+	int i = 0;
+	resource_req *temp = NULL;
+	resource_req *req = NULL;
+	int j = 0;
+	int k = 0;
+
+	if (ns == NULL)
+		return;
+
+	clear_consumable_resreq(pjob->resreq);
+	/* Loop through all chunks and nspec array, for each resource request in nspec array
+	 * take the corresponding chunk level resource request and using that
+	 * resource request update job's resource assigned
+	 * This is written with an assumption that each node spec corresponds to each chunk in
+	 * the order they were requested.
+	 */
+	for (j=0; pjob->select->chunks[j] != NULL; j++) {
+		for (k=0; k < pjob->select->chunks[j]->num_chunks && ns[i] != NULL; k++, i++) {
+			for(temp = ns[i]->resreq; temp != NULL; temp = temp->next) {
+				if (temp->type.is_consumable) {
+					req = find_resource_req(pjob->resreq, temp->def);
+					/* Resource requested while finding the node solution must be
+					* present in the node's resources and resource request of the job
+					*/
+					if (req != NULL) {
+						req->amount += temp->amount;
+						req->op = EQ;
+					}
+				}
+			}
+		}
+	}
+	/* Now loop through all consumable resreq again and set res_str in them */
+	for(req = pjob->resreq; req != NULL; req = req->next) {
+		if (req->type.is_consumable)
+			req->res_str = res_to_str_alloc(req, RF_REQUEST);
+	}
+}
+
+#ifdef DEBUG
+
+/* to test debug malloc messages -
+ * set '#define malloc my_malloc' in a place which is included in all the
+ * files you want to test.  The target tree's pbs_config. is a fine place
+ *
+ * run scheduler in debugger and set break points near the mallocs you want
+ * to fail.  Set the debug_malloc_null to 1 and continue stepping through
+ * the code.
+ *
+ */
+
+int debug_malloc_null = 0;
+void *
+my_malloc(size_t bytes)
+{
+	if (debug_malloc_null)
+		return NULL;
+
+	return calloc(1, bytes);
+}
+
+/* does not work - when debug_malloc_null is 0, it crashes */
+void *
+my_realloc(void *ptr, size_t size)
+{
+	void *p;
+	if (debug_malloc_null) {
+		free(ptr);
+		return NULL;
+	}
+
+	p = calloc(1, size);
+	if (p != NULL)
+		memcpy(p, ptr, size);
+
+	free(ptr);
+	return p;
+}
+
+#endif

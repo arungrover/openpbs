@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 1994-2016 Altair Engineering, Inc.
  * For more information, contact Altair at www.altair.com.
- *  
+ *
  * This file is part of the PBS Professional ("PBS Pro") software.
- * 
+ *
  * Open Source License Information:
  *  
  * PBS Pro is free software. You can redistribute it and/or modify it under the
@@ -128,9 +128,11 @@ extern int chk_and_update_db_svrhost(void);
 extern int recov_attr_db_raw(pbs_db_conn_t *, pbs_db_attr_info_t *, pbs_list_head *);
 extern int apply_aoe_inchunk_rules(resource *, attribute *, void *, int);
 extern int apply_select_inchunk_rules(resource *, attribute *, void *, int, int);
+extern int validate_perm_res_in_select(char *);
 extern int svr_create_tmp_jobscript(job *, char *);
 extern void unset_jobscript_max_size(void);
 extern char *svr_load_jobscript(job *);
+extern void chk_svr_resc_limit(attribute *, attribute *, attribute *, int);
 
 #ifdef	_PROVISION_H
 extern int find_prov_vnode_list(job *pjob, exec_vnode_listtype *prov_vnodes, char **aoe_name);

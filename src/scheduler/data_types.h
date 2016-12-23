@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 1994-2016 Altair Engineering, Inc.
  * For more information, contact Altair at www.altair.com.
- *  
+ *
  * This file is part of the PBS Professional ("PBS Pro") software.
- * 
+ *
  * Open Source License Information:
  *  
  * PBS Pro is free software. You can redistribute it and/or modify it under the
@@ -109,6 +109,7 @@ typedef struct schd_error schd_error;
 typedef struct np_cache np_cache;
 typedef struct chunk chunk;
 typedef struct selspec selspec;
+typedef struct multi_selspec multi_selspec;
 typedef struct resdef resdef;
 typedef struct timed_event timed_event;
 typedef struct event_list event_list;
@@ -199,6 +200,14 @@ struct selspec
 	int total_cpus;		/* # of cpus requested in this select spec */
 	resdef **defs;                /* the resources requested by this select spec*/
 	chunk **chunks;
+};
+
+struct multi_selspec
+{
+	unsigned int  selspec_status:1;	    /* status to tell whether this selspec is ok to run or not */
+	schd_error *err;		    /* stores list of reasons when selspec is not ok to run */
+	selspec *spec;			    /* select specification */
+	char *str_spec;			    /* string representation of select specification */
 };
 
 /* for description of these bits, check the PBS admin guide or scheduler IDS */
@@ -426,6 +435,7 @@ struct job_info
 	unsigned is_subjob:1;		/* is a subjob of a job array */
 
 	unsigned is_provisioning:1;	/* job is provisioning */
+	unsigned is_multiselect:1;	/* job has multiple select specifications */
 	unsigned is_preempted:1;      /* job is preempted */
 	unsigned topjob_ineligible:1;	/* Job is ineligible to be a top job */
 
@@ -636,6 +646,10 @@ struct resource_resv
 	time_t min_duration;		/* minimum duration of STF job */
 
 	resource_req *resreq;		/* list of resources requested */
+	resource_req *resreq_orig;	/* list of resources requested originally */
+	int num_selspec;		/* Number of select specifications present in the request */
+	int selspec_index;		/* Index of selspec which is actually selected to run the job */
+	multi_selspec **multi_select;	/* list of multiple select spec */
 	selspec *select;		/* select spec */
 	place *place_spec;		/* placement spec */
 
@@ -697,9 +711,10 @@ struct resource_req
 	char *name;			/* name of the resource - reference to the definition name */
 	struct resource_type type;	/* resource type information */
 
-	sch_resource_t amount;	/* numeric value of resource */
-	char *res_str;		/* string value of resource */
-	resdef *def;                  /* definition of resource */
+	sch_resource_t amount;	        /* numeric value of resource */
+	char *res_str;		        /* string value of resource requested */
+	enum batch_op op;	        /* operation to be performed on each resource requested */
+	resdef *def;                    /* definition of resource */
 	struct resource_req *next;	/* next resource_req in list */
 };
 

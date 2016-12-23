@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 1994-2016 Altair Engineering, Inc.
  * For more information, contact Altair at www.altair.com.
- *  
+ *
  * This file is part of the PBS Professional ("PBS Pro") software.
- * 
+ *
  * Open Source License Information:
  *  
  * PBS Pro is free software. You can redistribute it and/or modify it under the
@@ -303,26 +303,6 @@ int global_spec_size(char *spec, int ncpu_size);
 const char *node_state_to_str(node_info *ninfo);
 
 /*
- *	parse_placespec - allocate a new place structure and parse
- *				a placement spec (-l place)
- *	returns newly allocated place
- *		NULL: invalid placement spec
- *
- */
-place *parse_placespec(char *place_str);
-
-/*
- *	parse_selspec - parse a simple select spec into requested resources
- *
- *	  IN: selspec - the select spec to parse
- *	  OUT: numchunks - the number of chunks
- *
- *	returns requested resource list (& number of chunks in numchunks)
- *		NULL on error or invalid spec
- */
-selspec *parse_selspec(char *selspec);
-
-/*
  *	combine_nspec_array - find and combine any nspec's for the same node
  *				in an nspec array
  */
@@ -450,13 +430,15 @@ resources_avail_on_vnode(resource_req *specreq_cons, node_info *node,
  *	  IN: node       - node to check for
  *	  IN: resersv    - the resource resv to check for
  *	  OUT: err       - schd_error reply if there aren't enough resources
+ *	  OUT: computed_req - list of resource request that can be satisfied on
+ *				each chunk (set only if resreq is conditional)
  *
  *	returns number of chunks which can be satisifed during the duration
  *		-1 on error
  */
 long long
 check_resources_for_node(resource_req *resreq, node_info *ninfo,
-	resource_resv *resresv, schd_error *err);
+	resource_resv *resresv, schd_error *err, resource_req **computed_req);
 
 /*
  *	create_node_array_from_nspec - create a node_info array by copying the

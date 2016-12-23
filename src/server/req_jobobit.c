@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 1994-2016 Altair Engineering, Inc.
  * For more information, contact Altair at www.altair.com.
- *  
+ *
  * This file is part of the PBS Professional ("PBS Pro") software.
- * 
+ *
  * Open Source License Information:
  *  
  * PBS Pro is free software. You can redistribute it and/or modify it under the
@@ -38,8 +38,8 @@
  * @file    req_jobobit.c
  *
  * @brief
- * 		req_jobobit.c - functions dealing with a Job Obituary Request (Notice)
- *		and the associated post execution job clean up.
+ * req_jobobit.c - functions dealing with a Job Obituary Request (Notice)
+ *	and the associated post execution job clean up.
  *
  * Functions included are:
  * 	setup_from()
@@ -138,8 +138,8 @@ static struct batch_request *setup_cpyfiles
 static char *msg_obitnotrun = "job not running, may have been requeued on node failure";
 /**
  * @brief
- * 		setup_from - setup the "from" name for a standard job file:
- *		output, error, or chkpt
+ * setup_from - setup the "from" name for a standard job file:
+ *	output, error, or chkpt
  *
  * @param[in]	pjob	- job structure
  * @param[in]	suffix	- suffix for the "from" name
@@ -163,7 +163,7 @@ setup_from(job  *pjob, char *suffix)
 /**
  * @brief
  * 		setup_cpyfiles - if need be, allocate and initialize a Copy Files
- *		batch request, then append the file pairs
+ *	batch request, then append the file pairs
  *
  * @param[in]	preq	- batch request
  * @param[in]	pjob	- job structure
@@ -357,8 +357,8 @@ enum job_atr	 ati;
 
 /**
  * @brief
- * 		cpy_stdfile - determine if one of the job's standard files (output or error)
- *		is to be copied, if so set up the Copy Files request.
+ * cpy_stdfile - determine if one of the job's standard files (output or error)
+ *	is to be copied, if so set up the Copy Files request.
  *
  * @param[in]	preq	- batch request
  * @param[in]	pjob	- job structure
@@ -442,11 +442,11 @@ static struct batch_request *cpy_stdfile(struct batch_request *preq, job *pjob, 
 
 /**
  * @brief
- * 		cpy_stage - set up a Copy Files request to include files specified by the
- *		user to be staged out (also used for stage-in).
- *		"stage_out" is a resource that may or may not *	exist on a host.
- *		If such exists, the files are listed one per string as
- *		"local_name@remote_host:remote_name".
+ * cpy_stage - set up a Copy Files request to include files specified by the
+ *	user to be staged out (also used for stage-in).
+ *	"stage_out" is a resource that may or may not *	exist on a host.
+ *	If such exists, the files are listed one per string as
+ *	"local_name@remote_host:remote_name".
  *
  * @param[in]	preq	- batch request
  * @param[in]	pjob	- job structure
@@ -503,13 +503,13 @@ struct batch_request *cpy_stage(struct batch_request *preq, job *pjob, enum job_
 
 /**
  * @brief
- * 		mom_comm - if needed, open a connection with the MOM under which
- *		the job was running.  The connection is typically set up by
- *		req_jobobit() using the connection already established by MOM.
- *		However, on server recovery there will be no pre-established connection.
+ * mom_comm - if needed, open a connection with the MOM under which
+ *	the job was running.  The connection is typically set up by
+ *	req_jobobit() using the connection already established by MOM.
+ *	However, on server recovery there will be no pre-established connection.
  *
- *		If a connection is needed and cannot be setup, set up a work-task
- *		entry and try again later.
+ *	If a connection is needed and cannot be setup, set up a work-task
+ *	entry and try again later.
  *
  * @param[in]	pjob	- job structure
  * @param[in]	func	- function pointer which accepts a work task structure and returns void
@@ -560,7 +560,7 @@ mom_comm(job *pjob, void (*func)(struct work_task *))
 			if (pjob->ji_qs.ji_un.ji_exect.ji_momaddr == 0)
 				return (-1);
 
-			pjob->ji_qs.ji_un.ji_exect.ji_momport = dum;
+				pjob->ji_qs.ji_un.ji_exect.ji_momport = dum;
 		}
 		pjob->ji_momhandle = svr_connect(
 			pjob->ji_qs.ji_un.ji_exect.ji_momaddr,
@@ -599,7 +599,7 @@ mom_comm(job *pjob, void (*func)(struct work_task *))
 
 /**
  * @brief
- * 		rel_resc - release resources assigned to the job
+ * rel_resc - release resources assigned to the job
  *
  * @param[in]	pjob	- job structure
  */
@@ -660,9 +660,9 @@ on_exitrerun_msg(job *pjob, char *fmt)
 
 /**
  * @brief
- * 		conn_to_mom_failed - called when the connection to Mom for end of job
- *		processing is broken (Mom gone?).  Log it and close and attempt to
- *		open a new one by going around again.
+ * conn_to_mom_failed - called when the connection to Mom for end of job
+ *	processing is broken (Mom gone?).  Log it and close and attempt to
+ *	open a new one by going around again.
  *
  * @param[in]	pjob	- job structure
  * @param[in]	func	- function pointer which accepts a work task structure and returns void
@@ -688,20 +688,20 @@ conn_to_mom_failed(job *pjob, void(*func)(struct work_task *))
 
 /**
  * @brief
- * 		continue post-execution processing of a job that terminated.
+ * continue post-execution processing of a job that terminated.
  *
- *		This function is called by pbsd_init() on recovery, by job_obit()
- *		on job termination and by itself (via a work task).  The clue to where
- *		we are is the job substate and the type of the work task entry it is
- *		called with.  If the work task entry type is Work_Immed, then this is
- *		the first time in for the job substate.  Otherwise it is with the reply
- *		given by MOM.
+ *	This function is called by pbsd_init() on recovery, by job_obit()
+ *	on job termination and by itself (via a work task).  The clue to where
+ *	we are is the job substate and the type of the work task entry it is
+ *	called with.  If the work task entry type is Work_Immed, then this is
+ *	the first time in for the job substate.  Otherwise it is with the reply
+ *	given by MOM.
  *
- *		NOTE:
- *		On the initial work task (WORK_Immed), the wt_parm1 is a job pointer.
- *		On a call-back work task (WORK_Deferred_Reply) generated by
- *		send_request(), the wt_parm1 is pointing to the request; and the
- *		rq_extra field in the request points to the job.
+ *	NOTE:
+ *	On the initial work task (WORK_Immed), the wt_parm1 is a job pointer.
+ *	On a call-back work task (WORK_Deferred_Reply) generated by
+ *	send_request(), the wt_parm1 is pointing to the request; and the
+ *	rq_extra field in the request points to the job.
  *
  * @param[in,out]	ptask	- work task
  */
@@ -1045,13 +1045,13 @@ on_job_exit(struct work_task *ptask)
 
 /**
  * @brief
- * 		on_job_rerun - Handle the clean up of jobs being rerun.  This gets
- *		messy if the job is being executed on another host.  Then the
- *		"standard" files must be copied to the server for safe keeping.
+ * on_job_rerun - Handle the clean up of jobs being rerun.  This gets
+ *	messy if the job is being executed on another host.  Then the
+ *	"standard" files must be copied to the server for safe keeping.
  *
- *		The basic flow is very much like that of on_job_exit().
- *		The substate will already set to JOB_SUBSTATE_RERUN and the
- *		JOB_SVFLG_HASRUN bit set in ji_svrflags.
+ *	The basic flow is very much like that of on_job_exit().
+ *	The substate will already set to JOB_SUBSTATE_RERUN and the
+ *	JOB_SVFLG_HASRUN bit set in ji_svrflags.
  *
  * @param[in,out]	ptask	- work task structure
  */
@@ -1098,6 +1098,8 @@ on_job_rerun(struct work_task *ptask)
 
 		case JOB_SUBSTATE_RERUN:
 
+			job_attr_def[(int)JOB_ATR_SchedSelect].at_set(&pjob->ji_wattr[(int)JOB_ATR_SchedSelect],
+								&pjob->ji_wattr[(int)JOB_ATR_RequestedSpec], SET);
 			if (ptask->wt_type != WORK_Deferred_Reply) {
 				if (pjob->ji_qs.ji_un.ji_exect.ji_momaddr==pbs_server_addr) {
 
@@ -1441,64 +1443,64 @@ concat_rescused_to_buffer(char *buffer, svrattrl *patlist, int *total_left, char
 
 /**
  * @brief
- *		Process the Job Obituary Notice (request) from MOM for a job which has.
- *		terminated.  The Obit contains the exit status and final resource
- *		usage for the job.
+ *	Process the Job Obituary Notice (request) from MOM for a job which has.
+ *	terminated.  The Obit contains the exit status and final resource
+ *	usage for the job.
  * @par
- *		If the job cannot be found, the Server tells Mom to discard her copy.
- *		This may be the case if the job was forcefully deleted while Mom was
- *		down or the Server was restarted cold/clean discarding the jobs.
+ *	If the job cannot be found, the Server tells Mom to discard her copy.
+ *	This may be the case if the job was forcefully deleted while Mom was
+ *	down or the Server was restarted cold/clean discarding the jobs.
  *
- *		Depending on the state of the job:
- *		- Not RUNNING and not EXITING - tell Mom to discard the job.
- *		- Also not in substate _TERM - Mom wishes to restart the end of job
- *	  	 processing; likely because she hasn't heard from the Server.
- *		- If the "run count" in the obit does not match the Server's, Mom has
- *	 	 an old copy and she is told to discard it.
+ *	Depending on the state of the job:
+ *	- Not RUNNING and not EXITING - tell Mom to discard the job.
+ *	- Also not in substate _TERM - Mom wishes to restart the end of job
+ *	  processing; likely because she hasn't heard from the Server.
+ *	- If the "run count" in the obit does not match the Server's, Mom has
+ *	  an old copy and she is told to discard it.
  * @par
- *		Normally, the Obit is received when the job is in substate RUNNING.
- *		The job is moved into that substate when Mom sends the session id of
- *		the job,  see stat_update().  However, it is possible that  the Obit
- *		is received before that and the job is in substate _PRERUN (or very
- *		unlikely _PROVISION).  If this is the case, call complete_running()
- *		to update the job to _RUNNING and write the "S" accounting record before
- *		we write the "E" record.
+ *	Normally, the Obit is received when the job is in substate RUNNING.
+ *	The job is moved into that substate when Mom sends the session id of
+ *	the job,  see stat_update().  However, it is possible that  the Obit
+ *	is received before that and the job is in substate _PRERUN (or very
+ *	unlikely _PROVISION).  If this is the case, call complete_running()
+ *	to update the job to _RUNNING and write the "S" accounting record before
+ *	we write the "E" record.
  * @par
- *		There are special job exit values (negative nunbers which cannot be
- *		actual exits status of the job).  These are typically because Mom
- *		could not complete starting the job or Mom is being restarted without
- *		the "-p" option.
- *		- JOB_EXEC_FAIL1: Mom could not start job, the standard out/err files
- *	  	were not created.
- *		- JOB_EXEC_FAIL2: Mom could not start the job, but had created the
- *	  	files so there is useful info in them.
- *		- JOB_EXEC_INITABT: Mom aborted the running job on her initialization.
- *		- JOB_EXEC_FAILUID: Mom aborted the job because of an invalid uid/gid.
- *		- JOB_EXEC_FAIL_PASSWORD: Mom aborted the job because she needed the
- *	  	user's password (Windows) and the password didn't work.
- *		- JOB_EXEC_RETRY: Mom couldn't start the job, but it might work later,
- *	  	so requeue it.
- *		- JOB_EXEC_BADRESRT: The job could not be started from the checkpoint
- *	  	restart file.
- *		- JOB_EXEC_INITRST: Mom aborted a checkpointed job which should be
- *	  	requeued for a later "restart".
- *		- JOB_EXEC_QUERST: The Epilogue told Mom to requeue the job which can
- *	  	be restarted from a checkpoint.
- *		- JOB_EXEC_RERUN: or JOB_EXEC_RERUN_SIS_FAIL: requeue the job if it is
- *	  	rerunable (not submitted with "-r n").
- *		- JOB_EXEC_FAILHOOK_RERUN: returned by a job rejected by a mom hook
- *	  	and the next action is to requeue/rerun the job.
- *		- JOB_EXEC_FAILHOOK_DELETE: returned by a job rejected by a mom hook
- *	  	and the next action is to just delete the job.
- *		- JOB_EXEC_HOOK_RERUN - returned by a job that ran a mom hook that
- *	  	instructed the server to requeue the job once reaching the end.
- *		- JOB_EXEC_HOOK_DELETE - returned by a job that ran a mom hook that
- *	  	instructed the server to delete the job  once reaching the end.
+ *	There are special job exit values (negative nunbers which cannot be
+ *	actual exits status of the job).  These are typically because Mom
+ *	could not complete starting the job or Mom is being restarted without
+ *	the "-p" option.
+ *	- JOB_EXEC_FAIL1: Mom could not start job, the standard out/err files
+ *	  were not created.
+ *	- JOB_EXEC_FAIL2: Mom could not start the job, but had created the
+ *	  files so there is useful info in them.
+ *	- JOB_EXEC_INITABT: Mom aborted the running job on her initialization.
+ *	- JOB_EXEC_FAILUID: Mom aborted the job because of an invalid uid/gid.
+ *	- JOB_EXEC_FAIL_PASSWORD: Mom aborted the job because she needed the
+ *	  user's password (Windows) and the password didn't work.
+ *	- JOB_EXEC_RETRY: Mom couldn't start the job, but it might work later,
+ *	  so requeue it.
+ *	- JOB_EXEC_BADRESRT: The job could not be started from the checkpoint
+ *	  restart file.
+ *	- JOB_EXEC_INITRST: Mom aborted a checkpointed job which should be
+ *	  requeued for a later "restart".
+ *	- JOB_EXEC_QUERST: The Epilogue told Mom to requeue the job which can
+ *	  be restarted from a checkpoint.
+ *	- JOB_EXEC_RERUN: or JOB_EXEC_RERUN_SIS_FAIL: requeue the job if it is
+ *	  rerunable (not submitted with "-r n").
+ *	- JOB_EXEC_FAILHOOK_RERUN: returned by a job rejected by a mom hook
+ *	  and the next action is to requeue/rerun the job.
+ *	- JOB_EXEC_FAILHOOK_DELETE: returned by a job rejected by a mom hook
+ *	  and the next action is to just delete the job.
+ *	- JOB_EXEC_HOOK_RERUN - returned by a job that ran a mom hook that
+ *	  instructed the server to requeue the job once reaching the end.
+ *	- JOB_EXEC_HOOK_DELETE - returned by a job that ran a mom hook that
+ *	  instructed the server to delete the job  once reaching the end.
  * @par
- *		Otherwise record the accounting information to be recorded later in the
- *		processing.  Now, the job is moved into "exiting" processing or "rerun"
- *		porcessiong (qrerun) via a work-task entry invoking either on_job_exit()
- *		or on_job_rerun().
+ *	Otherwise record the accounting information to be recorded later in the
+ *	processing.  Now, the job is moved into "exiting" processing or "rerun"
+ *	porcessiong (qrerun) via a work-task entry invoking either on_job_exit()
+ *	or on_job_rerun().
  *
  * param[in] - pruu - the structure containing the resource usage info
  * param[in] - stream - the RPP stream connecting to the Mom
@@ -1754,11 +1756,11 @@ job_obit(struct resc_used_update *pruu, int	stream)
 		 */
 		resource_def *tmpdef;
 		tmpdef = find_resc_def(svr_resc_def, patlist->al_resc, svr_resc_size);
-		/* 
+			/*
 		 * Copy all resources to the accounting buffer.
 		 * But save resource information to the mail buffer only when 
 		 * the resource is not invisible.
-		 */
+			 */
 		concat_rescused_to_buffer(acctbuf, patlist, &amt, " ");
 
 		if (tmpdef->rs_flags & ATR_DFLAG_USRD) {
@@ -1784,130 +1786,130 @@ job_obit(struct resc_used_update *pruu, int	stream)
 	if ((exitstatus < 0) && (exitstatus != JOB_EXEC_CHKP)) {
 		/* negative exit status is special */
 
-		switch (exitstatus) {
-			case JOB_EXEC_FAILHOOK_DELETE:
-				/* this is a reject */
-				log_event(PBSEVENT_ERROR|PBSEVENT_JOB,
-					PBS_EVENTCLASS_JOB, LOG_INFO,
-					pjob->ji_qs.ji_jobid,
-					msg_hook_reject_deletejob);
-				DBPRT(("%s: MOM rejected job %s due to a hook.\n",
-					id, pruu->ru_pjobid))
-				svr_mailowner(pjob, MAIL_ABORT, MAIL_FORCE,
-					msg_hook_reject_deletejob);
-				alreadymailed = 1;
-				break;
-
-			case JOB_EXEC_HOOK_DELETE:
-				/* more likely an accept with a hook delete option */
-				log_event(PBSEVENT_ADMIN|PBSEVENT_JOB, PBS_EVENTCLASS_JOB,
-					LOG_INFO, pjob->ji_qs.ji_jobid,
-					"a hook requested for job to be deleted");
-				DBPRT(("%s: a hook requested for job %s to be deleted.\n",
-					id, pruu->ru_pjobid))
-				svr_mailowner(pjob, MAIL_ABORT, MAIL_FORCE,
-					"a hook requested for job to be deleted");
-				alreadymailed = 1;
-				break;
-
-			case JOB_EXEC_FAIL1:
-			default:
-
-				/* MOM rejected job with fatal error, abort job */
-
-				DBPRT(("%s: MOM rejected job %s with fatal error.\n",
-					id, pruu->ru_pjobid))
-				svr_mailowner(pjob, MAIL_ABORT, MAIL_FORCE, msg_momnoexec1);
-				alreadymailed = 1;
-				break;
-
-			case JOB_EXEC_FAIL2:
-
-				/* MOM reject job after files setup, abort job */
-
-				DBPRT(("%s: MOM rejected job %s after setup.\n",
-					id, pruu->ru_pjobid))
-				svr_mailowner(pjob, MAIL_ABORT, MAIL_FORCE, msg_momnoexec2);
-				alreadymailed = 1;
-				break;
-
-			case JOB_EXEC_INITABT:
-
-				/* MOM aborted job on her initialization */
-
-				DBPRT(("%s: MOM aborted job %s on init, no requeue.\n",
-					id, pruu->ru_pjobid))
-				alreadymailed = setrerun(pjob);
-				pjob->ji_qs.ji_svrflags |= JOB_SVFLG_HASRUN;
-				break;
-
-			case JOB_EXEC_FAILUID:
-
-				/* MOM abort job because uid or gid was invalid */
-
-				DBPRT(("%s: MOM rejected job %s with invaild uid/gid.\n",
-					id, pruu->ru_pjobid))
-				svr_mailowner(pjob, MAIL_ABORT, MAIL_FORCE, msg_baduser);
-				alreadymailed = 1;
-				/* go to the retry case */
-				goto RetryJob;
-
-			case JOB_EXEC_FAIL_PASSWORD:
-
-				/* put job on password hold */
-				pjob->ji_wattr[(int)JOB_ATR_hold].at_val.at_long |= HOLD_bad_password;
-				pjob->ji_wattr[(int)JOB_ATR_hold].at_flags |= ATR_VFLAG_SET | ATR_VFLAG_MODCACHE;
-
-				pjob->ji_qs.ji_substate = JOB_SUBSTATE_HELD;
-				pjob->ji_modified = 1;
-				svr_evaljobstate(pjob, &newstate, &newsubst, 0);
-				(void)svr_setjobstate(pjob, newstate, newsubst);
-
-				msg = (pruu->ru_comment ? pruu->ru_comment:"");
-				mailmsg = (char *)malloc( strlen(msg) + 1 + \
-                                       strlen(msg_bad_password) + 1 );
-				if (mailmsg) {
-					sprintf(mailmsg, "%s:%s", msg, msg_bad_password);
-
-					svr_mailowner(pjob, MAIL_BEGIN, MAIL_FORCE,
-						mailmsg);
-					job_attr_def[(int)JOB_ATR_Comment].at_decode(&pjob->ji_wattr[(int)JOB_ATR_Comment], (char *)0, (char *)0, mailmsg);
-
-					log_event(PBSEVENT_ERROR|PBSEVENT_JOB,
-						PBS_EVENTCLASS_JOB, LOG_INFO,
-						pjob->ji_qs.ji_jobid, mailmsg);
-					(void)free(mailmsg);
-				} else {
-					svr_mailowner(pjob, MAIL_BEGIN, MAIL_FORCE,
-						msg_bad_password);
-					job_attr_def[(int)JOB_ATR_Comment].at_decode(&pjob->ji_wattr[(int)JOB_ATR_Comment], (char *)0, (char *)0, msg_bad_password);
-				}
-
-			case JOB_EXEC_RETRY:
-			case JOB_EXEC_FAILHOOK_RERUN:
-			case JOB_EXEC_HOOK_RERUN:
-				if (exitstatus == JOB_EXEC_FAILHOOK_RERUN) {
+			switch (exitstatus) {
+				case JOB_EXEC_FAILHOOK_DELETE:
+					/* this is a reject */
 					log_event(PBSEVENT_ERROR|PBSEVENT_JOB,
 						PBS_EVENTCLASS_JOB, LOG_INFO,
 						pjob->ji_qs.ji_jobid,
-						msg_hook_reject_rerunjob);
+						msg_hook_reject_deletejob);
 					DBPRT(("%s: MOM rejected job %s due to a hook.\n",
 						id, pruu->ru_pjobid))
-				}
-RetryJob:
-				/* MOM rejected job, but said retry it */
+					svr_mailowner(pjob, MAIL_ABORT, MAIL_FORCE,
+						msg_hook_reject_deletejob);
+					alreadymailed = 1;
+					break;
 
-				DBPRT(("%s: MOM rejected job %s but will retry.\n",
-					id, pruu->ru_pjobid))
-				if (pjob->ji_qs.ji_svrflags & JOB_SVFLG_HASRUN) {
-					/* has run before, treat this as another rerun */
+				case JOB_EXEC_HOOK_DELETE:
+					/* more likely an accept with a hook delete option */
+					log_event(PBSEVENT_ADMIN|PBSEVENT_JOB, PBS_EVENTCLASS_JOB,
+						LOG_INFO, pjob->ji_qs.ji_jobid,
+						"a hook requested for job to be deleted");
+					DBPRT(("%s: a hook requested for job %s to be deleted.\n",
+						id, pruu->ru_pjobid))
+					svr_mailowner(pjob, MAIL_ABORT, MAIL_FORCE,
+						"a hook requested for job to be deleted");
+					alreadymailed = 1;
+					break;
+
+				case JOB_EXEC_FAIL1:
+				default:
+
+					/* MOM rejected job with fatal error, abort job */
+
+					DBPRT(("%s: MOM rejected job %s with fatal error.\n",
+						id, pruu->ru_pjobid))
+					svr_mailowner(pjob, MAIL_ABORT, MAIL_FORCE, msg_momnoexec1);
+					alreadymailed = 1;
+					break;
+
+				case JOB_EXEC_FAIL2:
+
+					/* MOM reject job after files setup, abort job */
+
+					DBPRT(("%s: MOM rejected job %s after setup.\n",
+						id, pruu->ru_pjobid))
+					svr_mailowner(pjob, MAIL_ABORT, MAIL_FORCE, msg_momnoexec2);
+					alreadymailed = 1;
+					break;
+
+				case JOB_EXEC_INITABT:
+
+					/* MOM aborted job on her initialization */
+
+					DBPRT(("%s: MOM aborted job %s on init, no requeue.\n",
+						id, pruu->ru_pjobid))
 					alreadymailed = setrerun(pjob);
-				} else {
-					/* have mom remove job files, not saving them,	*/
-					/* and requeue job				*/
-					pjob->ji_qs.ji_substate = JOB_SUBSTATE_RERUN2;
-				}
-				if (pjob->ji_wattr[(int)JOB_ATR_runcount].at_val.at_long >
+					pjob->ji_qs.ji_svrflags |= JOB_SVFLG_HASRUN;
+					break;
+
+				case JOB_EXEC_FAILUID:
+
+					/* MOM abort job because uid or gid was invalid */
+
+					DBPRT(("%s: MOM rejected job %s with invaild uid/gid.\n",
+						id, pruu->ru_pjobid))
+					svr_mailowner(pjob, MAIL_ABORT, MAIL_FORCE, msg_baduser);
+					alreadymailed = 1;
+					/* go to the retry case */
+					goto RetryJob;
+
+				case JOB_EXEC_FAIL_PASSWORD:
+
+					/* put job on password hold */
+					pjob->ji_wattr[(int)JOB_ATR_hold].at_val.at_long |= HOLD_bad_password;
+					pjob->ji_wattr[(int)JOB_ATR_hold].at_flags |= ATR_VFLAG_SET | ATR_VFLAG_MODCACHE;
+
+					pjob->ji_qs.ji_substate = JOB_SUBSTATE_HELD;
+					pjob->ji_modified = 1;
+					svr_evaljobstate(pjob, &newstate, &newsubst, 0);
+					(void)svr_setjobstate(pjob, newstate, newsubst);
+
+					msg = (pruu->ru_comment ? pruu->ru_comment:"");
+					mailmsg = (char *)malloc( strlen(msg) + 1 + \
+                                        strlen(msg_bad_password) + 1 );
+					if (mailmsg) {
+						sprintf(mailmsg, "%s:%s", msg, msg_bad_password);
+
+						svr_mailowner(pjob, MAIL_BEGIN, MAIL_FORCE,
+							mailmsg);
+						job_attr_def[(int)JOB_ATR_Comment].at_decode(&pjob->ji_wattr[(int)JOB_ATR_Comment], (char *)0, (char *)0, mailmsg);
+
+						log_event(PBSEVENT_ERROR|PBSEVENT_JOB,
+							PBS_EVENTCLASS_JOB, LOG_INFO,
+							pjob->ji_qs.ji_jobid, mailmsg);
+						(void)free(mailmsg);
+					} else {
+						svr_mailowner(pjob, MAIL_BEGIN, MAIL_FORCE,
+							msg_bad_password);
+						job_attr_def[(int)JOB_ATR_Comment].at_decode(&pjob->ji_wattr[(int)JOB_ATR_Comment], (char *)0, (char *)0, msg_bad_password);
+					}
+
+				case JOB_EXEC_RETRY:
+				case JOB_EXEC_FAILHOOK_RERUN:
+				case JOB_EXEC_HOOK_RERUN:
+					if (exitstatus == JOB_EXEC_FAILHOOK_RERUN) {
+						log_event(PBSEVENT_ERROR|PBSEVENT_JOB,
+							PBS_EVENTCLASS_JOB, LOG_INFO,
+							pjob->ji_qs.ji_jobid,
+							msg_hook_reject_rerunjob);
+						DBPRT(("%s: MOM rejected job %s due to a hook.\n",
+							id, pruu->ru_pjobid))
+					}
+RetryJob:
+					/* MOM rejected job, but said retry it */
+
+					DBPRT(("%s: MOM rejected job %s but will retry.\n",
+						id, pruu->ru_pjobid))
+					if (pjob->ji_qs.ji_svrflags & JOB_SVFLG_HASRUN) {
+						/* has run before, treat this as another rerun */
+						alreadymailed = setrerun(pjob);
+					} else {
+						/* have mom remove job files, not saving them,	*/
+						/* and requeue job				*/
+						pjob->ji_qs.ji_substate = JOB_SUBSTATE_RERUN2;
+					}
+					if (pjob->ji_wattr[(int)JOB_ATR_runcount].at_val.at_long >
 #ifdef NAS /* localmod 083 */
 					PBS_MAX_HOPCOUNT
 #else
@@ -1915,44 +1917,44 @@ RetryJob:
 #endif /* localmod 083 */
 				) {
 					pjob->ji_wattr[(int)JOB_ATR_hold].at_val.at_long |= HOLD_s;
-					pjob->ji_wattr[(int)JOB_ATR_hold].at_flags |=
-						ATR_VFLAG_SET | ATR_VFLAG_MODCACHE;
+						pjob->ji_wattr[(int)JOB_ATR_hold].at_flags |=
+							ATR_VFLAG_SET | ATR_VFLAG_MODCACHE;
 					job_attr_def[(int)JOB_ATR_Comment].at_decode(
 						&pjob->ji_wattr[(int)JOB_ATR_Comment],
-						(char *)0, (char *)0,
-						"job held, too many failed attempts to run");
-				}
-				break;
+							(char *)0, (char *)0,
+							"job held, too many failed attempts to run");
+					}
+					break;
 
-			case JOB_EXEC_BADRESRT:
+				case JOB_EXEC_BADRESRT:
 
-				/* MOM could not restart job, setup for rerun */
+					/* MOM could not restart job, setup for rerun */
 
-				DBPRT(("%s: MOM could not restart job %s, will rerun.\n",
-					id, pruu->ru_pjobid))
-				alreadymailed = setrerun(pjob);
-				pjob->ji_qs.ji_svrflags &= ~JOB_SVFLG_CHKPT;
-				break;
+					DBPRT(("%s: MOM could not restart job %s, will rerun.\n",
+						id, pruu->ru_pjobid))
+					alreadymailed = setrerun(pjob);
+					pjob->ji_qs.ji_svrflags &= ~JOB_SVFLG_CHKPT;
+					break;
 
-			case JOB_EXEC_INITRST:
-				/* Mom aborted job on Mom being restarted, job has been  */
-				/* checkpointed and can be "restarted" rather than rerun */
-			case JOB_EXEC_QUERST:
-				/* Epilogue requested requeue of a checkpointed job    */
-				/* it can be restarted later from restart file         */
+				case JOB_EXEC_INITRST:
+					/* Mom aborted job on Mom being restarted, job has been  */
+					/* checkpointed and can be "restarted" rather than rerun */
+				case JOB_EXEC_QUERST:
+					/* Epilogue requested requeue of a checkpointed job    */
+					/* it can be restarted later from restart file         */
 
-				/* In both cases, job has checkpoint/restart file,     */
-				/* requeue job and leave all information on execution  */
-				/* host for a later restart                            */
+					/* In both cases, job has checkpoint/restart file,     */
+					/* requeue job and leave all information on execution  */
+					/* host for a later restart                            */
 
-				DBPRT(("%s: MOM request requeue of job for restart.\n",
-					id, pruu->ru_pjobid))
-				if (pjob->ji_qs.ji_svrflags & JOB_SVFLG_SubJob)
-					goto RetryJob;
+					DBPRT(("%s: MOM request requeue of job for restart.\n",
+						id, pruu->ru_pjobid))
+					if (pjob->ji_qs.ji_svrflags & JOB_SVFLG_SubJob)
+						goto RetryJob;
 
-				rel_resc(pjob);
-				ack_obit(stream, pjob->ji_qs.ji_jobid);
-				pjob->ji_qs.ji_svrflags |= JOB_SVFLG_HASRUN|JOB_SVFLG_CHKPT;
+					rel_resc(pjob);
+					ack_obit(stream, pjob->ji_qs.ji_jobid);
+					pjob->ji_qs.ji_svrflags |= JOB_SVFLG_HASRUN|JOB_SVFLG_CHKPT;
 
 					svr_evaljobstate(pjob, &newstate, &newsubst, 1);
 					(void)svr_setjobstate(pjob, newstate, newsubst);
@@ -1962,24 +1964,24 @@ RetryJob:
 					pjob->ji_momhandle = -1;
 					pjob->ji_mom_prot = PROT_INVALID;
 
-				FREE_RUU(pruu)
-				return;
+					FREE_RUU(pruu)
+					return;
 
-			case JOB_EXEC_INITRMG:
+				case JOB_EXEC_INITRMG:
 
-				/* MOM abort job on init, job has migratable checkpoint */
-				/* Must recover output and checkpoint file, do eoj	    */
+					/* MOM abort job on init, job has migratable checkpoint */
+					/* Must recover output and checkpoint file, do eoj	    */
 
-				DBPRT(("%s: MOM aborted migratable job %s on init,"
-					" will requeue.\n", id, pruu->ru_pjobid))
+					DBPRT(("%s: MOM aborted migratable job %s on init,"
+						" will requeue.\n", id, pruu->ru_pjobid))
 
-				if (pjob->ji_qs.ji_svrflags & JOB_SVFLG_SubJob)
-					goto RetryJob;
+					if (pjob->ji_qs.ji_svrflags & JOB_SVFLG_SubJob)
+						goto RetryJob;
 
-				alreadymailed = setrerun(pjob);
-				pjob->ji_qs.ji_svrflags |= JOB_SVFLG_HASRUN |
-					JOB_SVFLG_ChkptMig;
-				break;
+					alreadymailed = setrerun(pjob);
+					pjob->ji_qs.ji_svrflags |= JOB_SVFLG_HASRUN |
+						JOB_SVFLG_ChkptMig;
+					break;
 
 				case JOB_EXEC_RERUN:
 				case JOB_EXEC_RERUN_SIS_FAIL:
@@ -2005,7 +2007,7 @@ RetryJob:
 					svr_setjobstate(pjob, JOB_STATE_HELD, JOB_SUBSTATE_HELD);
 					FREE_RUU(pruu)
 					return;
-		}
+			}
 	}
 
 	/* can now free the resc_used_update structure */
