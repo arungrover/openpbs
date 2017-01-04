@@ -422,7 +422,7 @@ main(int argc, char *argv[])
 
 	(void)snprintf(path_log, MAXPATHLEN, "%s/%s", pbs_conf.pbs_home_path, PBS_LOGFILES);
 	ret_val = log_open_main(log_file, path_log, 0); /* NO silent open */
-	fprintf (stdout, " path_log is %d, ret val of log_open_main is %d\n", path_log, ret_val);
+	fprintf (stdout, " path_log is %s, ret val of log_open_main is %d\n", path_log, ret_val);
 	fflush(stdout);
 
 	for (i = 0; i < (svr_resc_size - 1); ++i)
