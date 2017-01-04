@@ -391,6 +391,7 @@ main(int argc, char *argv[])
 	int		rc;
 	hook	*phook;
 	char	output_path[MAXPATHLEN + 1];
+	int	ret_val;
 
 	/* python externs */
 	extern void pbs_python_svr_initialize_interpreter_data(
@@ -420,7 +421,8 @@ main(int argc, char *argv[])
 	/* initialize the pointers in the resource_def array */
 
 	(void)snprintf(path_log, MAXPATHLEN, "%s/%s", pbs_conf.pbs_home_path, PBS_LOGFILES);
-	(void)log_open_main(log_file, path_log, 1); /* silent open */
+	ret_val = log_open_main(log_file, path_log, 0); /* NO silent open */
+	fprintf (stdout, " path_log is %d, ret val of log_open_main is %d\n", path_log, ret_val);
 
 	for (i = 0; i < (svr_resc_size - 1); ++i)
 		svr_resc_def[i].rs_next = &svr_resc_def[i+1];
