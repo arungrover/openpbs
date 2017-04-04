@@ -1029,6 +1029,7 @@ struct config
 
 	/* selection criteria of nodes for provisioning */
 	enum provision_policy_types provision_policy;
+	char *nfilter;			/* node filter */
 };
 
 

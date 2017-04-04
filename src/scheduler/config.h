@@ -141,6 +141,7 @@
 #define PARSE_STRICT_ORDERING "strict_ordering"
 #define PARSE_RES_UNSET_INFINITE "resource_unset_infinite"
 #define PARSE_SELECT_PROVISION "provision_policy"
+#define PARSE_NODE_FILTER "nfilter"
 
 #ifdef NAS
 /* localmod 034 */

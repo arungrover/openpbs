@@ -491,6 +491,32 @@ static struct fc_translation_table fctt[] = {
 #define	ERR2COMMENT(code)	(fctt[(code) - RET_BASE].fc_comment)
 #define	ERR2INFO(code)		(fctt[(code) - RET_BASE].fc_info)
 
+char * nfilter_str="\n\
+result=\"\"\n\
+def filter_nodes():\n\
+    global result\n\
+    for n in nlist:\n\
+        if %s:\n\
+            result+=n['name']\n\
+            result+=','\n\
+    result=result[:-1]\n\
+    return result\n\
+filter_nodes()\n\
+print result\n";
+
+#if 0
+
+char *nfilter_str="\n\
+result=\"\"\n\
+def generic_filter(left, op):\n\
+    for n in left:\n\
+        if op(n,result):\n\
+            result += n['name']\n\
+            result+=','\n\
+    result=result[:-1]\n\
+    return result\n\
+generic_filter(nlist, (lambda n, result: %s))\n";
+#endif
 /**
  * @brief
  * 		create an array of jobs in a specified queue
@@ -3633,6 +3659,201 @@ queue_subjob(resource_resv *array, server_info *sinfo,
 
 	return rresv;
 }
+
+#ifdef PYTHON
+char *
+filter_nodes(char *condition, node_info **nodes_input)
+{
+#if 0
+	static PyObject *nlist = NULL;
+	static node_info** nodes = NULL;
+	PyCodeObject *filter_code;
+	PyObject *ndict;
+	PyObject *attr_dict;
+	PyObject *key;
+	PyObject *value;
+	PyObject *num_nodes;
+	char *result;
+	PyObject *Py_filter;
+	char * filter = NULL;
+	int i, j;
+
+	if (condition == NULL)
+		return NULL;
+	filter = (char *)malloc(strlen(condition) + strlen("lambda n, result: ") +2);
+	//filter = (char *)malloc(strlen(condition) + strlen(nfilter_str) +2);
+	if (filter == NULL)
+		return NULL;
+	sprintf (filter,"lambda n, result: %s",condition);
+	//sprintf (filter,nfilter_str,condition);
+
+	if (nodes_input != NULL) {
+		free(nlist);
+		nlist = PyList_New(0);
+		nodes = nodes_input;
+
+		for (j = 0; nodes[j] != NULL; j++) {
+			schd_resource *res = NULL;
+			node_info *this_node = nodes[j];
+			ndict = PyDict_New();
+			key = PyString_FromString("name");
+			value = PyString_FromString(this_node->name);
+			PyDict_SetItem(ndict,key,value);
+			attr_dict = PyDict_New();
+			for (res = this_node->res; res != NULL; res = res->next){
+				key = PyString_FromString(res->name);
+				if ((res->def->type.is_num || res->def->type.is_long || res->def->type.is_float)
+					&& res->avail != SCHD_INFINITY)
+					value = PyString_FromString(res->orig_str_avail);
+				else if (res->def->type.is_string && res->str_avail != NULL)
+					value = PyString_FromString(res->str_avail[0]);
+				PyDict_SetItem(attr_dict,key,value);
+			}
+			key = PyString_FromString("resources_available");
+			PyDict_SetItem(ndict,key,attr_dict);
+			PyList_Append(nlist,ndict);
+		}
+	}
+	num_nodes = PyLong_FromLong(j);
+	Py_filter = PyString_FromString(filter);
+	result = generic_filter(nlist, Py_filter, num_nodes);
+	log_err(-1,__func__,result);
+	return result;
+
+#endif
+	static char id[] = "filter_nodes";
+	static node_info** nodes = NULL;
+	char buf[10240] = {'\0'};
+	static char *globals = NULL;
+	char *script = NULL;
+	int script_size = 1024*10;  /* initial size... will grow if needed */
+	int globals_size = 1024*10;  /* initial size... will grow if needed */
+	char errbuf[MAX_LOG_SIZE];
+	resource_req *req;
+	sch_resource_t ans = 0;
+	char *str;
+	int i,j;
+	char *filter;
+	char *result = NULL;
+	int filter_buf_len;
+
+	PyObject *module;
+	PyObject *dict;
+	static PyObject *list;
+	PyObject *obj;
+	PyObject *key;
+	PyObject *value;
+	PyCodeObject *code;
+
+	if (condition == NULL)
+		return 0;
+
+	filter_buf_len = 2*(strlen(nfilter_str) + strlen(condition)) + 1;
+
+	if (nodes_input) {
+		nodes = nodes_input;
+		free(globals);
+		globals = NULL;
+		globals_size = 1024*10;
+	}
+
+	filter = malloc(filter_buf_len);
+	if (filter == NULL) {
+		log_err(errno, __func__, MEM_ERR_MSG);
+		return NULL;
+	}
+	if (globals == NULL) {
+		if ((globals = malloc(globals_size * sizeof(char))) == NULL  ) {
+			log_err(errno, __func__, MEM_ERR_MSG);
+			free(filter);
+			return NULL;
+		}
+
+		globals[0] = '\0';
+		if (pbs_strcat(&globals, &globals_size, "nlist = [") == NULL) {
+	//	if (pbs_strcat(&globals, &globals_size, "[") == NULL) {
+			free(globals);
+			free(filter);
+			globals = NULL;
+			return NULL;
+		}
+
+		for (j = 0; nodes[j] != NULL; j++) {
+			node_info *this_node = nodes[j];
+			int res_added = 0;
+			int comma_added = 0;
+			schd_resource *res = NULL;
+			sprintf(buf, "{'name':'%s',",this_node->name);
+			strcat(buf,"'resources_available':{");
+			pbs_strcat(&globals, &globals_size,buf);
+			buf[0] = '\0';
+			for (res = this_node->res; res != NULL; res = res->next){
+				if ((res->def->type.is_num || res->def->type.is_long || res->def->type.is_float)
+					&& res->avail != SCHD_INFINITY) {
+					sprintf(buf, "'%s':'%s'", res->name,res->orig_str_avail);
+					pbs_strcat(&globals, &globals_size, buf);
+					comma_added = 0;
+					res_added = 1;
+				}
+				else if (res->def->type.is_string && res->str_avail != NULL) {
+					sprintf(buf, "'%s':'%s'", res->name,res->str_avail[0]);
+					pbs_strcat(&globals, &globals_size, buf);
+					comma_added = 0;
+					res_added = 1;
+				}
+				if (res_added) {
+					pbs_strcat(&globals, &globals_size, ",");
+					res_added = 0;
+					comma_added = 1;
+				}
+
+			}
+			if (comma_added) {
+				globals[strlen(globals)-1] = '\0';
+				comma_added = 0;
+			}
+			pbs_strcat(&globals, &globals_size, "}},");
+		}
+		globals[strlen(globals)-1] = '\0';
+		pbs_strcat(&globals, &globals_size, "]");
+	}
+//	log_err(-1,__func__,globals);
+	script_size = globals_size;
+	script = malloc(script_size + filter_buf_len + 1);
+	if (script == NULL) {
+		free(filter);
+		free(globals);
+		globals = NULL;
+		return NULL;
+	}
+	script[0] = '\0';
+	pbs_strcat(&script, &script_size, globals);
+	pbs_strcat(&script, &script_size, "\n");
+	sprintf(filter,nfilter_str,condition);
+	//PyRun_SimpleString(globals);
+	pbs_strcat(&script, &script_size, filter);
+	code = (PyCodeObject*) Py_CompileString(script,"node_filter",Py_file_input);
+
+
+
+	//log_err(-1,__func__,script);
+	module = PyImport_AddModule("__main__");
+	dict = PyModule_GetDict(module);
+	obj = PyEval_EvalCode(code, dict, dict);
+	obj = PyMapping_GetItemString(dict, "result");
+	if (obj != NULL) {
+		//result = PyString_AsString(PyObject_Str(obj));
+		result = PyString_AsString(obj);
+		//log_err(-1,__func__,result);
+		free(filter);
+		free(script);
+		return (result);
+	}
+	free(filter);
+	free(script);
+	return NULL;
+}
+#endif
 
 /**
  * @brief

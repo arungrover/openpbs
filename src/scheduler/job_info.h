@@ -354,6 +354,8 @@ int is_finished_job(int error);
  */
 int preemption_similarity(resource_resv *hjob, resource_resv *pjob, schd_error *full_err);
 
+char *
+filter_nodes(char *formula, node_info **nodes_input);
 
 #ifdef	__cplusplus
 }

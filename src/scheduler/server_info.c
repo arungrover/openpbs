@@ -180,6 +180,7 @@ query_server(status *pol, int pbs_sd)
 	char *errmsg;
 	resource_resv **jobs_not_in_reservations;
 	status *policy;
+	node_info **nodes = NULL;
 
 	if (pol == NULL)
 		return NULL;
@@ -346,6 +347,16 @@ query_server(status *pol, int pbs_sd)
 		free_server(sinfo, 1);
 		return NULL;
 	}
+
+	nodes = sinfo->nodes;
+	log_err(-1,__func__,"Filter nodes started");
+	for (i = 0; sinfo->jobs[i] != NULL; i++) {
+		if (!sinfo->jobs[i]->job->is_running && sinfo->jobs[i]->node_set_str == NULL) {
+			sinfo->jobs[i]->node_set_str = break_comma_list(filter_nodes(conf.nfilter, nodes));
+			nodes = NULL;
+		}
+	}
+	log_err(-1,__func__,"Filter nodes ended");
 
 	jobs_not_in_reservations = resource_resv_filter(sinfo->jobs,
 		sinfo->sc.total,

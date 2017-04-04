@@ -351,6 +351,8 @@ parse_config(char *fname)
 				}
 				else if (!strcmp(config_name, PARSE_FAIRSHARE_RES))
 					conf.fairshare_res = string_dup(config_value);
+				else if (!strcmp(config_name, PARSE_NODE_FILTER))
+					conf.nfilter = string_dup(config_value);
 				else if (!strcmp(config_name, PARSE_FAIRSHARE_ENT)) {
 					if (strcmp(config_value, ATTR_euser) &&
 						strcmp(config_value, ATTR_egroup) &&
@@ -1086,6 +1088,8 @@ init_config()
 	/* set parts of cstat which don't change per cycle */
 	cstat.sync_fairshare_files = 1;
 	cstat.backfill_depth = 1;
+	
+	conf.nfilter = NULL;
 
 	return 1;
 }
