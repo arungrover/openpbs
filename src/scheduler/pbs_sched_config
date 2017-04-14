@@ -604,4 +604,4 @@ dedicated_prefix: ded
 #	NO PRIME OPTION
 
 log_filter: 3328
-nfilter: "int(n['resources_available']['ncpus'])>int(2)"
+nfilter: "int(n[resources_available][ncpus])>int(2)"

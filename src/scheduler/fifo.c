@@ -198,6 +198,8 @@ schedinit(void)
 #ifdef PYTHON
 	Py_NoSiteFlag = 1;
 	Py_FrozenFlag = 1;
+//	Py_IgnoreEnvironmentFlag = 1;
+//	Py_OptimizeFlag = 2;
 	Py_Initialize();
 
 	path = PySys_GetObject("path");

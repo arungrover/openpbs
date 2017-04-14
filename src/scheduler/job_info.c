@@ -490,19 +490,52 @@ static struct fc_translation_table fctt[] = {
 
 #define	ERR2COMMENT(code)	(fctt[(code) - RET_BASE].fc_comment)
 #define	ERR2INFO(code)		(fctt[(code) - RET_BASE].fc_info)
-
+#if 0
 char * nfilter_str="\n\
 result=\"\"\n\
 def filter_nodes():\n\
     global result\n\
+    name=0\n\
+    resources_available=1\n\
+    arch=0\n\
+    host=1\n\
+    mem=2\n\
+    ncpus=3\n\
+    vmem=4\n\
+    vnode=5\n\
     for n in nlist:\n\
         if %s:\n\
-            result+=n['name']\n\
+            result+=n[name]\n\
             result+=','\n\
     result=result[:-1]\n\
     return result\n\
 filter_nodes()\n\
 print result\n";
+#endif
+
+char *nfilter_str="\n\
+result=\"\"\n\
+name=0\n\
+resources_available=1\n\
+arch=0\n\
+host=1\n\
+mem=2\n\
+ncpus=3\n\
+vmem=4\n\
+vnode=5\n\
+for n in nlist:\n\
+    if %s:\n\
+        result+=n[name] + ','\n\
+        #result+=','\n\
+result=result[:-1]\n";
+
+typedef enum res_position {
+    RPOS_ARCH=0,
+    RPOS_HOST,
+    RPOS_MEM,
+    RPOS_NCPUS,
+    RPOS_VMEM,
+    RPOS_VNODE} res_position;
 
 #if 0
 
@@ -3783,20 +3816,22 @@ filter_nodes(char *condition, node_info **nodes_input)
 			int res_added = 0;
 			int comma_added = 0;
 			schd_resource *res = NULL;
-			sprintf(buf, "{'name':'%s',",this_node->name);
-			strcat(buf,"'resources_available':{");
+			sprintf(buf, "['%s',[",this_node->name);
+			//sprintf(buf, "{'name':'%s',",this_node->name);
+			//strcat(buf,"'resources_available':{");
 			pbs_strcat(&globals, &globals_size,buf);
 			buf[0] = '\0';
 			for (res = this_node->res; res != NULL; res = res->next){
 				if ((res->def->type.is_num || res->def->type.is_long || res->def->type.is_float)
 					&& res->avail != SCHD_INFINITY) {
-					sprintf(buf, "'%s':'%s'", res->name,res->orig_str_avail);
+					//sprintf(buf, "'%s':'%s'", res->name,res->orig_str_avail);
+					sprintf(buf, "'%s'", res->orig_str_avail);
 					pbs_strcat(&globals, &globals_size, buf);
 					comma_added = 0;
 					res_added = 1;
 				}
 				else if (res->def->type.is_string && res->str_avail != NULL) {
-					sprintf(buf, "'%s':'%s'", res->name,res->str_avail[0]);
+					sprintf(buf, "'%s'", res->str_avail[0]);
 					pbs_strcat(&globals, &globals_size, buf);
 					comma_added = 0;
 					res_added = 1;
@@ -3812,12 +3847,13 @@ filter_nodes(char *condition, node_info **nodes_input)
 				globals[strlen(globals)-1] = '\0';
 				comma_added = 0;
 			}
-			pbs_strcat(&globals, &globals_size, "}},");
+			pbs_strcat(&globals, &globals_size, "]],");
 		}
 		globals[strlen(globals)-1] = '\0';
 		pbs_strcat(&globals, &globals_size, "]");
+		PyRun_SimpleString(globals);
 	}
-//	log_err(-1,__func__,globals);
+	//log_err(-1,__func__,globals);
 	script_size = globals_size;
 	script = malloc(script_size + filter_buf_len + 1);
 	if (script == NULL) {
@@ -3827,24 +3863,24 @@ filter_nodes(char *condition, node_info **nodes_input)
 		return NULL;
 	}
 	script[0] = '\0';
-	pbs_strcat(&script, &script_size, globals);
-	pbs_strcat(&script, &script_size, "\n");
+	//pbs_strcat(&script, &script_size, globals);
+	//pbs_strcat(&script, &script_size, "\n");
 	sprintf(filter,nfilter_str,condition);
-	//PyRun_SimpleString(globals);
-	pbs_strcat(&script, &script_size, filter);
-	code = (PyCodeObject*) Py_CompileString(script,"node_filter",Py_file_input);
+	PyRun_SimpleString(filter);
+	//pbs_strcat(&script, &script_size, filter);
+	//code = (PyCodeObject*) Py_CompileString(script,"node_filter",Py_file_input);
 
 
 
 	//log_err(-1,__func__,script);
 	module = PyImport_AddModule("__main__");
 	dict = PyModule_GetDict(module);
-	obj = PyEval_EvalCode(code, dict, dict);
+	//obj = PyEval_EvalCode(code, dict, dict);
 	obj = PyMapping_GetItemString(dict, "result");
 	if (obj != NULL) {
 		//result = PyString_AsString(PyObject_Str(obj));
 		result = PyString_AsString(obj);
-		//log_err(-1,__func__,result);
+		log_err(-1,__func__,result);
 		free(filter);
 		free(script);
 		return (result);

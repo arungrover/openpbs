@@ -651,7 +651,9 @@ void
 log_err(int errnum, const char *routine, const char *text)
 {
 	char buf[LOG_BUF_SIZE], *errmsg;
+	char *_msg = NULL;
 	int  i;
+	int len;
 
 	if (errnum == -1) {
 
@@ -685,11 +687,25 @@ log_err(int errnum, const char *routine, const char *text)
 				errmsg = "";
 		(void)snprintf(buf, LOG_BUF_SIZE, "%s (%d) in ", errmsg, errnum);
 	}
+	len = strlen(text);
 	(void)strcat(buf, routine);
 	(void)strcat(buf, ", ");
-	i = LOG_BUF_SIZE - (int)strlen(buf) - 2;
-	(void)strncat(buf, text, i);
-	buf[LOG_BUF_SIZE -1] = '\0';
+	if (len < LOG_BUF_SIZE) {
+		i = LOG_BUF_SIZE - (int)strlen(buf) - 2;
+		(void)strncat(buf, text, i);
+		buf[LOG_BUF_SIZE -1] = '\0';
+	}
+	else {
+		_msg = malloc(len+strlen(buf) +1);
+		if (_msg != NULL) {
+			strcpy(_msg,buf);
+			strcat(_msg,text);
+			(void)log_record(PBSEVENT_ERROR | PBSEVENT_FORCE, PBS_EVENTCLASS_SERVER,
+				LOG_ERR, msg_daemonname, _msg);
+			free(_msg);
+			return;
+		}
+	}
 
 	if (log_opened == 0) {
 		(void)log_open("/dev/console", log_directory);
