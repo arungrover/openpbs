@@ -48,7 +48,7 @@ class CrayUtils:
         (self.node_status, self.node_summary) = self.parse_apstat()
 
     def parse_apstat(self, options='-rn'):
-        cmd_run = os.popen(self.cray_cmds['apstat'] +" " + options)
+        cmd_run = os.popen('apstat' +" " + options)
         cmd_result = cmd_run.read()
         keys = cmd_result.split('\n')[0].split()
         status = []
@@ -76,4 +76,4 @@ class CrayUtils:
         return (status, summary)
 
     def count_node_in_state(self, state='up'):
-        return self.node_summary[state]
+        return int(self.node_summary[state])
