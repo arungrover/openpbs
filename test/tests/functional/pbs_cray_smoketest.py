@@ -40,10 +40,11 @@ from tests.functional import *
 from ptl.utils.pbs_crayutils import CrayUtils
 
 
-@tags('cray,smoke')
+@tags('cray', 'smoke')
 class TestCraySmokeTest(TestFunctional):
 
     """
+    Set of tests that qualifies as smoketest for Cray platform
     """
 
     def setUp(self):
@@ -51,7 +52,7 @@ class TestCraySmokeTest(TestFunctional):
             self.skipTest("Test suite only meant to run on a Cray")
         TestFunctional.setUp(self)
 
-    @tags('cray,smoke')
+    @tags('cray', 'smoke')
     def test_cray_apstat(self):
         """
         Check output of apstat -rn on Cray.
@@ -59,70 +60,73 @@ class TestCraySmokeTest(TestFunctional):
         held, or down.  Check the that the number of up nodes is the same as
         the number of available nodes.
         """
-	cu = CrayUtils()
-	self.assertTrue(cu.count_node_in_state('resv') is 0,
-		        "No compute node should be having ALPS reservation")
-	self.assertTrue(cu.count_node_in_state('use') is 0,
-		        "No compute node should be in use")
-	nodes_up_apstat = cu.count_node_in_state('up')
-	nodes = self.server.status(NODE, {'resources_available.vntype' : 'cray_compute'})
-	self.assertEqual(nodes_up_apstat, len(nodes))
+        cu = CrayUtils()
+        self.assertTrue(cu.count_node_in_state('resv') is 0,
+                        "No compute node should be having ALPS reservation")
+        self.assertTrue(cu.count_node_in_state('use') is 0,
+                        "No compute node should be in use")
+        nodes_up_apstat = cu.count_node_in_state('up')
+        nodes = self.server.filter(NODE,
+                                   {ATTR_rescavail+'.vntype': 'cray_compute'})
+        self.assertEqual(nodes_up_apstat,
+                         len(nodes[ATTR_rescavail+'.vntype=cray_compute']))
 
-
-
-    @tags('cray,smoke')
+    @tags('cray', 'smoke')
     def test_cray_pbsnodes(self):
         """
         Check pbsnodes -av output on a Cray system.
         pbsnodes output should show that nodes are free and resources are
         available.
         """
-	nodes = self.server.status(NODE)
-	for node in nodes:
-	    self.assertEqual(node['state'], 'free')
-	    self.assertEqual(node['resources_assigned.ncpus'], '0')
-	    self.assertEqual(node['resources_assigned.mem'], '0kb')
+        nodes = self.server.status(NODE)
+        for node in nodes:
+            self.assertEqual(node['state'], 'free')
+            self.assertEqual(node['resources_assigned.ncpus'], '0')
+            self.assertEqual(node['resources_assigned.mem'], '0kb')
 
-    @tags('cray,smoke')
+    @tags('cray', 'smoke')
     def test_cray_login_job(self):
         """
         Submit a simple sleep job that requests to run on a login node
-	and expect that job to go in running state on a login node.
+        and expect that job to go in running state on a login node.
         """
-	j1 = Job(TEST_USER, {ATTR_l+'.vntype' : 'login'})
-	# specifically create a job script because PTL framework
-	# will create a job with aprun on cray but login nodes may not
-	# have this command on them
-	j1.create_script('sleep 10\n')
-	jid1 = self.server.submit(j1)
-	self.server.expect(JOB, {ATTR_state: 'R'}, id=jid1)
-	# fetch node name where the job is running and check that the
-	# node is a login node
+        j1 = Job(TEST_USER, {ATTR_l + '.vntype': 'cray_login'})
+        jid1 = self.server.submit(j1)
+        self.server.expect(JOB, {ATTR_state: 'R'}, id=jid1)
+        # fetch node name where the job is running and check that the
+        # node is a login node
         qstat = self.server.status(JOB, 'exec_vnode', id=jid1)
         vname = qstat[0]['exec_vnode'].partition(':')[0].strip('(')
-        self.server.expect(NODE, {'resources_available.vntype': 'login'},
-		           id=vname)
+        self.server.expect(NODE, {ATTR_rescavail + '.vntype': 'cray_login'},
+                           id=vname)
 
-	cu = CrayUtils()
-	#Check if number of compute nodes in use are 0
-	self.assertEqual(cu.count_node_in_state('use'),0)
+        cu = CrayUtils()
+        # Check if number of compute nodes in use are 0
+        self.assertEqual(cu.count_node_in_state('use'), 0)
 
-    @tags('cray,smoke')
+    @tags('cray', 'smoke')
     def test_cray_compute_job(self):
         """
-	Submit a simple sleep job that runs on a compute node and 
-	expect the job to go in running state on a compute node.
+        Submit a simple sleep job that runs on a compute node and
+        expect the job to go in running state on a compute node.
         """
-	j1 = Job(TEST_USER)
-	jid1 = self.server.submit(j1)
-	self.server.expect(JOB, {ATTR_state: 'R'}, id=jid1)
-	# fetch node name where the job is running and check that the
-	# node is a compute node
+        j1 = Job(TEST_USER, {ATTR_l + '.vntype': 'cray_compute'})
+        jid1 = self.server.submit(j1)
+        self.server.expect(JOB, {ATTR_state: 'R'}, id=jid1)
+        # fetch node name where the job is running and check that the
+        # node is a compute node
         qstat = self.server.status(JOB, 'exec_vnode', id=jid1)
         vname = qstat[0]['exec_vnode'].partition(':')[0].strip('(')
-        self.server.expect(NODE, {'resources_available.vntype': 'cray_compute'},
-		           id=vname)
+        self.server.expect(NODE, {ATTR_rescavail + '.vntype': 'cray_compute'},
+                           id=vname)
+        # Sleep for some time before aprun actually starts
+        # using the reservation
+        time.sleep(5)
 
-	cu = CrayUtils()
-	#Check if number of compute nodes in use are 1
-	self.assertEqual(cu.count_node_in_state('use'),1)
+        cu = CrayUtils()
+        # Check if number of compute nodes in use are 1
+        self.assertEqual(cu.count_node_in_state('resv'), 1)
+        if self.du.get_platform() == 'cray':
+            # Cray simulator will not show anything in 'use' because
+            # aprun command is just a pass through on simulator
+            self.assertEqual(cu.count_node_in_state('use'), 1)

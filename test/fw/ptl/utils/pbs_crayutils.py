@@ -35,7 +35,11 @@
 # Use of Altair’s trademarks, including but not limited to "PBS™",
 # "PBS Professional®", and "PBS Pro™" and Altair’s logos is subject to Altair's
 # trademark licensing policies.
+import socket
 import os
+
+from ptl.utils.pbs_dshutils import DshUtils
+
 
 class CrayUtils:
 
@@ -44,26 +48,50 @@ class CrayUtils:
     """
     node_status = []
     node_summary = {}
+    du = ""
+
     def __init__(self):
+        self.du = DshUtils()
         (self.node_status, self.node_summary) = self.parse_apstat()
 
     def parse_apstat(self, options='-rn'):
-        cmd_run = os.popen('apstat' +" " + options)
-        cmd_result = cmd_run.read()
-        keys = cmd_result.split('\n')[0].split()
+        """
+        Run apstat command on cray/craysim and parse its output
+
+        :param options: options to pass to apstat command
+        :type options: str
+        :returns: tuple of (node status, node summary)
+        """
         status = []
         summary = {}
         count = 0
-        cmd_iter = iter(cmd_result.split('\n'))
+        hostname = socket.gethostname()
+        platform = self.du.get_platform(hostname)
+        apstat_env = os.environ
+        apstat_cmd = "apstat"
+        if 'cray' not in platform:
+            return (status, summary)
+        if 'craysim' in platform:
+            lib_path = '$LD_LIBRARY_PATH:/opt/alps/tester/usr/lib/'
+            apstat_env['LD_LIBRARY_PATH'] = lib_path
+            apstat_env['ALPS_CONFIG_FILE'] = '/opt/alps/tester/alps.conf'
+            apstat_env['apsched_sharedDir'] = '/opt/alps/tester/'
+            apstat_cmd = "/opt/alps/tester/usr/bin/apstat -d ."
+        cmd_run = self.du.run_cmd(hostname, [apstat_cmd, options],
+                                  as_script=True, wait_on_script=True,
+                                  env=apstat_env)
+        cmd_result = cmd_run['out']
+        keys = cmd_result[0].split()
+        cmd_iter = iter(cmd_result)
         for line in cmd_iter:
             if count == 0:
                 count += 1
                 continue
             if "Compute node summary" in line:
-	        summary_line = next(cmd_iter)
+                summary_line = next(cmd_iter)
                 summary_keys = summary_line.split()
                 summary_data = next(cmd_iter).split()
-                sum_index=0
+                sum_index = 0
                 for a in summary_keys:
                     summary[a] = summary_data[sum_index]
                     sum_index += 1
@@ -76,4 +104,11 @@ class CrayUtils:
         return (status, summary)
 
     def count_node_in_state(self, state='up'):
+        """
+        Count the number of nodes in a specific state on cray/craysim
+
+        :param state: state of the node which is being queried
+        :type state: str
+        :returns: count of number of nodes found in a specific state
+        """
         return int(self.node_summary[state])
