@@ -260,6 +260,7 @@ extern "C" {
 
 #define PBSE_SOFTWT_STF		     15180 /* soft_walltime is incompatible with STF jobs */
 #define PBSE_BAD_NODE_STATE	     15181 /* node is in the wrong state for the operation */
+#define PBSE_NO_MOM_AVAILABLE	     15182 /* No Mom found in desired state */
 
 /*
  ** 	Resource monitor specific

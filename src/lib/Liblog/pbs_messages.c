@@ -415,6 +415,7 @@ char *msg_alps_switch_err = "Switching ALPS reservation failed";
 
 char *msg_softwt_stf = "soft_walltime is not supported with Shrink to Fit jobs";
 char *msg_bad_node_state = "Node is in the wrong state for operation";
+char *msg_no_mom_available = "No Mom found in desired state";
 
 /*
  * The following table connects error numbers with text
@@ -594,6 +595,7 @@ struct pbs_err_to_txt pbs_err_to_txt[] = {
 	{PBSE_BAD_NODE_STATE, &msg_bad_node_state},
 	{PBSE_SCHED_OP_NOT_PERMITTED, &msg_sched_op_not_permitted},
 	{PBSE_SCHED_PARTITION_ALREADY_EXISTS, &msg_sched_part_already_used},
+	{PBSE_NO_MOM_AVAILABLE, &msg_no_mom_available},
 	{ 0, (char **)0 }		/* MUST be the last entry */
 };
 

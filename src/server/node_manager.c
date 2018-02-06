@@ -7103,7 +7103,7 @@ set_nodes(void *pobj, int objtype, char *execvnod_in, char **execvnod_out, char 
 							/* cannot find a Mom that works */
 							free(phowl);
 							free(execvncopy);
-							return (PBSE_SYSTEM);
+							return (PBSE_NO_MOM_AVAILABLE);
 						}
 						/*
 						 * save the "first" allocated Mom for incr
@@ -8084,7 +8084,7 @@ momptr_offline_by_mom(mominfo_t *pmom, char *why)
 		log_event(PBSEVENT_SYSTEM, PBS_EVENTCLASS_NODE,
 			LOG_ALERT, pmom->mi_host, why);
 
-	set_all_state(pmom, 1, INUSE_OFFLINE_BY_MOM, why, Set_All_State_Regardless);
+	set_all_state(pmom, 1, INUSE_OFFLINE_BY_MOM, why, Set_ALL_State_All_Down);
 	return;
 }
 
