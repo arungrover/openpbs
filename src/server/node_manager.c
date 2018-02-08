@@ -511,7 +511,7 @@ set_all_state(mominfo_t *pmom, int do_set, unsigned long bits, char *txt,
 	if (setwhen == Set_ALL_State_All_Down) {
 		inuse_flag = INUSE_DOWN;
 	} else if (setwhen == Set_All_State_All_Offline) {
-		inuse_flag = INUSE_OFFLINE;
+		inuse_flag = INUSE_OFFLINE_BY_MOM;
 	}
 
 	for (nchild = 0; nchild < psvrmom->msr_numvnds; ++nchild) {
