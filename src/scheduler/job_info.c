@@ -120,6 +120,7 @@
 #include "resource.h"
 #include "server_info.h"
 #include "attribute.h"
+#include "pbs_rescspec.h"
 
 #ifdef NAS
 #include "site_code.h"
@@ -3697,6 +3698,8 @@ queue_subjob(resource_resv *array, server_info *sinfo,
 char *
 filter_nodes(char *condition, node_info **nodes_input)
 {
+    /** before RESCSPEC **/
+#if 0
 #if 0
 	static PyObject *nlist = NULL;
 	static node_info** nodes = NULL;
@@ -3888,6 +3891,33 @@ filter_nodes(char *condition, node_info **nodes_input)
 	free(filter);
 	free(script);
 	return NULL;
+#endif /** before RESCSPEC **/
+
+	/** RESCSPEC implementation **/
+	rescspec *rspec = NULL;
+	char logbuf2[2048] = {0};
+	char *result = NULL;
+	int result_size = 0;
+	rspec = parse_rescspec(condition);
+	if (rspec != NULL) {
+		result = calloc(1,4096);
+		result_size = 4096;
+		for (j = 0; nodes_input[j] != NULL; j++) {
+			if (check_rescspec(rspec, nodes_input[j], logbuf) <= 0){
+				if (logbuf[0] != '\0') {
+					sprintf2(logbuf, "Rescspec %d invalid on node %s: %s", i, nodes_input[j]->name, logbuf);
+					schdlog(PBSEVENT_DEBUG2, PBS_EVENTCLASS_JOB, LOG_DEBUG, "Filter-job", logbuf2);
+				}
+			} else {
+				pbs_strcat(&result,&result_size,nodes_input[j]->name);
+				pbs_strcat(&result,&result_size,",");
+			}
+		}
+		if (result[0] != '\0')
+			result(result_size-1) = '\0';
+		free_rescspec(rspec);
+	}
+	return result;
 }
 #endif
 

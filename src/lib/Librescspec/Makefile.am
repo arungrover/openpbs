@@ -35,16 +35,14 @@
 #  trademark licensing policies.
 #
 
-SUBDIRS = \
-	Libattr \
-	Libdb \
-	Liblog \
-	Libnet \
-	Libpbs \
-	Libpython \
-	Libsite \
-	Libsec \
-	Libtpp \
-	Libutil \
-	Librescspec
+noinst_LIBRARIES = librescspec.a
+
+librescspec_a_CPPFLAGS = -I$(top_srcdir)/src/include -I$(top_srcdir)/src/lib/Librescspec
+
+librescspec_a_SOURCES = \
+	lang_parse.c \
+	lang_scan.c \
+	tok.c \
+	parser.c \
+	parse_rescspec.c
 

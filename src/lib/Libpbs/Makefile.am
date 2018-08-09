@@ -253,6 +253,11 @@ libpbs_la_SOURCES = \
 	../Liblog/pbs_messages.c \
 	../Libsec/cs.c \
 	../Libsec/cs_standard.c \
+	../Librescspec/lang_scan.c \
+	../Librescspec/lang_parse.c \
+	../Librescspec/tok.c \
+	../Librescspec/parser.c \
+	../Librescspec/parse_rescspec.c \
 	../Libutil/misc_utils.c \
 	../Libutil/munge_supp.c \
 	../Libutil/pbs_secrets.c \
