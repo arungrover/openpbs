@@ -739,8 +739,26 @@ parse_config(char *fname)
 								tok++;
 
 							if (tok != NULL && tok[0] == '!') {
+								char *p = NULL;
+								char *filename;
 								tok++;
 								tmp2 = string_dup(tok);
+								filename = tmp2;
+								/* skip any command line args (if any) */
+								p = strpbrk(tmp2, " ");
+								if (p != NULL)
+									*p = '\0';
+#ifdef  WIN32
+								if (tmp_file_sec(filename, 0, 1, WRITES_MASK, 1)) {
+#else
+								if (tmp_file_sec(filename, 0, 1, S_IWGRP|S_IWOTH, 1)) {
+#endif
+									snprintf(errbuf, sizeof(errbuf),
+										"error: %s file has a non-secure file access", filename);
+									error = 1;
+								}
+								if (p != NULL)
+									*p = ' ';
 								conf.dynamic_res[res_num].res = tmp1;
 								conf.dynamic_res[res_num].program = tmp2;
 							}

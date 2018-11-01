@@ -700,13 +700,34 @@ query_server_dyn_res(server_info *sinfo)
 	char			  cmd_line[512];
 #endif
 
-	for (i = 0; i < MAX_SERVER_DYN_RES && conf.dynamic_res[i].res != NULL; i ++) {
+	for (i = 0; i < MAX_SERVER_DYN_RES && conf.dynamic_res[i].res != NULL; i++) {
 		res = find_alloc_resource_by_str(sinfo->res, conf.dynamic_res[i].res);
 		if (res != NULL) {
+			char *p = NULL;
+			char *filename = conf.dynamic_res[i].program;
 			if (sinfo->res == NULL)
 				sinfo->res = res;
 
 			pipe_err = errno = 0;
+
+			/* skip any command line args (if any) */
+			p = strpbrk(conf.dynamic_res[i].program, " ");
+			if (p != NULL)
+				*p = '\0';
+			/* Make sure file does not have open permissions */
+#ifdef  WIN32
+			if (tmp_file_sec(filename, 0, 1, WRITES_MASK, 1)) {
+#else
+			if (tmp_file_sec(filename, 0, 1, S_IWGRP|S_IWOTH, 1)) {
+#endif
+				snprintf(buf, sizeof(buf),
+					"error: %s file has a non-secure file access", filename);
+				schdlog(PBSEVENT_DEBUG, PBS_EVENTCLASS_SERVER, LOG_DEBUG, "server_dyn_res", buf);
+				(void) set_resource(res, res_zero, RF_AVAIL);
+			}
+			if (p != NULL)
+				*p = ' ';
+
 #ifdef	WIN32
 			/* In Windows, don't use popen() as this crashes if COMSPEC not set */
 			/* also, let's quote command line so that paths with spaces can be */
