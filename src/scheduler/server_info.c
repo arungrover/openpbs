@@ -704,6 +704,7 @@ query_server_dyn_res(server_info *sinfo)
 		res = find_alloc_resource_by_str(sinfo->res, conf.dynamic_res[i].res);
 		if (res != NULL) {
 			char *p = NULL;
+			int err;
 			char *filename = conf.dynamic_res[i].program;
 			if (sinfo->res == NULL)
 				sinfo->res = res;
@@ -716,12 +717,14 @@ query_server_dyn_res(server_info *sinfo)
 				*p = '\0';
 			/* Make sure file does not have open permissions */
 #ifdef  WIN32
-			if (tmp_file_sec(filename, 0, 1, WRITES_MASK, 1)) {
+			err = tmp_file_sec(filename, 0, 1, WRITES_MASK, 1);
 #else
-			if (tmp_file_sec(filename, 0, 1, S_IWGRP|S_IWOTH, 1)) {
+			err = tmp_file_sec(filename, 0, 1, S_IWGRP|S_IWOTH, 1);
 #endif
+			if (err != 0) {
 				snprintf(buf, sizeof(buf),
-					"error: %s file has a non-secure file access", filename);
+					"error: %s file has a non-secure file access, setting resource %s to 0, errno: %d",
+					filename, res->name, err);
 				schdlog(PBSEVENT_DEBUG, PBS_EVENTCLASS_SERVER, LOG_DEBUG, "server_dyn_res", buf);
 				(void) set_resource(res, res_zero, RF_AVAIL);
 			}

@@ -70,7 +70,7 @@ class TestMomDynRes(TestFunctional):
             self.filenames.append(fp)
         return fp_list
 
-    def check_log(self, fp, exist=True):
+    def check_access_log(self, fp, exist=True):
         match_from = time.time()
         # adding a second delay because log_match can then start from the
         # correct log message and avoid false positives from previous
@@ -365,24 +365,24 @@ class TestMomDynRes(TestFunctional):
 
         # give write permission to group and others
         self.du.chmod(path=fp, mode=0766)
-        self.check_log(fp)
+        self.check_access_log(fp)
 
         # give write permission to group
         self.du.chmod(path=fp, mode=0764)
-        self.check_log(fp)
+        self.check_access_log(fp)
 
         # give write permission to others
         self.du.chmod(path=fp, mode=0746)
-        self.check_log(fp)
+        self.check_access_log(fp)
 
         # give write permission to user only
         self.du.chmod(path=fp, mode=0744)
-        self.check_log(fp, exist=False)
+        self.check_access_log(fp, exist=False)
 
-        # Cleanup
-        os.remove(fp)
+        # Add to filenames for cleanup
+        self.filenames.append(fp)
 
-        # Create a script in tmp directory which has more open privileges
+        # Create a script in home directory which has more open privileges
         # This should make loading of this file fail in all cases
         dir_temp = self.du.mkdtemp(mode=0766, dir=home_dir)
         fp = self.du.create_temp_file(body=scr_body, dirname=dir_temp)
@@ -391,19 +391,19 @@ class TestMomDynRes(TestFunctional):
 
         # give write permission to group and others
         self.du.chmod(path=fp, mode=0766)
-        self.check_log(fp)
+        self.check_access_log(fp)
 
         # give write permission to group
         self.du.chmod(path=fp, mode=0764)
-        self.check_log(fp)
+        self.check_access_log(fp)
 
         # give write permission to others
         self.du.chmod(path=fp, mode=0746)
-        self.check_log(fp)
+        self.check_access_log(fp)
 
         # give write permission to user only
         self.du.chmod(path=fp, mode=0744)
-        self.check_log(fp)
+        self.check_access_log(fp)
 
         # Cleanup
         os.remove(fp)
@@ -418,7 +418,7 @@ class TestMomDynRes(TestFunctional):
         self.mom.add_config({'foo': mom_config_str})
         # give write permission to user only
         self.du.chmod(path=fp, mode=0744)
-        self.check_log(fp, exist=False)
+        self.check_access_log(fp, exist=False)
 
         match_from = time.time()
         time.sleep(1)
@@ -427,13 +427,13 @@ class TestMomDynRes(TestFunctional):
         # submit a job requesting this mom resource
         attr = {"Resource_List.foo": 4}
         j = Job(TEST_USER, attrs=attr)
-        jid = self.server.submit(j)
+        self.server.submit(j)
         self.mom.log_match(fp + ' file has a non-secure file access',
                            starttime=match_from, existence=True,
                            max_attempts=10)
 
-        # Cleanup
-        os.remove(fp)
+        # Add to filenames for cleanup
+        self.filenames.append(fp)
 
     def tearDown(self):
         # removing all files creating in test

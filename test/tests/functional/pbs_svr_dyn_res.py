@@ -48,7 +48,7 @@ class TestServerDynRes(TestFunctional):
         self.server.manager(MGR_CMD_SET, NODE, a,
                             id=self.mom.shortname, expect=True)
 
-    def check_log(self, fp, exist=True):
+    def check_access_log(self, fp, exist=True):
         """
         Helper function to check if scheduler logged a file security
         message.
@@ -155,7 +155,7 @@ class TestServerDynRes(TestFunctional):
         # Create a resource of type long. positive value
         resname = ["foobar"]
         restype = ["long"]
-        resval = ['"' + resname[0] + ' ' + '!/usr/bin/echo 4' + '"']
+        resval = ['"' + resname[0] + ' ' + '!/bin/echo 4' + '"']
 
         # Add server_dyn_res entry in sched_config
         self.setup_dyn_res(resname, restype, resval)
@@ -177,7 +177,7 @@ class TestServerDynRes(TestFunctional):
         # Create a resource of type long. negative value
         resname = ["foobar"]
         restype = ["long"]
-        resval = ['"' + resname[0] + ' ' + '!/usr/bin/echo -1' + '"']
+        resval = ['"' + resname[0] + ' ' + '!/bin/echo -1' + '"']
 
         # Add server_dyn_res entry in sched_config
         self.setup_dyn_res(resname, restype, resval)
@@ -619,30 +619,30 @@ class TestServerDynRes(TestFunctional):
         scr_body = ['echo "10"', 'exit 0']
         home_dir = os.path.expanduser("~")
         fp = self.du.create_temp_file(body=scr_body, dirname=home_dir)
-        dyn_scr = '"foo !'+fp+'"'
+        dyn_scr = '"foo !' + fp + '"'
         self.scheduler.set_sched_config({'server_dyn_res': dyn_scr},
                                         validate=False)
 
         # give write permission to group and others
         self.du.chmod(path=fp, mode=0766)
-        self.check_log(fp)
+        self.check_access_log(fp)
 
         # give write permission to group
         self.du.chmod(path=fp, mode=0764)
-        self.check_log(fp)
+        self.check_access_log(fp)
 
         # give write permission to others
         self.du.chmod(path=fp, mode=0746)
-        self.check_log(fp)
+        self.check_access_log(fp)
 
         # give write permission to user only
         self.du.chmod(path=fp, mode=0744)
-        self.check_log(fp, exist=False)
+        self.check_access_log(fp, exist=False)
 
         # Cleanup
         os.remove(fp)
 
-        # Create a script in tmp directory which has more open privileges
+        # Create a script in home directory which has more open privileges
         # This should make loading of this file fail in all cases
         dir_temp = self.du.mkdtemp(mode=0766, dir=home_dir)
         fp = self.du.create_temp_file(body=scr_body, dirname=dir_temp)
@@ -652,19 +652,19 @@ class TestServerDynRes(TestFunctional):
 
         # give write permission to group and others
         self.du.chmod(path=fp, mode=0766)
-        self.check_log(fp)
+        self.check_access_log(fp)
 
         # give write permission to group
         self.du.chmod(path=fp, mode=0764)
-        self.check_log(fp)
+        self.check_access_log(fp)
 
         # give write permission to others
         self.du.chmod(path=fp, mode=0746)
-        self.check_log(fp)
+        self.check_access_log(fp)
 
         # give write permission to user only
         self.du.chmod(path=fp, mode=0744)
-        self.check_log(fp)
+        self.check_access_log(fp)
 
         # Cleanup
         os.remove(fp)
@@ -677,10 +677,10 @@ class TestServerDynRes(TestFunctional):
         self.du.chmod(path=fp, mode=0744)
         self.scheduler.set_sched_config({'server_dyn_res': dyn_scr},
                                         validate=False)
-        self.check_log(fp, exist=False)
+        self.check_access_log(fp, exist=False)
 
         time.sleep(1)
-        match_from = time.time()
+        match_from = int(time.time())
         # give write permission to others
         self.du.chmod(path=fp, mode=0746)
         self.server.manager(MGR_CMD_SET, SERVER, {'scheduling': 'True'})

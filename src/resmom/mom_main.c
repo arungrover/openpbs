@@ -3433,13 +3433,15 @@ add_static(char *str, char *file, int linenum)
 	str = TOKCPY(str, name);/* resource name */
 	str = skipwhite(str);	/* resource value */
 	if (*str == '!') {	/* shell escape command */
+		int err;
 		rmnl(str);
 #ifdef  WIN32
-		if (tmp_file_sec(&str[1], 0, 1, WRITES_MASK, 1)) {
+		err = tmp_file_sec(&str[1], 0, 1, WRITES_MASK, 1);
 #else
-		if (tmp_file_sec(&str[1], 0, 1, S_IWGRP|S_IWOTH, 1)) {
+		err = tmp_file_sec(&str[1], 0, 1, S_IWGRP|S_IWOTH, 1);
 #endif
-			snprintf(log_buffer, sizeof(log_buffer), "error: %s file has a non-secure file access", str);
+		if (err != 0) {
+			snprintf(log_buffer, sizeof(log_buffer), "error: %s file has a non-secure file access, errno: %d", &str[1], err);
 			log_event(PBSEVENT_DEBUG, PBS_EVENTCLASS_SERVER, LOG_DEBUG, "add_static", log_buffer);
 			return 1;
 		}
@@ -5470,6 +5472,7 @@ conf_res(char *s, struct rm_attribute *attr)
 	char	*child_spot;
 	int	child_len;
 	int	secondalarm = 0;
+	int	err;
 
 	if (*s != '!') {	/* static value */
 		if (attr) {
@@ -5540,11 +5543,12 @@ conf_res(char *s, struct rm_attribute *attr)
 
 	/* Make sure file does not have open permissions */
 #ifdef  WIN32
-	if (tmp_file_sec(ret_string, 0, 1, WRITES_MASK, 1)) {
+	err = tmp_file_sec(ret_string, 0, 1, WRITES_MASK, 1);
 #else
-	if (tmp_file_sec(ret_string, 0, 1, S_IWGRP|S_IWOTH, 1)) {
+	err = tmp_file_sec(ret_string, 0, 1, S_IWGRP|S_IWOTH, 1);
 #endif
-		snprintf(log_buffer, sizeof(log_buffer), "error: %s file has a non-secure file access", ret_string);
+	if (err != 0) {
+		snprintf(log_buffer, sizeof(log_buffer), "error: %s file has a non-secure file access, errno: %d", ret_string, err);
 		log_event(PBSEVENT_DEBUG, PBS_EVENTCLASS_SERVER, LOG_DEBUG, __func__, log_buffer);
 		goto done;
 	}
