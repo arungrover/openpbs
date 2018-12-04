@@ -114,7 +114,7 @@
 
 struct		connect_handle connection[NCONNECTS];
 int		connector;
-int		server_sock;
+int		server_sock = -1;
 int		second_connection = -1;
 
 #define		START_CLIENTS	2	/* minimum number of clients */
@@ -223,6 +223,8 @@ die(int sig)
 	}
 
 	log_close(1);
+	if (server_sock != -1)
+		close(server_sock);
 	exit(1);
 }
 
