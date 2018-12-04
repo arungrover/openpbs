@@ -41,6 +41,8 @@ from ptl.lib.pbs_ifl_mock import *
 
 class TestServerDynRes(TestFunctional):
 
+    filenames = []
+
     def setUp(self):
         TestFunctional.setUp(self)
         # Setup node
@@ -619,6 +621,9 @@ class TestServerDynRes(TestFunctional):
         scr_body = ['echo "10"', 'exit 0']
         home_dir = os.path.expanduser("~")
         fp = self.du.create_temp_file(body=scr_body, dirname=home_dir)
+        # Add to filenames for cleanup
+        self.filenames.append(fp)
+
         dyn_scr = '"foo !' + fp + '"'
         self.scheduler.set_sched_config({'server_dyn_res': dyn_scr},
                                         validate=False)
@@ -639,13 +644,14 @@ class TestServerDynRes(TestFunctional):
         self.du.chmod(path=fp, mode=0744)
         self.check_access_log(fp, exist=False)
 
-        # Cleanup
-        os.remove(fp)
-
         # Create a script in home directory which has more open privileges
         # This should make loading of this file fail in all cases
         dir_temp = self.du.mkdtemp(mode=0766, dir=home_dir)
         fp = self.du.create_temp_file(body=scr_body, dirname=dir_temp)
+        # Add to filenames for cleanup
+        self.filenames.append(fp)
+        self.filenames.append(dir_temp)
+
         dyn_scr = '"foo !'+fp+'"'
         self.scheduler.set_sched_config({'server_dyn_res': dyn_scr},
                                         validate=False)
@@ -666,12 +672,11 @@ class TestServerDynRes(TestFunctional):
         self.du.chmod(path=fp, mode=0744)
         self.check_access_log(fp)
 
-        # Cleanup
-        os.remove(fp)
-        os.removedirs(dir_temp)
-
         # Create a dynamic script with right permissions
         fp = self.du.create_temp_file(body=scr_body, dirname=home_dir)
+        # Add to filenames for cleanup
+        self.filenames.append(fp)
+
         dyn_scr = '"foo !' + fp + '"'
         # give write permission to user only
         self.du.chmod(path=fp, mode=0744)
@@ -688,5 +693,36 @@ class TestServerDynRes(TestFunctional):
                                  starttime=match_from, existence=True,
                                  max_attempts=10)
 
-        # Cleanup
-        os.remove(fp)
+        # Create dynamic resource script in tmp directory and check
+        # file permissions
+        fp = self.du.create_temp_file(body=scr_body, dirname=home_dir)
+        # Add to filenames for cleanup
+        self.filenames.append(fp)
+
+        dyn_scr = '"foo !' + fp + '"'
+        self.scheduler.set_sched_config({'server_dyn_res': dyn_scr},
+                                        validate=False)
+
+        # give write permission to group and others
+        self.du.chmod(path=fp, mode=0766)
+        self.check_access_log(fp)
+
+        # give write permission to group
+        self.du.chmod(path=fp, mode=0764)
+        self.check_access_log(fp)
+
+        # give write permission to others
+        self.du.chmod(path=fp, mode=0746)
+        self.check_access_log(fp)
+
+        # give write permission to user only
+        self.du.chmod(path=fp, mode=0744)
+        self.check_access_log(fp, exist=False)
+
+    def tearDown(self):
+        # removing all files creating in test
+        for i in self.filenames:
+            if os.path.isfile(i):
+                os.remove(i)
+            elif os.path.isdir(i):
+                os.removedirs(i)

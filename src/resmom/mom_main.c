@@ -3442,7 +3442,7 @@ add_static(char *str, char *file, int linenum)
 #endif
 		if (err != 0) {
 			snprintf(log_buffer, sizeof(log_buffer), "error: %s file has a non-secure file access, errno: %d", &str[1], err);
-			log_event(PBSEVENT_DEBUG, PBS_EVENTCLASS_SERVER, LOG_DEBUG, "add_static", log_buffer);
+			log_event(PBSEVENT_DEBUG, PBS_EVENTCLASS_SERVER, LOG_DEBUG, __func__, log_buffer);
 			return 1;
 		}
 	}
