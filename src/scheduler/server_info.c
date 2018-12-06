@@ -700,7 +700,7 @@ query_server_dyn_res(server_info *sinfo)
 	char			  cmd_line[512];
 #endif
 
-	for (i = 0; i < MAX_SERVER_DYN_RES && conf.dynamic_res[i].res != NULL; i++) {
+	for (i = 0; (i < MAX_SERVER_DYN_RES) && (conf.dynamic_res[i].res != NULL); i++) {
 		res = find_alloc_resource_by_str(sinfo->res, conf.dynamic_res[i].res);
 		if (res != NULL) {
 			char *p = NULL;

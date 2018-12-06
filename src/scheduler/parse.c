@@ -745,7 +745,7 @@ parse_config(char *fname)
 								tok++;
 								tmp2 = string_dup(tok);
 								filename = tmp2;
-								/* skip any command line args (if any) */
+								/* skip command line args (if any) */
 								p = strpbrk(tmp2, " ");
 								if (p != NULL)
 									*p = '\0';
