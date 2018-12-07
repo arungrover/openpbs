@@ -71,11 +71,15 @@ class TestMomDynRes(TestFunctional):
         return fp_list
 
     def check_access_log(self, fp, exist=True):
-        match_from = time.time()
+        """
+        Helper function to check if mom logged a file security
+        message.
+        """
         # adding a second delay because log_match can then start from the
         # correct log message and avoid false positives from previous
         # logs
         time.sleep(1)
+        match_from = int(time.time())
         self.mom.signal('-HUP')
         self.mom.log_match(fp + ' file has a non-secure file access',
                            starttime=match_from, existence=exist,
@@ -382,7 +386,7 @@ class TestMomDynRes(TestFunctional):
         self.du.chmod(path=fp, mode=0744)
         self.check_access_log(fp, exist=False)
 
-        # Create a script in home directory which has more open privileges
+        # Create script in a directory which has more open privileges
         # This should make loading of this file fail in all cases
         dir_temp = self.du.mkdtemp(mode=0766, dir=home_dir)
         fp = self.du.create_temp_file(body=scr_body, dirname=dir_temp)
@@ -423,7 +427,7 @@ class TestMomDynRes(TestFunctional):
         self.du.chmod(path=fp, mode=0744)
         self.check_access_log(fp, exist=False)
 
-        match_from = time.time()
+        match_from = int(time.time())
         time.sleep(1)
         # give write permission to others
         self.du.chmod(path=fp, mode=0746)
@@ -437,7 +441,7 @@ class TestMomDynRes(TestFunctional):
 
         # Create dynamic resource script in tmp directory and check
         # file permissions
-        fp = self.du.create_temp_file(body=scr_body, dirname=home_dir)
+        fp = self.du.create_temp_file(body=scr_body)
         # Add to filenames for cleanup
         self.filenames.append(fp)
 

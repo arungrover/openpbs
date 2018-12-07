@@ -725,7 +725,7 @@ query_server_dyn_res(server_info *sinfo)
 				snprintf(buf, sizeof(buf),
 					"error: %s file has a non-secure file access, setting resource %s to 0, errno: %d",
 					filename, res->name, err);
-				schdlog(PBSEVENT_DEBUG, PBS_EVENTCLASS_SERVER, LOG_DEBUG, "server_dyn_res", buf);
+				schdlog(PBSEVENT_SECURITY, PBS_EVENTCLASS_SERVER, LOG_ERR, "server_dyn_res", buf);
 				(void) set_resource(res, res_zero, RF_AVAIL);
 			}
 			if (p != NULL)

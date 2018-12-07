@@ -5549,8 +5549,9 @@ conf_res(char *s, struct rm_attribute *attr)
 	err = tmp_file_sec(ret_string, 0, 1, S_IWGRP|S_IWOTH, 1);
 #endif
 	if (err != 0) {
-		snprintf(log_buffer, sizeof(log_buffer), "error: %s file has a non-secure file access, errno: %d", ret_string, err);
-		log_event(PBSEVENT_DEBUG, PBS_EVENTCLASS_SERVER, LOG_DEBUG, __func__, log_buffer);
+		snprintf(log_buffer, sizeof(log_buffer),
+			"error: %s file has a non-secure file access, errno: %d", ret_string, err);
+		log_event(PBSEVENT_SECURITY, PBS_EVENTCLASS_SERVER, LOG_ERR, __func__, log_buffer);
 		goto done;
 	}
 
