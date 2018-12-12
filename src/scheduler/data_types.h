@@ -970,6 +970,7 @@ struct dyn_res
 {
 	char *res;
 	char *program;
+	char *script;
 };
 
 struct peer_queue

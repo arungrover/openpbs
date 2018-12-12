@@ -646,13 +646,13 @@ class TestServerDynRes(TestFunctional):
 
         # Create script in a directory which has more open privileges
         # This should make loading of this file fail in all cases
-        dir_temp = self.du.mkdtemp(mode=0766, dir=home_dir)
+        dir_temp = self.du.mkdtemp(mode=0766, dir=home_dir, suffix=' tmp')
         fp = self.du.create_temp_file(body=scr_body, dirname=dir_temp)
         # Add to filenames for cleanup
         self.filenames.append(fp)
         self.filenames.append(dir_temp)
 
-        dyn_scr = '"foo !'+fp+'"'
+        dyn_scr = "\'foo !" + "\"" + fp + "\"\'"
         self.scheduler.set_sched_config({'server_dyn_res': dyn_scr},
                                         validate=False)
 

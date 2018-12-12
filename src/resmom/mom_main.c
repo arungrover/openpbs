@@ -3434,18 +3434,24 @@ add_static(char *str, char *file, int linenum)
 	str = skipwhite(str);	/* resource value */
 	if (*str == '!') {	/* shell escape command */
 		int err;
+		char *filename;
 		rmnl(str);
+		filename = get_script_name(&str[1]);
+		if (filename == NULL)
+			return 1;
 #ifdef  WIN32
-		err = tmp_file_sec(&str[1], 0, 1, WRITES_MASK, 1);
+		err = tmp_file_sec(filename, 0, 1, WRITES_MASK, 1);
 #else
-		err = tmp_file_sec(&str[1], 0, 1, S_IWGRP|S_IWOTH, 1);
+		err = tmp_file_sec(filename, 0, 1, S_IWGRP|S_IWOTH, 1);
 #endif
 		if (err != 0) {
 			snprintf(log_buffer, sizeof(log_buffer),
-				"error: %s file has a non-secure file access, errno: %d", &str[1], err);
+				"error: %s file has a non-secure file access, errno: %d", filename, err);
 			log_event(PBSEVENT_SECURITY, PBS_EVENTCLASS_SERVER, LOG_ERR, __func__, log_buffer);
+			free(filename);
 			return 1;
 		}
+		free(filename);
 	}
 	else {			/* get the value */
 		i = strlen(str);
@@ -5464,6 +5470,7 @@ conf_res(char *s, struct rm_attribute *attr)
 	int	used[RM_NPARM];
 	char	param[256], *d;
 	int	i,  len;
+	char	*filename = NULL;
 #ifdef	WIN32
 	pio_handles     child;
 #else
@@ -5542,15 +5549,18 @@ conf_res(char *s, struct rm_attribute *attr)
 	*d = '\0';
 	DBPRT(("command: %s\n", ret_string))
 
+	filename = get_script_name(ret_string);
+	if (filename == NULL)
+		return NULL;
 	/* Make sure file does not have open permissions */
 #ifdef  WIN32
-	err = tmp_file_sec(ret_string, 0, 1, WRITES_MASK, 1);
+	err = tmp_file_sec(filename, 0, 1, WRITES_MASK, 1);
 #else
-	err = tmp_file_sec(ret_string, 0, 1, S_IWGRP|S_IWOTH, 1);
+	err = tmp_file_sec(filename, 0, 1, S_IWGRP|S_IWOTH, 1);
 #endif
 	if (err != 0) {
 		snprintf(log_buffer, sizeof(log_buffer),
-			"error: %s file has a non-secure file access, errno: %d", ret_string, err);
+			"error: %s file has a non-secure file access, errno: %d", filename, err);
 		log_event(PBSEVENT_SECURITY, PBS_EVENTCLASS_SERVER, LOG_ERR, __func__, log_buffer);
 		goto done;
 	}
@@ -5660,6 +5670,7 @@ done:
 		free(name[i]);
 		free(value[i]);
 	}
+	free(filename);
 	return ret_string;
 }
 

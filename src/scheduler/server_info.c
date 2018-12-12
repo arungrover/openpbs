@@ -703,18 +703,12 @@ query_server_dyn_res(server_info *sinfo)
 	for (i = 0; (i < MAX_SERVER_DYN_RES) && (conf.dynamic_res[i].res != NULL); i++) {
 		res = find_alloc_resource_by_str(sinfo->res, conf.dynamic_res[i].res);
 		if (res != NULL) {
-			char *p = NULL;
 			int err;
-			char *filename = conf.dynamic_res[i].program;
+			char *filename = conf.dynamic_res[i].script;
 			if (sinfo->res == NULL)
 				sinfo->res = res;
 
 			pipe_err = errno = 0;
-
-			/* skip any command line args (if any) */
-			p = strpbrk(conf.dynamic_res[i].program, " ");
-			if (p != NULL)
-				*p = '\0';
 			/* Make sure file does not have open permissions */
 #ifdef  WIN32
 			err = tmp_file_sec(filename, 0, 1, WRITES_MASK, 1);
@@ -728,9 +722,6 @@ query_server_dyn_res(server_info *sinfo)
 				schdlog(PBSEVENT_SECURITY, PBS_EVENTCLASS_SERVER, LOG_ERR, "server_dyn_res", buf);
 				(void) set_resource(res, res_zero, RF_AVAIL);
 			}
-			if (p != NULL)
-				*p = ' ';
-
 #ifdef	WIN32
 			/* In Windows, don't use popen() as this crashes if COMSPEC not set */
 			/* also, let's quote command line so that paths with spaces can be */

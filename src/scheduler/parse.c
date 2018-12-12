@@ -728,6 +728,7 @@ parse_config(char *fname)
 
 					/* MAX_SERVER_DYN_RES-1 to leave room for the sentinel */
 					if (res_num < MAX_SERVER_DYN_RES-1) {
+						char *filename = NULL;
 						/* get the resource name */
 						tok = strtok(config_value, DELIM);
 						if (tok != NULL) {
@@ -739,30 +740,27 @@ parse_config(char *fname)
 								tok++;
 
 							if (tok != NULL && tok[0] == '!') {
-								char *p = NULL;
-								char *filename;
 								int err;
 								tok++;
 								tmp2 = string_dup(tok);
-								filename = tmp2;
-								/* skip command line args (if any) */
-								p = strpbrk(tmp2, " ");
-								if (p != NULL)
-									*p = '\0';
-#ifdef  WIN32
-								err = tmp_file_sec(filename, 0, 1, WRITES_MASK, 1);
-#else
-								err = tmp_file_sec(filename, 0, 1, S_IWGRP|S_IWOTH, 1);
-#endif
-								if (err != 0) {
-									snprintf(errbuf, sizeof(errbuf),
-										"error: %s file has a non-secure file access, errno: %d", filename, err);
+								filename = get_script_name(tok);
+								if (filename == NULL)
 									error = 1;
+								else {
+#ifdef  WIN32
+									err = tmp_file_sec(filename, 0, 1, WRITES_MASK, 1);
+#else
+									err = tmp_file_sec(filename, 0, 1, S_IWGRP|S_IWOTH, 1);
+#endif
+									if (err != 0) {
+										snprintf(errbuf, sizeof(errbuf),
+											"error: %s file has a non-secure file access, errno: %d", filename, err);
+										error = 1;
+									}
+									conf.dynamic_res[res_num].res = tmp1;
+									conf.dynamic_res[res_num].program = tmp2;
+									conf.dynamic_res[res_num].script = filename;
 								}
-								if (p != NULL)
-									*p = ' ';
-								conf.dynamic_res[res_num].res = tmp1;
-								conf.dynamic_res[res_num].program = tmp2;
 							}
 							else
 								error = 1;
@@ -777,8 +775,12 @@ parse_config(char *fname)
 							if (tmp2 != NULL)
 								free(tmp2);
 
+							if (filename != NULL)
+								free(filename);
+
 							conf.dynamic_res[res_num].res = NULL;
 							conf.dynamic_res[res_num].program = NULL;
+							conf.dynamic_res[res_num].script = NULL;
 						}
 						else
 							res_num++;
