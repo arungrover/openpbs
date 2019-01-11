@@ -818,6 +818,10 @@ perm_granted_admin_and_owner(char *path, int disallow, char *owner, char *errmsg
 				path, owner);
 			goto chkerr;
 		}
+	} else {
+		rc = EPERM;
+		sprintf(errmsg, "File %s owner information can not be obtained", path);
+		goto chkerr;
 	}
 
 	/* make sure perm mask granted only to privilege groups or the
