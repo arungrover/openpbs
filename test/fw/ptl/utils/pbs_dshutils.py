@@ -1855,7 +1855,8 @@ class DshUtils(object):
 
     def create_temp_file(self, hostname=None, suffix='', prefix='PtlPbs',
                          dirname=None, text=False, asuser=None, body=None,
-                         level=logging.INFOCLI2, mode=0644):
+                         level=logging.INFOCLI2, mode=0644, uid=None,
+                         gid=None):
         """
         Create a temp file by calling tempfile.mkstemp
 
@@ -1878,6 +1879,10 @@ class DshUtils(object):
         :type level: int
         :param mode: mode to use while creating directories
                      (must be octal like 0777)
+        :param uid: uid to apply (must be either user name or
+                    uid or -1)
+        :param gid: gid to apply (must be either group name or
+                    gid or -1)
         """
         home_dir = os.path.expanduser("~")
         # create a temp file as current user in user's home directory
@@ -1892,8 +1897,9 @@ class DshUtils(object):
         os.close(fd)
         # by default mkstemp creates file with 0600 permission
         # to create file as different user first change the file
-        # permissions (default is 0644)
-        self.chmod(path=tmpfile, mode=mode)
+        # permissions
+        if mode is not None:
+            self.chmod(path=tmpfile, mode=mode)
         dest_file = ""
         if asuser is not None:
             # since we need to create as differnt user than current user
@@ -1913,8 +1919,11 @@ class DshUtils(object):
 
         if dest_file != tmpfile or not self.is_localhost(hostname):
             self.run_copy(hostname, tmpfile, dest_file, runas=asuser,
-                          preserve_permission=False, level=level)
+                          preserve_permission=True, level=level)
             os.unlink(tmpfile)
+        if asuser is not None:
+            self.chown(path=dest_file, hostname=hostname, runas=asuser,
+                       sudo=True, uid=uid, gid=gid)
         return dest_file
 
     def mkdtemp(self, hostname=None, suffix='', prefix='PtlPbs', dir=None,
@@ -1961,26 +1970,6 @@ class DshUtils(object):
             self.chown(hostname, fn, uid=uid, gid=gid, recursive=True,
                        sudo=True)
         return fn
-
-    def create_dyn_res_script(self, body, prefix="PbsPtl", suffix=".scr",
-                              perm=0744, dirname=None, host=None):
-        """
-        Create a dynamic resource script owned by root
-        """
-        conf_file = self.get_pbs_conf_file(hostname=host)
-        config = self.parse_pbs_config(file=conf_file, hostname=host)
-        pbs_home_dir = config['PBS_HOME']
-        if dirname is None:
-            dirname = pbs_home_dir
-        fp = self.create_temp_file(prefix=prefix, suffix=suffix,
-                                   body=body, asuser="root",
-                                   dirname=dirname, hostname=host,
-                                   mode=perm)
-        # exclicity change the permission of the file because create_temp_file
-        # will only create a not be able to apply default permissions
-        if perm != 0744 and dirname == pbs_home_dir:
-            self.chmod(path=fp, mode=perm, sudo=True, hostname=host)
-        return fp
 
     def parse_strace(self, lines):
         """

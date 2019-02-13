@@ -67,20 +67,20 @@ class TestServerDynRes(TestFunctional):
                                  starttime=match_from, existence=exist,
                                  max_attempts=10)
 
-    def setup_dyn_res(self, resname, restype, resval):
+    def setup_dyn_res(self, resname, restype, resflag, script_body):
         """
         Helper function to setup server dynamic resources
         """
         self.server.manager(MGR_CMD_SET, SERVER, {'scheduling': 'False'})
-
-        for i in resname:
-            attr = {"type": restype[0]}
-            self.server.manager(MGR_CMD_CREATE, RSC, attr, id=i, expect=True)
+        val = []
+        ln = len(resname)
+        for i in range(ln):
+            attr = {"type": restype[i], "flag": resflag[i]}
+            self.server.manager(MGR_CMD_CREATE, RSC, attr, id=resname[i],
+                                expect=True)
             # Add resource to sched_config's 'resources' line
-            self.scheduler.add_resource(i)
+            self.scheduler.add_resource(resname[i])
 
-        # Add server_dyn_res entry in sched_config
-        if len(resval) > 1:  # Mutliple resources
             # To create multiple server dynamic resources in sched_config
             # from PTL, a list containing "resource !<script>" should be
             # supplied as value to the key 'server_dyn_res' when calling
@@ -89,12 +89,13 @@ class TestServerDynRes(TestFunctional):
             # server_dyn_res entry.
             # HACK: So adding a single resource first and then the list.
             # There wouldn't be any duplicate entries though.
-            a = {'server_dyn_res': resval[0]}
-            self.scheduler.set_sched_config(a)
-            a = {'server_dyn_res': resval}
-        else:
-            a = {'server_dyn_res': resval[0]}
-
+            dest_file = self.scheduler.add_server_dyn_res(resname[i],
+                                                          script_body[i],
+                                                          prefix="svr_resc",
+                                                          suffix=".scr")
+            val.append('"' + resname[i] + ' ' + '!' + dest_file + '"')
+            self.filenames.append(dest_file)
+        a = {'server_dyn_res': val}
         self.scheduler.set_sched_config(a)
 
         # The server dynamic resource script gets executed for every
@@ -109,14 +110,11 @@ class TestServerDynRes(TestFunctional):
         # Create a server_dyn_res of type long
         resname = ["mybadres"]
         restype = ["long"]
-        script_body = "echo abc"
-        fn = self.du.create_dyn_res_script(script_body,
-                                           prefix="PtlPbs_badoutfile",
-                                           perm=0755)
-        resval = ['"' + resname[0] + ' ' + '!' + fn + '"']
+        resflag = ["nh"]
+        script_body = ["echo abc"]
 
         # Add it as a server_dyn_res that returns a string output
-        self.setup_dyn_res(resname, restype, resval)
+        self.setup_dyn_res(resname, restype, resflag, script_body)
 
         # Submit a job
         j = Job(TEST_USER)
@@ -129,7 +127,7 @@ class TestServerDynRes(TestFunctional):
 
         # Also check that "<script> returned bad output"
         # is in the logs
-        self.scheduler.log_match("%s returned bad output" % (fn))
+        self.scheduler.log_match("%s returned bad output" % self.filenames[0])
 
         # The scheduler uses 0 as the available amount of the dynamic resource
         # if the server_dyn_res script output is bad
@@ -146,7 +144,7 @@ class TestServerDynRes(TestFunctional):
         # Check for the expected log message for insufficient resources
         self.scheduler.log_match(
             "Insufficient amount of server resource: %s (R: 1 A: 0 T: 0)"
-            % (resname[0]))
+            % (resname[0]), level=logging.DEBUG2)
 
     def test_res_long_pos(self):
         """
@@ -156,10 +154,11 @@ class TestServerDynRes(TestFunctional):
         # Create a resource of type long. positive value
         resname = ["foobar"]
         restype = ["long"]
-        resval = ['"' + resname[0] + ' ' + '!/bin/echo 4' + '"']
+        resflag = ["nh"]
+        resval = ['/bin/echo 4']
 
         # Add server_dyn_res entry in sched_config
-        self.setup_dyn_res(resname, restype, resval)
+        self.setup_dyn_res(resname, restype, resflag, resval)
 
         a = {'Resource_List.foobar': 4}
         # Submit job
@@ -178,10 +177,11 @@ class TestServerDynRes(TestFunctional):
         # Create a resource of type long. negative value
         resname = ["foobar"]
         restype = ["long"]
-        resval = ['"' + resname[0] + ' ' + '!/bin/echo -1' + '"']
+        resflag = ["nh"]
+        resval = ['/bin/echo -1']
 
         # Add server_dyn_res entry in sched_config
-        self.setup_dyn_res(resname, restype, resval)
+        self.setup_dyn_res(resname, restype, resflag, resval)
 
         # Submit job
         a = {'Resource_List.foobar': '1'}
@@ -206,21 +206,14 @@ class TestServerDynRes(TestFunctional):
         # Create a resource of type long
         resname = ["foo"]
         restype = ["long"]
+        resflag = ["nh"]
+        resval = ['echo get_foo > /tmp/PtlPbs_got_foo; echo 1']
 
         # Prep for server_dyn_resource scripts. Script "PbsPtl_get_foo*"
         # generates file "PbsPtl_got_foo" and returns 1.
-        script_body = "echo get_foo > /tmp/PtlPbs_got_foo; echo 1"
-
         fpath_out = os.path.join(os.sep, "tmp", "PtlPbs_got_foo")
 
-        fn_in = self.du.create_dyn_res_script(script_body,
-                                              prefix="PtlPbs_get_foo")
-        self.filenames.append(fn_in)
-
-        # Add additional white space between resource name and the script
-        resval = ['"' + resname[0] + '  ' + ' !' + fn_in + '"']
-
-        self.setup_dyn_res(resname, restype, resval)
+        self.setup_dyn_res(resname, restype, resflag, resval)
 
         # Check if the file "PbsPtl_got_foo" was created
         for _ in range(10):
@@ -251,30 +244,12 @@ class TestServerDynRes(TestFunctional):
         # Create resources of type long
         resname = ["foobar_small", "foobar_medium", "foobar_large"]
         restype = ["long", "long", "long"]
+        resflag = ["nh", "nh", "nh"]
 
         # Prep for server_dyn_resource scripts.
-        script_body_s = "echo 8"
-        script_body_m = "echo 12"
-        script_body_l = "echo 20"
+        script_body = ["echo 8", "echo 12", "echo 20"]
 
-        fn_s = self.du.create_dyn_res_script(script_body_s,
-                                             prefix="PtlPbs_small",
-                                             suffix=".scr")
-        fn_m = self.du.create_dyn_res_script(script_body_m,
-                                             prefix="PtlPbs_medium",
-                                             suffix=".scr")
-        fn_l = self.du.create_dyn_res_script(script_body_l,
-                                             prefix="PtlPbs_large",
-                                             suffix=".scr")
-        self.filenames.append(fn_s)
-        self.filenames.append(fn_m)
-        self.filenames.append(fn_l)
-
-        resval = ['"' + resname[0] + ' ' + '!' + fn_s + '"',
-                  '"' + resname[1] + ' ' + '!' + fn_m + '"',
-                  '"' + resname[2] + ' ' + '!' + fn_l + '"']
-
-        self.setup_dyn_res(resname, restype, resval)
+        self.setup_dyn_res(resname, restype, resflag, script_body)
 
         a = {'Resource_List.foobar_small': '4'}
         # Submit job
@@ -311,17 +286,12 @@ class TestServerDynRes(TestFunctional):
         # Create a resource of type string
         resname = ["foobar"]
         restype = ["string"]
+        resflag = ["q"]
 
         # Prep for server_dyn_resource script
-        script_body = "echo abc"
+        resval = ["echo abc"]
 
-        fn = self.du.create_dyn_res_script(script_body, prefix="PtlPbs_check",
-                                           suffix=".scr")
-        self.filenames.append(fn)
-
-        resval = ['"' + resname[0] + ' ' + '!' + fn + '"']
-
-        self.setup_dyn_res(resname, restype, resval)
+        self.setup_dyn_res(resname, restype, resflag, resval)
 
         # Submit job
         a = {'Resource_List.foobar': 'abc'}
@@ -353,17 +323,12 @@ class TestServerDynRes(TestFunctional):
         # Create a resource of type string_array
         resname = ["foobar"]
         restype = ["string_array"]
+        resflag = ["q"]
 
         # Prep for server_dyn_resource script
-        script_body = "echo white, red, blue"
+        resval = ["echo white, red, blue"]
 
-        fn = self.du.create_dyn_res_script(script_body, prefix="PtlPbs_color",
-                                           suffix=".scr")
-        self.filenames.append(fn)
-
-        resval = ['"' + resname[0] + ' ' + '!' + fn + '"']
-
-        self.setup_dyn_res(resname, restype, resval)
+        self.setup_dyn_res(resname, restype, resflag, resval)
 
         # Submit job
         a = {'Resource_List.foobar': 'red'}
@@ -395,17 +360,12 @@ class TestServerDynRes(TestFunctional):
         # Create a resource of type size
         resname = ["foobar"]
         restype = ["size"]
+        resflag = ["q"]
 
         # Prep for server_dyn_resource script
-        script_body = "echo 100gb"
+        resval = ["echo 100gb"]
 
-        fn = self.du.create_dyn_res_script(script_body, prefix="PtlPbs_size",
-                                           suffix=".scr")
-        self.filenames.append(fn)
-
-        resval = ['"' + resname[0] + ' ' + '!' + fn + '"']
-
-        self.setup_dyn_res(resname, restype, resval)
+        self.setup_dyn_res(resname, restype, resflag, resval)
 
         # Submit job
         a = {'Resource_List.foobar': '95gb'}
@@ -456,17 +416,12 @@ class TestServerDynRes(TestFunctional):
         # Create a resource of type size
         resname = ["foobar"]
         restype = ["size"]
+        resflag = ["h"]
 
         # Prep for server_dyn_resource script
-        script_body = "echo 100gb"
+        resval = ["echo 100gb"]
 
-        fn = self.du.create_dyn_res_script(script_body, prefix="PtlPbs_size",
-                                           suffix=".scr")
-        self.filenames.append(fn)
-
-        resval = ['"' + resname[0] + ' ' + '!' + fn + '"']
-
-        self.setup_dyn_res(resname, restype, resval)
+        self.setup_dyn_res(resname, restype, resflag, resval)
 
         # Submit job
         a = {'Resource_List.foobar': '95gb'}
@@ -478,11 +433,8 @@ class TestServerDynRes(TestFunctional):
         self.server.expect(JOB, a, id=jid)
 
         # Change script during job run
-        change_res = "echo 50gb"
-        home_dir = os.path.expanduser("~")
-        fp = self.du.create_dyn_res_script(change_res, dirname=home_dir)
-        self.du.run_copy(src=fp, dest=fn, runas=ROOT_USER)
-        self.filenames.append(fn)
+        resval = ["echo 100gb"]
+        self.setup_dyn_res(resname, restype, resflag, resval)
 
         # Rerun job
         self.server.rerunjob(jid)
@@ -502,17 +454,12 @@ class TestServerDynRes(TestFunctional):
         # Create a resource of type size
         resname = ["foobar"]
         restype = ["size"]
+        resflag = ["q"]
 
         # Script returns invalid value for resource type 'size'
-        script_body = "echo two gb"
+        resval = ["echo two gb"]
 
-        fn = self.du.create_dyn_res_script(script_body, prefix="PtlPbs_size",
-                                           suffix=".scr")
-        self.filenames.append(fn)
-
-        resval = ['"' + resname[0] + ' ' + '!' + fn + '"']
-
-        self.setup_dyn_res(resname, restype, resval)
+        self.setup_dyn_res(resname, restype, resflag, resval)
 
         # Submit job
         a = {'Resource_List.foobar': '2gb'}
@@ -521,7 +468,7 @@ class TestServerDynRes(TestFunctional):
 
         # Also check that "<script> returned bad output"
         # is in the logs
-        self.scheduler.log_match("%s returned bad output" % (fn))
+        self.scheduler.log_match("%s returned bad output" % self.filenames[0])
 
         # The job shouldn't run
         job_comment = "Can Never Run: Insufficient amount of server resource:"
@@ -539,17 +486,12 @@ class TestServerDynRes(TestFunctional):
         # Create a resource of type float
         resname = ["foo"]
         restype = ["float"]
+        resflag = ["q"]
 
         # Prep for server_dyn_resource script
-        script_body = "echo abc"
+        resval = ["echo abc"]
 
-        fn = self.du.create_dyn_res_script(script_body, prefix="PtlPbs_float",
-                                           suffix=".scr")
-        self.filenames.append(fn)
-
-        resval = ['"' + resname[0] + ' ' + '!' + fn + '"']
-
-        self.setup_dyn_res(resname, restype, resval)
+        self.setup_dyn_res(resname, restype, resflag, resval)
 
         # Submit job
         a = {'Resource_List.foo': '1.2'}
@@ -558,7 +500,7 @@ class TestServerDynRes(TestFunctional):
 
         # Also check that "<script> returned bad output"
         # is in the logs
-        self.scheduler.log_match("%s returned bad output" % (fn))
+        self.scheduler.log_match("%s returned bad output" % self.filenames[0])
 
         # The job shouldn't run
         job_comment = "Can Never Run: Insufficient amount of server resource:"
@@ -576,17 +518,12 @@ class TestServerDynRes(TestFunctional):
         # Create a resource of type boolean
         resname = ["foo"]
         restype = ["boolean"]
+        resflag = ["h"]
 
         # Prep for server_dyn_resource script
-        script_body = "echo yes"
+        resval = "echo yes"
 
-        fn = self.du.create_dyn_res_script(script_body, prefix="PtlPbs_bool",
-                                           suffix=".scr")
-        self.filenames.append(fn)
-
-        resval = ['"' + resname[0] + ' ' + '!' + fn + '"']
-
-        self.setup_dyn_res(resname, restype, resval)
+        self.setup_dyn_res(resname, restype, resflag, resval)
 
         # Submit job
         a = {'Resource_List.foo': '"true"'}
@@ -595,7 +532,7 @@ class TestServerDynRes(TestFunctional):
 
         # Also check that "<script> returned bad output"
         # is in the logs
-        self.scheduler.log_match("%s returned bad output" % (fn))
+        self.scheduler.log_match("%s returned bad output" % self.filenames[0])
 
         # The job shouldn't run
         job_comment = "Can Never Run: Insufficient amount of server resource:"
@@ -615,28 +552,25 @@ class TestServerDynRes(TestFunctional):
 
         scr_body = ['echo "10"', 'exit 0']
         home_dir = os.path.expanduser("~")
-        fp = self.du.create_dyn_res_script(scr_body, dirname=home_dir)
+        fp = self.add_server_dyn_res("foo", scr_body, dirname=home_dir,
+                                     validate=False)
         # Add to filenames for cleanup
         self.filenames.append(fp)
 
-        dyn_scr = '"foo !' + fp + '"'
-        self.scheduler.set_sched_config({'server_dyn_res': dyn_scr},
-                                        validate=False)
-
         # give write permission to group and others
-        self.du.chmod(path=fp, mode=0766, sudo=True)
+        self.du.chmod(path=fp, mode=0766, sudo=True, runas=ROOT_USER)
         self.check_access_log(fp)
 
         # give write permission to group
-        self.du.chmod(path=fp, mode=0764, sudo=True)
+        self.du.chmod(path=fp, mode=0764, sudo=True, runas=ROOT_USER)
         self.check_access_log(fp)
 
         # give write permission to others
-        self.du.chmod(path=fp, mode=0746, sudo=True)
+        self.du.chmod(path=fp, mode=0746, sudo=True, runas=ROOT_USER)
         self.check_access_log(fp)
 
         # give write permission to user only
-        self.du.chmod(path=fp, mode=0744, sudo=True)
+        self.du.chmod(path=fp, mode=0744, sudo=True, runas=ROOT_USER)
         if os.getuid() != 0:
                 self.check_access_log(fp, exist=True)
         else:
@@ -647,77 +581,56 @@ class TestServerDynRes(TestFunctional):
         # Create the dirctory name with a space in it, to make sure PBS parses
         # it correctly.
         dir_temp = self.du.mkdtemp(mode=0766, dir=home_dir, suffix=' tmp')
-        fp = self.du.create_dyn_res_script(scr_body, dirname=dir_temp)
+        fp = self.scheduler.add_server_dyn_res("foo", scr_body,
+                                               dirname=dir_temp,
+                                               validate=False)
 
         # Add to filenames for cleanup
         self.filenames.append(fp)
         self.filenames.append(dir_temp)
 
-        dyn_scr = "\'foo !" + "\"" + fp + "\"\'"
-        self.scheduler.set_sched_config({'server_dyn_res': dyn_scr},
-                                        validate=False)
-
         # give write permission to group and others
-        self.du.chmod(path=fp, mode=0766, sudo=True)
+        self.du.chmod(path=fp, mode=0766, sudo=True, runas=ROOT_USER)
         self.check_access_log(fp)
 
         # give write permission to group
-        self.du.chmod(path=fp, mode=0764, sudo=True)
+        self.du.chmod(path=fp, mode=0764, sudo=True, runas=ROOT_USER)
         self.check_access_log(fp)
 
         # give write permission to others
-        self.du.chmod(path=fp, mode=0746, sudo=True)
+        self.du.chmod(path=fp, mode=0746, sudo=True, runas=ROOT_USER)
         self.check_access_log(fp)
 
         # give write permission to user only
-        self.du.chmod(path=fp, mode=0744, sudo=True)
+        self.du.chmod(path=fp, mode=0744, sudo=True, runas=ROOT_USER)
         self.check_access_log(fp)
 
-        # Create a dynamic script with right permissions
-        fp = self.du.create_temp_file(body=scr_body, dirname=home_dir,
-                                      asuser=ROOT_USER)
-        # Add to filenames for cleanup
-        self.filenames.append(fp)
-
-        # Create dynamic resource script in tmp directory and check
+        # Create dynamic resource script in PBS_HOME directory and check
         # file permissions
-        # du.create_dyn_res_script by default creates the script in /tmp
-
-        # give write permission to group and others
-        fp = self.du.create_dyn_res_script(scr_body, perm=0766)
+        # self.scheduler.add_mom_dyn_res by default creates the script in
+        # PBS_HOME as root
+        fp = self.scheduler.add_server_dyn_res("foo", scr_body, perm=0766,
+                                               validate=False)
         self.filenames.append(fp)
-        dyn_scr = '"foo !' + fp + '"'
-        self.scheduler.set_sched_config({'server_dyn_res': dyn_scr},
-                                        validate=False)
+
         self.check_access_log(fp)
 
         # give write permission to group
-        fp = self.du.create_dyn_res_script(scr_body, perm=0764)
-        self.filenames.append(fp)
-        dyn_scr = '"foo !' + fp + '"'
-        self.scheduler.set_sched_config({'server_dyn_res': dyn_scr},
-                                        validate=False)
+        self.du.chmod(path=fp, mode=0764, sudo=True, runas=ROOT_USER)
         self.check_access_log(fp)
 
         # give write permission to others
-        fp = self.du.create_dyn_res_script(scr_body, perm=0746)
-        self.filenames.append(fp)
-        dyn_scr = '"foo !' + fp + '"'
-        self.scheduler.set_sched_config({'server_dyn_res': dyn_scr},
-                                        validate=False)
+        self.du.chmod(path=fp, mode=0746, sudo=True, runas=ROOT_USER)
         self.check_access_log(fp)
 
         # give write permission to user only
-        fp = self.du.create_dyn_res_script(scr_body, perm=0744)
-        self.filenames.append(fp)
-        dyn_scr = '"foo !' + fp + '"'
-        self.scheduler.set_sched_config({'server_dyn_res': dyn_scr},
-                                        validate=False)
+        self.du.chmod(path=fp, mode=0744, sudo=True, runas=ROOT_USER)
         self.check_access_log(fp, exist=False)
 
     def tearDown(self):
         # removing all files creating in test
-        self.du.rm(path=self.filenames, sudo=True, force=True,
-                   recursive=True)
-        del self.filenames[:]
+        if len(self.filenames) != 0:
+            self.du.rm(path=self.filenames, sudo=True, force=True,
+                       recursive=True)
+            self.filenames[:] = []
         TestFunctional.tearDown(self)
