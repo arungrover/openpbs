@@ -1902,20 +1902,22 @@ class DshUtils(object):
             self.chmod(path=tmpfile, mode=mode)
         dest_file = ""
         if asuser is not None:
-            # since we need to create as differnt user than current user
-            # create a temp file just to get temp file name with absolute path
-            # in user's home directory
-            (_, tmpfile2) = tempfile.mkstemp(suffix, prefix, home_dir, text)
-            # remove the newly created temp file
-            os.unlink(tmpfile2)
+            # since we need to create as different user than current user
+            # create a path with temp file name and absolute path
+            # of user's home directory
+            home_dir2 = os.path.join(os.sep, 'home', str(asuser),
+                                     tmpfile.split(os.sep)[-1])
             if dirname:
-                dest_file = os.path.join(dirname, tmpfile2.split(os.sep)[-1])
+                dest_file = os.path.join(dirname, tmpfile.split(os.sep)[-1])
             else:
-                dest_file = tmpfile2
+                dest_file = home_dir2
         elif dirname:
+            # create the file in specified directory
             dest_file = os.path.join(dirname, tmpfile.split(os.sep)[-1])
         else:
-            dest_file = tmpfile
+            # Neither user is provided nor directory, create the file in
+            # tmp directory
+            dest_file = os.path.join(os.sep, 'tmp', tmpfile.split(os.sep)[-1])
 
         if dest_file != tmpfile or not self.is_localhost(hostname):
             self.run_copy(hostname, tmpfile, dest_file, runas=asuser,

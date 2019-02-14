@@ -67,15 +67,16 @@ class TestServerDynRes(TestFunctional):
                                  starttime=match_from, existence=exist,
                                  max_attempts=10)
 
-    def setup_dyn_res(self, resname, restype, resflag, script_body):
+    def setup_dyn_res(self, resname, restype, script_body):
         """
         Helper function to setup server dynamic resources
         """
         self.server.manager(MGR_CMD_SET, SERVER, {'scheduling': 'False'})
         val = []
+        attr = {}
         ln = len(resname)
         for i in range(ln):
-            attr = {"type": restype[i], "flag": resflag[i]}
+            attr["type"] = restype[i]
             self.server.manager(MGR_CMD_CREATE, RSC, attr, id=resname[i],
                                 expect=True)
             # Add resource to sched_config's 'resources' line
@@ -110,11 +111,10 @@ class TestServerDynRes(TestFunctional):
         # Create a server_dyn_res of type long
         resname = ["mybadres"]
         restype = ["long"]
-        resflag = ["nh"]
         script_body = ["echo abc"]
 
         # Add it as a server_dyn_res that returns a string output
-        self.setup_dyn_res(resname, restype, resflag, script_body)
+        self.setup_dyn_res(resname, restype, script_body)
 
         # Submit a job
         j = Job(TEST_USER)
@@ -154,11 +154,10 @@ class TestServerDynRes(TestFunctional):
         # Create a resource of type long. positive value
         resname = ["foobar"]
         restype = ["long"]
-        resflag = ["nh"]
         resval = ['/bin/echo 4']
 
         # Add server_dyn_res entry in sched_config
-        self.setup_dyn_res(resname, restype, resflag, resval)
+        self.setup_dyn_res(resname, restype, resval)
 
         a = {'Resource_List.foobar': 4}
         # Submit job
@@ -177,11 +176,10 @@ class TestServerDynRes(TestFunctional):
         # Create a resource of type long. negative value
         resname = ["foobar"]
         restype = ["long"]
-        resflag = ["nh"]
         resval = ['/bin/echo -1']
 
         # Add server_dyn_res entry in sched_config
-        self.setup_dyn_res(resname, restype, resflag, resval)
+        self.setup_dyn_res(resname, restype, resval)
 
         # Submit job
         a = {'Resource_List.foobar': '1'}
@@ -206,14 +204,13 @@ class TestServerDynRes(TestFunctional):
         # Create a resource of type long
         resname = ["foo"]
         restype = ["long"]
-        resflag = ["nh"]
         resval = ['echo get_foo > /tmp/PtlPbs_got_foo; echo 1']
 
         # Prep for server_dyn_resource scripts. Script "PbsPtl_get_foo*"
         # generates file "PbsPtl_got_foo" and returns 1.
         fpath_out = os.path.join(os.sep, "tmp", "PtlPbs_got_foo")
 
-        self.setup_dyn_res(resname, restype, resflag, resval)
+        self.setup_dyn_res(resname, restype, resval)
 
         # Check if the file "PbsPtl_got_foo" was created
         for _ in range(10):
@@ -244,12 +241,11 @@ class TestServerDynRes(TestFunctional):
         # Create resources of type long
         resname = ["foobar_small", "foobar_medium", "foobar_large"]
         restype = ["long", "long", "long"]
-        resflag = ["nh", "nh", "nh"]
 
         # Prep for server_dyn_resource scripts.
         script_body = ["echo 8", "echo 12", "echo 20"]
 
-        self.setup_dyn_res(resname, restype, resflag, script_body)
+        self.setup_dyn_res(resname, restype, script_body)
 
         a = {'Resource_List.foobar_small': '4'}
         # Submit job
@@ -286,12 +282,11 @@ class TestServerDynRes(TestFunctional):
         # Create a resource of type string
         resname = ["foobar"]
         restype = ["string"]
-        resflag = ["q"]
 
         # Prep for server_dyn_resource script
         resval = ["echo abc"]
 
-        self.setup_dyn_res(resname, restype, resflag, resval)
+        self.setup_dyn_res(resname, restype, resval)
 
         # Submit job
         a = {'Resource_List.foobar': 'abc'}
@@ -323,12 +318,11 @@ class TestServerDynRes(TestFunctional):
         # Create a resource of type string_array
         resname = ["foobar"]
         restype = ["string_array"]
-        resflag = ["q"]
 
         # Prep for server_dyn_resource script
         resval = ["echo white, red, blue"]
 
-        self.setup_dyn_res(resname, restype, resflag, resval)
+        self.setup_dyn_res(resname, restype, resval)
 
         # Submit job
         a = {'Resource_List.foobar': 'red'}
@@ -360,12 +354,11 @@ class TestServerDynRes(TestFunctional):
         # Create a resource of type size
         resname = ["foobar"]
         restype = ["size"]
-        resflag = ["q"]
 
         # Prep for server_dyn_resource script
         resval = ["echo 100gb"]
 
-        self.setup_dyn_res(resname, restype, resflag, resval)
+        self.setup_dyn_res(resname, restype, resval)
 
         # Submit job
         a = {'Resource_List.foobar': '95gb'}
@@ -413,15 +406,20 @@ class TestServerDynRes(TestFunctional):
         returned by a script. Check if the script change during
         job run is correctly considered
         """
+
+        # This test must run as root because it modifies a root owned
+        # file
+        if os.getuid() != 0:
+            self.skipTest("Test must run as root")
+
         # Create a resource of type size
         resname = ["foobar"]
         restype = ["size"]
-        resflag = ["h"]
 
         # Prep for server_dyn_resource script
         resval = ["echo 100gb"]
 
-        self.setup_dyn_res(resname, restype, resflag, resval)
+        self.setup_dyn_res(resname, restype, resval)
 
         # Submit job
         a = {'Resource_List.foobar': '95gb'}
@@ -433,8 +431,8 @@ class TestServerDynRes(TestFunctional):
         self.server.expect(JOB, a, id=jid)
 
         # Change script during job run
-        resval = ["echo 100gb"]
-        self.setup_dyn_res(resname, restype, resflag, resval)
+        cmd = ["echo", "\"echo 50gb\"", " > ", self.filenames[0]]
+        self.du.run_cmd(cmd=cmd, runas=ROOT_USER)
 
         # Rerun job
         self.server.rerunjob(jid)
@@ -454,12 +452,11 @@ class TestServerDynRes(TestFunctional):
         # Create a resource of type size
         resname = ["foobar"]
         restype = ["size"]
-        resflag = ["q"]
 
         # Script returns invalid value for resource type 'size'
         resval = ["echo two gb"]
 
-        self.setup_dyn_res(resname, restype, resflag, resval)
+        self.setup_dyn_res(resname, restype, resval)
 
         # Submit job
         a = {'Resource_List.foobar': '2gb'}
@@ -486,12 +483,11 @@ class TestServerDynRes(TestFunctional):
         # Create a resource of type float
         resname = ["foo"]
         restype = ["float"]
-        resflag = ["q"]
 
         # Prep for server_dyn_resource script
         resval = ["echo abc"]
 
-        self.setup_dyn_res(resname, restype, resflag, resval)
+        self.setup_dyn_res(resname, restype, resval)
 
         # Submit job
         a = {'Resource_List.foo': '1.2'}
@@ -518,12 +514,11 @@ class TestServerDynRes(TestFunctional):
         # Create a resource of type boolean
         resname = ["foo"]
         restype = ["boolean"]
-        resflag = ["h"]
 
         # Prep for server_dyn_resource script
-        resval = "echo yes"
+        resval = ["echo yes"]
 
-        self.setup_dyn_res(resname, restype, resflag, resval)
+        self.setup_dyn_res(resname, restype, resval)
 
         # Submit job
         a = {'Resource_List.foo': '"true"'}
@@ -546,14 +541,15 @@ class TestServerDynRes(TestFunctional):
         permission of the script are open to write for others and group
         """
         # Create a new resource
-        attr = {'type': 'long', 'flag': 'nh'}
+        attr = {'type': 'long', 'flag': 'q'}
         self.server.manager(MGR_CMD_CREATE, RSC, attr, id='foo')
         self.scheduler.add_resource('foo')
 
         scr_body = ['echo "10"', 'exit 0']
         home_dir = os.path.expanduser("~")
-        fp = self.add_server_dyn_res("foo", scr_body, dirname=home_dir,
-                                     validate=False)
+        fp = self.scheduler.add_server_dyn_res("foo", scr_body,
+                                               dirname=home_dir,
+                                               validate=False)
         # Add to filenames for cleanup
         self.filenames.append(fp)
 
