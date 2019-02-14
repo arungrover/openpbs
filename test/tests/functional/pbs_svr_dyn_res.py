@@ -432,7 +432,7 @@ class TestServerDynRes(TestFunctional):
 
         # Change script during job run
         cmd = ["echo", "\"echo 50gb\"", " > ", self.filenames[0]]
-        self.du.run_cmd(cmd=cmd, runas=ROOT_USER)
+        self.du.run_cmd(cmd=cmd, runas=ROOT_USER, as_script=True)
 
         # Rerun job
         self.server.rerunjob(jid)
