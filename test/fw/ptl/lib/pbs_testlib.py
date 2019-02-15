@@ -11062,7 +11062,7 @@ class Scheduler(PBSService):
                                                 body=script_body,
                                                 asuser="root",
                                                 dirname=dirname, hostname=host,
-                                                mode=perm, uid=0, gid=0)
+                                                mode=perm)
 
         self.server_dyn_res.append(res_file)
         self.logger.info(self.logprefix + "adding server dyn res " + res_file)
@@ -13466,7 +13466,7 @@ class MoM(PBSService):
                                                 body=script_body,
                                                 asuser="root",
                                                 dirname=dirname, hostname=host,
-                                                mode=perm, uid=0, gid=0)
+                                                mode=perm)
 
         self.logger.info(self.logprefix + "adding mom dyn res " + res_file)
         self.logger.info("-" * 30)

@@ -540,6 +540,7 @@ class TestServerDynRes(TestFunctional):
         Test whether scheduler rejects the server_dyn_res script when the
         permission of the script are open to write for others and group
         """
+        self.skipTest("Can only be run as root")
         # Create a new resource
         attr = {'type': 'long', 'flag': 'q'}
         self.server.manager(MGR_CMD_CREATE, RSC, attr, id='foo')

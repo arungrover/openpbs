@@ -357,6 +357,7 @@ class TestMomDynRes(TestFunctional):
         Test whether mom rejects the mom dynamic resource script when the
         permission of the script are open to write for others and group
         """
+        self.skipTest("Can only be run as root")
         attr = {"type": "long", "flag": "h"}
         self.server.manager(MGR_CMD_CREATE, RSC, attr,
                             id="foo", expect=True)

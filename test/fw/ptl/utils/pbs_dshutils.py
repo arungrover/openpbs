@@ -1855,8 +1855,7 @@ class DshUtils(object):
 
     def create_temp_file(self, hostname=None, suffix='', prefix='PtlPbs',
                          dirname=None, text=False, asuser=None, body=None,
-                         level=logging.INFOCLI2, mode=0644, uid=None,
-                         gid=None):
+                         level=logging.INFOCLI2, mode=0644):
         """
         Create a temp file by calling tempfile.mkstemp
 
@@ -1879,10 +1878,6 @@ class DshUtils(object):
         :type level: int
         :param mode: mode to use while creating directories
                      (must be octal like 0777)
-        :param uid: uid to apply (must be either user name or
-                    uid or -1)
-        :param gid: gid to apply (must be either group name or
-                    gid or -1)
         """
         home_dir = os.path.expanduser("~")
         # create a temp file as current user in user's home directory
@@ -1919,13 +1914,11 @@ class DshUtils(object):
             # tmp directory
             dest_file = os.path.join(os.sep, 'tmp', tmpfile.split(os.sep)[-1])
 
-        if dest_file != tmpfile or not self.is_localhost(hostname):
+        if asuser is not None and asuser != self.get_current_user() or \
+           dest_file != tmpfile or not self.is_localhost(hostname):
             self.run_copy(hostname, tmpfile, dest_file, runas=asuser,
-                          preserve_permission=True, level=level)
+                          preserve_permission=False, level=level)
             os.unlink(tmpfile)
-        if asuser is not None:
-            self.chown(path=dest_file, hostname=hostname, runas=asuser,
-                       sudo=True, uid=uid, gid=gid)
         return dest_file
 
     def mkdtemp(self, hostname=None, suffix='', prefix='PtlPbs', dir=None,
