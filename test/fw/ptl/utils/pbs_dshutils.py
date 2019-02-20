@@ -1913,11 +1913,14 @@ class DshUtils(object):
             # Neither user is provided nor directory, create the file in
             # tmp directory
             dest_file = os.path.join(os.sep, 'tmp', tmpfile.split(os.sep)[-1])
-
+        # copy file in any of the following conditions:
+        # 1 - If asuser is set and it is not the current user
+        # 2 - If destination file path is not same as temporary file path
+        # 3 - If file creation is needed on a remote host
         if asuser is not None and asuser != self.get_current_user() or \
            dest_file != tmpfile or not self.is_localhost(hostname):
             self.run_copy(hostname, tmpfile, dest_file, runas=asuser,
-                          preserve_permission=False, level=level)
+                          preserve_permission=False, level=level, mode=mode)
             os.unlink(tmpfile)
         return dest_file
 
