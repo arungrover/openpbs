@@ -2083,6 +2083,8 @@ class DshUtils(object):
         preserve = False
         if mode is not None:
             preserve = True
+        else:
+            mode = 0o755
         # create a temp dir as current user
         tmpdir = tempfile.mkdtemp(suffix, prefix)
         if dirname is not None:
