@@ -2082,17 +2082,21 @@ class DshUtils(object):
         """
         preserve = False
         if mode is not None:
-            preserve = True
-        else:
-            mode = 0o755
+            if asuser is None:
+                preserve = True
+            else:
+                preserve = False
         # create a temp dir as current user
         tmpdir = tempfile.mkdtemp(suffix, prefix)
         if dirname is not None:
             dirname = str(dirname)
-            self.chmod(path=tmpdir, mode=mode)
+            self.chmod(path=tmpdir, mode=0o755)
             self.run_copy(hostname, src=tmpdir, dest=dirname, runas=asuser,
-                          recursive=True,
+                          recursive=True, gid=asgroup,
                           preserve_permission=preserve, level=level)
+            if mode is not None:
+                self.chmod(hostname, path=dirname, mode=mode, runas=asuser)
+
             tmpdir = dirname + tmpdir[4:]
 
         # if temp dir to be created on remote host
@@ -2101,13 +2105,16 @@ class DshUtils(object):
                 # by default mkstemp creates dir with 0600 permission
                 # to create dir as different user first change the dir
                 # permission to 0755 so that other user has read permission
-                self.chmod(path=tmpdir, mode=mode)
+                self.chmod(path=tmpdir, mode=0o755)
                 # copy temp dir created on local host to remote host
                 # as different user
                 self.run_copy(hostname, src=tmpdir, dest=tmpdir, runas=asuser,
                               recursive=True,
                               preserve_permission=preserve, level=level)
+                if mode is not None:
+                    self.chmod(hostname, path=tmpdir, mode=mode, runas=asuser)
             else:
+                self.chmod(path=tmpdir, mode=mode)
                 # copy temp dir created on localhost to remote as current user
                 self.run_copy(hostname, src=tmpdir, dest=tmpdir,
                               preserve_permission=preserve, level=level)
@@ -2117,7 +2124,7 @@ class DshUtils(object):
             # by default mkdtemp creates dir with 0600 permission
             # to create dir as different user first change the dir
             # permission to 0755 so that other user has read permission
-            self.chmod(path=tmpdir, mode=mode)
+            self.chmod(path=tmpdir, mode=0o755)
             # since we need to create as differnt user than current user
             # create a temp dir just to get temp dir name with absolute path
             tmpdir2 = tempfile.mkdtemp(suffix, prefix, dirname)
@@ -2126,6 +2133,8 @@ class DshUtils(object):
             self.run_copy(hostname, src=tmpdir, dest=tmpdir2, runas=asuser,
                           recursive=True,
                           preserve_permission=preserve, level=level)
+            if mode is not None:
+                self.chmod(hostname, path=tmpdir2, mode=mode, runas=asuser)
             # remove original temp dir
             os.rmdir(tmpdir)
             self.tmpdirlist.append(tmpdir2)
