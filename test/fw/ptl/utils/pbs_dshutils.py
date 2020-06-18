@@ -2080,12 +2080,6 @@ class DshUtils(object):
                      directory
         :param level: logging level, defaults to INFOCLI2
         """
-        preserve = False
-        if mode is not None:
-            if asuser is None:
-                preserve = True
-            else:
-                preserve = False
         current_user_info = self.get_id_info(self.get_current_user())
         uid = current_user_info['uid']
         gid = current_user_info['gid']
@@ -2100,7 +2094,7 @@ class DshUtils(object):
             self.chmod(path=tmpdir, mode=0o755)
             self.run_copy(hostname, src=tmpdir, dest=dirname, runas=asuser,
                           recursive=True, gid=gid, uid=uid,
-                          preserve_permission=preserve, level=level)
+                          level=level)
             if mode is not None:
                 self.chmod(hostname, path=dirname, mode=mode, runas=asuser)
             else:
@@ -2119,7 +2113,7 @@ class DshUtils(object):
                 # as different user
                 self.run_copy(hostname, src=tmpdir, dest=tmpdir, runas=asuser,
                               recursive=True, uid=uid, gid=gid,
-                              preserve_permission=preserve, level=level)
+                              level=level)
                 if mode is not None:
                     self.chmod(hostname, path=tmpdir, mode=mode, runas=asuser)
                 else:
@@ -2128,7 +2122,7 @@ class DshUtils(object):
                 self.chmod(path=tmpdir, mode=0o755)
                 # copy temp dir created on localhost to remote as current user
                 self.run_copy(hostname, src=tmpdir, dest=tmpdir,
-                              preserve_permission=True, level=level,
+                              level=level, preserve_permission=True,
                               uid=uid, gid=gid)
             # remove local temp dir
             os.rmdir(tmpdir)
@@ -2143,8 +2137,7 @@ class DshUtils(object):
             os.rmdir(tmpdir2)
             # copy the orginal temp as new temp dir
             self.run_copy(hostname, src=tmpdir, dest=tmpdir2, runas=asuser,
-                          recursive=True, uid=uid, gid=gid,
-                          preserve_permission=preserve, level=level)
+                          recursive=True, uid=uid, gid=gid, level=level)
             if mode is not None:
                 self.chmod(hostname, path=tmpdir2, mode=mode, runas=asuser)
             else:
