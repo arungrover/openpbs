@@ -108,6 +108,9 @@ class TestDshUtils(TestSelf):
         Test creating a directory as user
         """
 
+        current_user_info = self.get_id_info(self.get_current_user())
+        self.logger.info("UID: " + str(current_user_info['uid']))
+        self.logger.info("GID: " + str(current_user_info['gid']))
         # check default configurations
         tmpdir = self.du.create_temp_dir()
         self.check_access(tmpdir, user=getpass.getuser())
