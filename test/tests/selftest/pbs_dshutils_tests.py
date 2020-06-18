@@ -108,7 +108,7 @@ class TestDshUtils(TestSelf):
         Test creating a directory as user
         """
 
-        current_user_info = self.get_id_info(self.get_current_user())
+        current_user_info = self.du.get_id_info(self.du.get_current_user())
         self.logger.info("UID: " + str(current_user_info['uid']))
         self.logger.info("GID: " + str(current_user_info['gid']))
         # check default configurations
