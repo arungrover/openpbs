@@ -2061,7 +2061,7 @@ class DshUtils(object):
         return tmpfile
 
     def create_temp_dir(self, hostname=None, suffix='', prefix='PtlPbs',
-                        dirname=None, asuser=None, asgroup=None, mode=0o755,
+                        dirname=None, asuser=None, asgroup=None, mode=None,
                         level=logging.INFOCLI2):
         """
         Create a temp dir by calling ``tempfile.mkdtemp``
@@ -2097,8 +2097,6 @@ class DshUtils(object):
                           level=level)
             if mode is not None:
                 self.chmod(hostname, path=dirname, mode=mode, runas=asuser)
-            else:
-                self.chmod(hostname, path=dirname, mode=0o755, runas=asuser)
 
             tmpdir = dirname + tmpdir[4:]
 
@@ -2116,8 +2114,6 @@ class DshUtils(object):
                               level=level)
                 if mode is not None:
                     self.chmod(hostname, path=tmpdir, mode=mode, runas=asuser)
-                else:
-                    self.chmod(hostname, path=tmpdir, mode=0o755, runas=asuser)
             else:
                 self.chmod(path=tmpdir, mode=0o755)
                 # copy temp dir created on localhost to remote as current user
@@ -2140,8 +2136,6 @@ class DshUtils(object):
                           recursive=True, uid=uid, gid=gid, level=level)
             if mode is not None:
                 self.chmod(hostname, path=tmpdir2, mode=mode, runas=asuser)
-            else:
-                self.chmod(hostname, path=tmpdir2, mode=0o755, runas=asuser)
             # remove original temp dir
             os.rmdir(tmpdir)
             self.tmpdirlist.append(tmpdir2)
