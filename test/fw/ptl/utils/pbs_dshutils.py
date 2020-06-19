@@ -2061,7 +2061,7 @@ class DshUtils(object):
         return tmpfile
 
     def create_temp_dir(self, hostname=None, suffix='', prefix='PtlPbs',
-                        dirname=None, asuser=None, asgroup=None, mode=None,
+                        dirname=None, asuser=None, asgroup=None, mode=0o755,
                         level=logging.INFOCLI2):
         """
         Create a temp dir by calling ``tempfile.mkdtemp``
