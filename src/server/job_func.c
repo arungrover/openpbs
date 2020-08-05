@@ -112,7 +112,7 @@ static void post_resv_purge(struct work_task *pwt);
 
 /* Global Data items */
 #ifndef PBS_MOM
-extern struct server   server;
+extern void ***local_job_store;
 #endif	/* PBS_MOM */
 extern char *msg_abt_err;
 extern char *path_jobs;
@@ -362,6 +362,7 @@ job_alloc(void)
 	pj->ji_deletehistory = 0;
 	pj->ji_script = NULL;
 	pj->ji_prov_startjob_task = NULL;
+	pj->ji_seqid = 0;
 #endif
 	pj->ji_qs.ji_jsversion = JSVERSION;
 	pj->ji_momhandle = -1;		/* mark mom connection invalid */
@@ -1021,6 +1022,18 @@ job_purge(job *pjob)
 	return;
 }
 
+void store_job(job *pj) {
+#ifndef PBS_MOM
+	local_job_store[pj->ji_seqid/10000][pj->ji_seqid%10000] = pj;
+#endif
+}
+
+void delete_job(job *pj) {
+#ifndef PBS_MOM
+	local_job_store[pj->ji_seqid/10000][pj->ji_seqid%10000] = NULL;
+#endif
+}
+
 /**
  * @brief
  * 		find_job() - find job by jobid
@@ -1050,6 +1063,7 @@ find_job(char *jobid)
 	char *host_dot;
 	char *serv_dot;
 	char *host;
+	unsigned long seqid;
 #endif
 	char *at;
 	job  *pj = NULL;
@@ -1132,6 +1146,8 @@ find_job(char *jobid)
 		strcat(buf, server_name);
 	}
 
+	seqid = strtol(pbuf, NULL, 10);
+	return (job *)local_job_store[seqid/10000][seqid%10000];
 #endif
 	if (pbs_idx_find(jobs_idx, &pbuf, (void **)&pj, NULL) == PBS_IDX_RET_OK)
 		return pj;

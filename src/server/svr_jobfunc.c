@@ -264,11 +264,14 @@ svr_enquejob(job *pjob)
 	log_event(PBSEVENT_DEBUG2, PBS_EVENTCLASS_JOB, LOG_DEBUG,
 		pjob->ji_qs.ji_jobid, log_buffer);
 #endif	/* NDEBUG */
-
+#if 0
 	if (pbs_idx_insert(jobs_idx, pjob->ji_qs.ji_jobid, pjob) != PBS_IDX_RET_OK) {
 		log_joberr(PBSE_INTERNAL, __func__, "Failed add job in index", pjob->ji_qs.ji_jobid);
 		return PBSE_INTERNAL;
 	}
+#endif /* JOB_STORE */
+	store_job(pjob);
+
 
 	pjcur = (job *)GET_PRIOR(svr_alljobs);
 	while (pjcur) {
@@ -476,8 +479,11 @@ svr_dequejob(job *pjob)
 	if (is_linked(&svr_alljobs, &pjob->ji_alljobs)) {
 		delete_link(&pjob->ji_alljobs);
 		delete_link(&pjob->ji_unlicjobs);
+		delete_job(pjob);
+#if 0
 		if (pbs_idx_delete(jobs_idx, pjob->ji_qs.ji_jobid) != PBS_IDX_RET_OK)
 			log_joberr(PBSE_INTERNAL, __func__, "Failed to delete job from index", pjob->ji_qs.ji_jobid);
+#endif /* JOB_STORE */
 		if (--server.sv_qs.sv_numjobs < 0)
 			bad_ct = 1;
 

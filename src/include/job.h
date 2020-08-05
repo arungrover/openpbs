@@ -542,6 +542,7 @@ struct job {
 
 #endif					/* END SERVER ONLY */
 
+	unsigned long ji_seqid;
 	/*
 	 * fixed size internal data - maintained via "quick save"
 	 * some of the items are copies of attributes, if so this
@@ -991,6 +992,8 @@ extern struct depend_job *find_dependjob(struct depend *pdep, char *name);
 extern int send_depend_req(job *pjob, struct depend_job *pparent, int type, int op, int schedhint, void (*postfunc)(struct work_task *));
 extern void post_runone(struct work_task *pwt);
 extern job  *find_job(char *);
+void store_job(job *);
+void delete_job(job *);
 extern char *get_variable(job *, char *);
 extern void  check_block(job *, char *);
 extern char *lookup_variable(void *, int, char *);

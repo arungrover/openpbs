@@ -477,6 +477,7 @@ req_quejob(struct batch_request *preq)
 	}
 
 	*pj->ji_qs.ji_fileprefix = '\0';
+	pj->ji_seqid = next_svr_sequence_id;
 
 #else                /* PBS_MOM mom mom mom mom*/
 	if (pj) {

@@ -208,6 +208,7 @@ char		server_host[PBS_MAXHOSTNAME+1];	  /* host_name of this svr */
 int		reap_child_flag = 0;
 time_t		secondary_delay = 30;
 struct server	server = {{0}};		/* the server structure */
+void		***local_job_store;
 pbs_sched	*dflt_scheduler = NULL; /* the default scheduler */
 int		shutdown_who;		/* see req_shutdown() */
 char		*mom_host = server_host;
@@ -683,6 +684,18 @@ tcp_pre_process(conn_t *conn)
 
 	return 1;
 }
+/**
+ * @brief Allocate  a store for 10 million jobs
+ *
+ * @return void
+ */
+static void create_job_store () {
+	int i;
+	local_job_store = calloc(1000, sizeof(void ***));
+	for (i = 0; i < 1000; i++)
+	    local_job_store[i] = calloc(10000, sizeof(void **));
+	return;
+}
 
 /**
  * @brief
@@ -1057,6 +1070,8 @@ main(int argc, char **argv)
 
 	/* save original environment in case we re-exec */
 	origevp = environ;
+	/* Create job store for 10 million jobs */
+	create_job_store();
 
 	/*
 	 * Open the log file so we can start recording events

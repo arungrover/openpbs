@@ -211,6 +211,8 @@ db_to_job(job *pjob,  pbs_db_job_info_t *dbjob)
 
 	compare_obj_hash(&pjob->ji_qs, sizeof(pjob->ji_qs), pjob->qs_hash);
 
+	pjob->ji_seqid = strtol(pjob->ji_qs.ji_jobid, NULL, 10);
+
 	pjob->newobj = 0;
 
 	return 0;
