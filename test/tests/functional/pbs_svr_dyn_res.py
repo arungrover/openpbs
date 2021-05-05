@@ -624,11 +624,11 @@ class TestServerDynRes(TestFunctional):
 
         # Create script in a directory which has more open privileges
         # This should make loading of this file fail in all cases
-        # Create the dirctory name with a space in it, to make sure PBS parses
+        # Create the directory name with a space in it, to make sure PBS parses
         # it correctly.
         dir_temp = self.du.create_temp_dir(mode=0o766,
                                            dirname=home_dir,
-                                           suffix=' tmp')
+                                           suffix='\ tmp')
         self.du.chmod(path=dir_temp, mode=0o766, sudo=True)
         self.du.chown(path=dir_temp, sudo=True, uid=self.scheduler.user)
         fp = self.scheduler.add_server_dyn_res("foo", scr_body,
