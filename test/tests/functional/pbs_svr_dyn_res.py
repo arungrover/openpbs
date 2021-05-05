@@ -628,8 +628,7 @@ class TestServerDynRes(TestFunctional):
         # it correctly.
         dir_temp = self.du.create_temp_dir(mode=0o766,
                                            dirname=home_dir,
-                                           suffix=' tmp',
-                                           sudo=True)
+                                           suffix=' tmp')
         self.du.chmod(path=dir_temp, mode=0o766, sudo=True)
         self.du.chown(path=dir_temp, sudo=True, uid=self.scheduler.user)
         fp = self.scheduler.add_server_dyn_res("foo", scr_body,
