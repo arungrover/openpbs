@@ -1052,7 +1052,7 @@ free_server_info(server_info *sinfo)
 		free_node_partition_array(sinfo->hostsets);
 	if (sinfo->nodesigs)
 		free_string_array(sinfo->nodesigs);
-	if (sinfo->npc_arr != NULL)
+	if (!sinfo->npc_arr.empty())
 		free_np_cache_array(sinfo->npc_arr);
 	if (sinfo->calendar != NULL)
 		free_event_list(sinfo->calendar);
@@ -1201,7 +1201,6 @@ new_server_info(int limallocflag)
 	sinfo->allpart = NULL;
 	sinfo->hostsets = NULL;
 	sinfo->nodesigs = NULL;
-	sinfo->npc_arr = NULL;
 	sinfo->qrun_job = NULL;
 	sinfo->policy = NULL;
 	sinfo->fstree = NULL;
@@ -1697,9 +1696,9 @@ update_server_on_run(status *policy, server_info *sinfo,
 		/* We're running a job or reservation, which will affect the cached data.
 		 * We'll flush the cache and rebuild it if needed
 		 */
-		if (sinfo->npc_arr != NULL) {
+		if (!sinfo->npc_arr.empty()) {
 			free_np_cache_array(sinfo->npc_arr);
-			sinfo->npc_arr = NULL;
+			sinfo->npc_arr = {};
 		}
 
 
@@ -1805,9 +1804,9 @@ update_server_on_end(status *policy, server_info *sinfo, queue_info *qinfo,
 	/* We're ending a job or reservation, which will affect the cached data.
 	 * We'll flush the cache and rebuild it if needed
 	 */
-	if (sinfo->npc_arr != NULL) {
+	if (!sinfo->npc_arr.empty()) {
 		free_np_cache_array(sinfo->npc_arr);
-		sinfo->npc_arr = NULL;
+		sinfo->npc_arr = {};
 	}
 
 	if (sinfo->has_soft_limit || sinfo->has_hard_limit) {
