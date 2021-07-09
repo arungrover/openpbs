@@ -497,7 +497,7 @@ query_server_info(status *pol, struct batch_status *server)
 	sinfo->name = std::string(server->name);
 
 	if ((sinfo->policy = dup_status(pol)) == NULL) {
-		sinfo->free_server_info();
+		delete sinfo;
 		return NULL;
 	}
 
@@ -557,7 +557,7 @@ query_server_info(status *pol, struct batch_status *server)
 					sinfo->res = resp;
 
 				if (set_resource(resp, attrp->value, RF_AVAIL) == 0) {
-					sinfo->free_server_info();
+					delete sinfo;
 					return NULL;
 				}
 			}
@@ -567,7 +567,7 @@ query_server_info(status *pol, struct batch_status *server)
 				sinfo->res = resp;
 			if (resp != NULL) {
 				if (set_resource(resp, attrp->value, RF_ASSN) == 0) {
-					sinfo->free_server_info();
+					delete sinfo;
 					return NULL;
 				}
 			}
@@ -611,7 +611,7 @@ query_server_info(status *pol, struct batch_status *server)
 	if (sinfo->job_sort_formula == NULL && sc_attrs.job_sort_formula != NULL) {
 		sinfo->job_sort_formula = string_dup(sc_attrs.job_sort_formula);
 		if (sinfo->job_sort_formula == NULL) {
-			sinfo->free_server_info();
+			delete sinfo;
 			return NULL;
 		}
 	}
@@ -961,8 +961,8 @@ server_info::free_server_psets()
 {
 	for (auto& spset : svr_to_psets) {
 		free_node_partition(spset.second);
-		spset.second = NULL;
 	}
+	svr_to_psets.clear();
 }
 
 /**
@@ -977,10 +977,8 @@ void
 server_info::dup_server_psets(const std::unordered_map<std::string, node_partition*>& spsets)
 {
 	for (const auto& spset : spsets) {
-		node_partition *temp = dup_node_partition(spset.second, this);
-		if (temp != NULL)
-			svr_to_psets[spset.first] = temp;
-		else {
+		svr_to_psets[spset.first] = dup_node_partition(spset.second, this);
+		if (svr_to_psets[spset.first] == NULL) {
 			free_server_psets();
 			return;
 		}
